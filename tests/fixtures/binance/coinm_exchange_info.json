@@ -1,0 +1,32 @@
+{
+  "timezone": "UTC",
+  "symbols": [
+    {
+      "symbol": "BTCUSD_260925",
+      "pair": "BTCUSD",
+      "contractType": "CURRENT_QUARTER",
+      "deliveryDate": 1790294400000,
+      "contractStatus": "TRADING",
+      "contractSize": 100,
+      "baseAsset": "BTC",
+      "quoteAsset": "USD",
+      "marginAsset": "BTC",
+      "pricePrecision": 1,
+      "quantityPrecision": 0,
+      "filters": [
+        {
+          "filterType": "PRICE_FILTER",
+          "minPrice": "0.1",
+          "maxPrice": "1000000",
+          "tickSize": "0.1"
+        },
+        {
+          "filterType": "LOT_SIZE",
+          "minQty": "1",
+          "maxQty": "100000",
+          "stepSize": "1"
+        }
+      ]
+    }
+  ]
+}
