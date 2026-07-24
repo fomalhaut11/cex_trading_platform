@@ -76,6 +76,6 @@ Reconciliation:
 - does not resubmit an uncertain order.
 
 This completes the deterministic offline recovery and convergence kernel.
-Binance query responses and private order events are covered by offline
-restart acceptance. Live authenticated stream lifecycle, reconnect/startup
-orchestration and Testnet evidence remain external gates.
+Binance query responses, private order events, bounded startup buffering and
+query/event ordering are covered by offline restart acceptance. Live
+authenticated Testnet evidence remains an external gate.

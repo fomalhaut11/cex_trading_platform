@@ -51,12 +51,12 @@ Malformed messages, unsupported events and client-order identity mismatches
 raise typed normalization errors. The adapter never silently accepts a report
 for a different canonical order.
 
-## Remaining live boundary
+## Private stream integration
 
-The deterministic mapping and offline restart scenario are complete. A live
-authenticated private-stream subscription, listen-key/session renewal,
-reconnect coordination and startup query orchestration remain part of the
-Testnet and operational acceptance work.
+The deterministic mapping now feeds the T018 private-stream session and
+startup reconciliation coordinator. Spot signature subscription, Futures
+listen-key renewal, reconnect backoff and startup race buffering are covered
+offline. Actual authenticated Testnet evidence remains an external gate.
 
 ## Protocol references
 

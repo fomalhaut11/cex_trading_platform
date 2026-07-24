@@ -38,9 +38,10 @@ check is evidence to investigate, not a gate to bypass.
 
 The first branch-coverage baseline is 87.07%. CI enforces a minimum of 85%.
 
-The T017 local preflight passes 242 tests and strict MyPy across 67 source
-files with 86.53% branch coverage. The historical first baseline remains
-recorded below for traceability.
+The T018 local preflight passes 256 tests and strict MyPy across 70 source
+files with 86.03% branch coverage. It adds private-stream and startup-race
+scenarios without lowering the 85% gate. The historical first baseline
+remains recorded below for traceability.
 The threshold protects against broad regressions while leaving room to add
 meaningful failure-path tests. It must not encourage shallow tests written only
 to increase a percentage.

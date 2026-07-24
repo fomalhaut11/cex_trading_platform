@@ -43,6 +43,14 @@ from .pipeline import (
     TradingPipeline,
     ValidationPort,
 )
+from .reconciliation import (
+    ReconciliationOms,
+    StartupOrderReconciliationCoordinator,
+    StartupQueryResult,
+    StartupReconciliationError,
+    StartupReconciliationReport,
+    StartupReconciliationState,
+)
 from .recorder_handoff import (
     OverflowPolicy,
     RecorderHandoff,
@@ -84,6 +92,7 @@ __all__ = [
     "PipelineStateError",
     "PipelineStatus",
     "PortfolioReadPort",
+    "ReconciliationOms",
     "RecorderHandoff",
     "RecorderHandoffError",
     "RecorderHandoffOverflowError",
@@ -94,6 +103,11 @@ __all__ = [
     "RiskPort",
     "StageOutcome",
     "StageTrace",
+    "StartupOrderReconciliationCoordinator",
+    "StartupQueryResult",
+    "StartupReconciliationError",
+    "StartupReconciliationReport",
+    "StartupReconciliationState",
     "StateGate",
     "StrategyPort",
     "TradingApplication",

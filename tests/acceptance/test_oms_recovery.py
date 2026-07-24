@@ -16,6 +16,7 @@ from cex_quant.core import (
     VenueOrderId,
 )
 from cex_quant.execution import (
+    QueryOrder,
     normalize_binance_order_query,
     normalize_binance_user_order_update,
 )
@@ -31,7 +32,11 @@ from cex_quant.oms import (
     ReconciliationSource,
 )
 from cex_quant.risk import RiskDecision, RiskDecisionStatus
-from cex_quant.runtime import CanonicalOmsApplicationService, OrderParameters
+from cex_quant.runtime import (
+    CanonicalOmsApplicationService,
+    OrderParameters,
+    StartupOrderReconciliationCoordinator,
+)
 from cex_quant.strategy import PositionTargetIntent
 
 INSTRUMENT = InstrumentId(
@@ -235,6 +240,96 @@ class OmsRecoveryAcceptanceTests(unittest.TestCase):
                 recovered = _service(journal)
                 self.assertEqual(
                     recovered.order(request.client_order_id).status,
+                    OrderStatus.FILLED,
+                )
+
+
+class _QueryGateway:
+    def __init__(
+        self,
+        snapshot: OrderReconciliationSnapshot,
+    ) -> None:
+        self.snapshot = snapshot
+
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot:
+        self.assert_identity = command.client_order_id
+        return self.snapshot
+
+
+class OmsStartupReconciliationAcceptanceTests(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_stream_buffer_and_rest_query_survive_restart(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            journal_path = Path(directory) / "oms.jsonl"
+            with JsonLinesOmsJournal(journal_path) as journal:
+                before_restart = _service(journal)
+                request = before_restart.create_order(_intent(), _decision())
+                before_restart.mark_submitting(
+                    request.client_order_id,
+                    at_ns=UnixNanos(160),
+                )
+
+            rest = normalize_binance_order_query(
+                BinanceProduct.USD_M,
+                {
+                    "avgPrice": "0",
+                    "clientOrderId": "recovery-order-1",
+                    "executedQty": "0",
+                    "orderId": 99,
+                    "status": "NEW",
+                    "updateTime": 1,
+                },
+                received_at_ns=UnixNanos(1_000_000),
+            )
+            stream = normalize_binance_user_order_update(
+                BinanceProduct.USD_M,
+                {
+                    "e": "ORDER_TRADE_UPDATE",
+                    "E": 3,
+                    "T": 2,
+                    "o": {
+                        "c": "recovery-order-1",
+                        "ap": "60000",
+                        "x": "TRADE",
+                        "X": "FILLED",
+                        "i": 99,
+                        "z": "2",
+                        "t": 7,
+                    },
+                },
+            )
+
+            with JsonLinesOmsJournal(journal_path) as journal:
+                recovered = _service(journal)
+                gateway = _QueryGateway(rest)
+                coordinator = StartupOrderReconciliationCoordinator(
+                    oms=recovered,
+                    gateway=gateway,
+                    now_ns=lambda: UnixNanos(3_000_000),
+                )
+                coordinator.begin_buffering()
+                await coordinator.on_stream_snapshot(stream)
+
+                report = await coordinator.reconcile_startup()
+
+                self.assertTrue(report.ready)
+                self.assertEqual(
+                    recovered.order(request.client_order_id).status,
+                    OrderStatus.FILLED,
+                )
+                self.assertEqual(
+                    gateway.assert_identity,
+                    request.client_order_id,
+                )
+
+            with JsonLinesOmsJournal(journal_path) as journal:
+                final = _service(journal)
+                self.assertEqual(
+                    final.order(request.client_order_id).status,
                     OrderStatus.FILLED,
                 )
 

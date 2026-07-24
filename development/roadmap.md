@@ -45,8 +45,8 @@ Status: In progress.
 1. Correct and maintain the documentation baseline.
 2. Require the successful CI checks on protected branches after the
    direct-push policy is agreed.
-3. Integrate authenticated Binance private-stream lifecycle and startup
-   reconciliation orchestration with the completed query/event adapters.
+3. Record authenticated Binance Testnet evidence for the completed
+   private-stream lifecycle and startup reconciliation orchestration.
 4. Add secrets management, supervision, health endpoints and operator controls.
 5. Synchronize the deployment-host clock and calibrate health thresholds.
 6. Run authenticated Binance Testnet acceptance.
