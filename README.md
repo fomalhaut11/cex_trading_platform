@@ -24,3 +24,7 @@ $env:PYTHONPATH = "src"
 
 Read `architecture/module_topology.md`, `architecture/state_ownership.md` and
 the accepted ADRs before changing a public contract.
+
+Project status and quality gates are maintained in
+`development/progress.md`, `development/roadmap.md` and
+`development/continuous_integration.md`.

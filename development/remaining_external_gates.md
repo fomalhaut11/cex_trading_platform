@@ -1,42 +1,43 @@
 # Remaining External Gates
 
-These items cannot be completed safely by the current offline sandbox. They
-are external acceptance gates rather than unfinished domain implementation.
+These are production-readiness or environment-dependent acceptance gates.
+They are not evidence that the deterministic offline domain foundation is
+unfinished, and none may be waived for a production release.
 
-## D Drive Deployment
+## Resolved Baseline Distribution
 
-The sandbox can read `D:\cex_quant_codex_docs_v2`, but every authorized write
-attempt is rejected before Windows file permissions are evaluated.
+The project is available in both of these locations:
 
-Verified fallback artifact:
+- working copy: `D:\cex_quant_codex_docs_v2`;
+- Git remote: `https://github.com/fomalhaut11/cex_trading_platform`.
 
-- file: `outputs/cex_quant_foundation_2026-07-23.zip`
-- files: 160
-- bytes: 197812
-- SHA-256:
-  `AE228939BA90F3C6CE3274D70DD7E5BA9427977B21FD775A23A660251DA00A45`
+The Git baseline is commit
+`889572c3b62b2833143084b4eea79bf5a4bf7468` on `main`. The local and remote
+commit identifiers were verified equal after the initial push.
 
-The archive was extracted into a fresh directory and all 218 tests passed.
-Copy or extract it to the D drive from a normal user process, then run:
+The earlier release archive remains a historical offline artifact, but Git is
+now the authoritative version history. A fresh checkout must pass:
 
 ```powershell
 $env:PYTHONPATH = "src"
 python -B -m unittest discover -s tests
 ```
 
-## MyPy Strict
+## CI and MyPy Strict
 
-The project configuration already enables strict checking. Installation failed
-through both available routes:
+The project configuration enables strict MyPy checking, but the current local
+environment does not have MyPy or coverage tooling installed. CI must run:
 
-- pip index requests stalled without package data;
-- direct official PyPI wheel download was rejected by the sandbox network
-  identity.
+- source compilation;
+- the complete deterministic regression suite;
+- Ruff;
+- MyPy in strict mode;
+- a measured coverage report.
 
-When normal PyPI access is available:
+When package access is available:
 
 ```powershell
-python -m pip install "mypy==2.3.0"
+python -m pip install -e ".[dev]"
 python -m mypy
 ```
 
@@ -71,3 +72,25 @@ The Testnet gate must cover:
 - confirmation that no secret appears in captured logs or failures.
 
 No real-money endpoint is authorized by this runbook.
+
+## Target-Host Performance
+
+The 100,000-event offline baseline checks determinism, bounded retained memory
+and thread cleanup. It does not establish a production latency service level.
+
+A002B must measure representative normal, peak and burst loads on the selected
+host and storage configuration. It must report p50, p95 and p99 latency,
+backpressure behavior, recorder durability costs, retained-memory slopes and
+thread/process health over a sustained soak.
+
+## Recovery and Operations
+
+Production acceptance also requires:
+
+- persistent OMS recovery and restart reconstruction;
+- reconciliation of REST acknowledgements and user-data events;
+- operator kill switch and an explicitly controlled reduce-only mode;
+- supervised process restart and health reporting;
+- credential storage and rotation procedures;
+- deployment, rollback, reconciliation and incident runbooks;
+- fault tests for slow or full storage, network loss and process termination.

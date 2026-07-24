@@ -2,28 +2,69 @@
 
 ## Scope
 
-This document defines the production CEX quantitative trading system.
+This document defines the target production architecture. Implemented and
+accepted scope is tracked separately in `development/progress.md`.
 
-Research platform is separated and only publishes approved artifacts.
+The research platform is separated from the live runtime and only publishes
+approved artifacts.
 
 ## Core Runtime Flow
 
-Exchange → Market Data Gateway → Normalizer → Validator → Market State
-Engine → Online Feature Engine → Strategy Runtime → Risk Engine → OMS →
-Execution Gateway → Exchange
+```text
+Exchange
+  -> Market Data Gateway
+  -> Normalizer
+  -> Validator
+  -> Market State Engine
+  -> Online Feature Engine
+  -> Strategy Runtime
+  -> Risk Engine
+  -> OMS
+  -> Execution Gateway
+  -> Exchange
+```
+
+Risk is mandatory and cannot be bypassed. Strategy produces venue-neutral
+intents; only the execution adapter may produce venue requests.
 
 ## Design Principles
 
--   Python-first, Rust-ready
--   Event, State and Storage separation
--   Real-time trading path separated from research
--   Metadata-driven governance
--   Registered features only in production
+- Python-first, Rust-ready.
+- Event, State and Storage separation.
+- Real-time trading path separated from research.
+- Metadata-driven governance.
+- Registered features only in production.
+- Immutable public contracts and single-writer state.
+- Bounded side channels and no blocking storage in the hot path.
 
 ## Runtime Domains
 
-1.  Market Data Domain
-2.  State Domain
-3.  Information Domain
-4.  Decision Domain
-5.  Execution Domain
+1. Market Data: connectors, normalization and validation.
+2. State: market, order and account/position state.
+3. Information: registered online features and provenance.
+4. Decision: strategy and fail-closed risk decisions.
+5. Execution: OMS lifecycle and venue execution adapters.
+
+## Product Coverage
+
+Canonical instruments cover spot, perpetuals, dated futures and options.
+Venue-specific payloads remain inside adapters.
+
+Observable option quotes are market data. Implied volatility, Greeks, smiles,
+term structures and volatility surfaces are versioned features. Venue-provided
+analytics are retained only with explicit venue provenance and are not the
+authoritative internal feature values.
+
+## Process Model
+
+The first implementation keeps the deterministic trading flow in one
+`trading-core` process. Recorder, monitoring, operations API and storage may
+be separated only for measured scaling or fault-domain reasons and must
+communicate through bounded channels.
+
+## Production Boundary
+
+Passing offline regression is necessary but insufficient for production.
+Production review also requires authenticated Testnet evidence, restart
+recovery, exchange reconciliation, target-host latency and soak results,
+secrets management, supervision, operator controls and operational runbooks.

@@ -1,10 +1,14 @@
 # Project Progress
 
-Last updated: 2026-07-23
+Last updated: 2026-07-24
 
 ## Current Phase
 
-Phase 2 - Integration.
+Phase 4 - Production readiness and external acceptance.
+
+The deterministic offline trading foundation is complete. This phase does not
+authorize production trading; it closes deployment, recovery, supervision,
+target-host performance and authenticated Testnet gates.
 
 ## Completed
 
@@ -64,30 +68,40 @@ Phase 2 - Integration.
   adapters plus the complete application composition root.
 - A002A 100,000-event order-book and recorder/replay baselines with stable
   digests, bounded retained memory and no leaked worker threads.
+- Git repository initialized on `main` and synchronized to
+  `https://github.com/fomalhaut11/cex_trading_platform`.
+- Baseline commit `889572c3b62b2833143084b4eea79bf5a4bf7468` verified
+  identical locally and on `origin/main`.
+- Project files synchronized to `D:\cex_quant_codex_docs_v2`.
+- Current-phase, roadmap, external-gate and architecture documents reconciled
+  with the implemented scope; CI requirements documented.
 
 ## In Progress
 
-- External acceptance preparation and deployment handoff.
+- CI implementation planning.
+- Production recovery, reconciliation and operational-control planning.
+- External acceptance preparation.
 
-## Blocked
+## Open External Gates
 
 - MyPy cannot be installed in the current sandbox: package-index requests
   stall and direct PyPI wheel downloads are rejected by the sandbox network
   identity. Ruff and runtime tests remain green.
-- Synchronization to `D:\cex_quant_codex_docs_v2` is blocked by the external
-  path sandbox despite the target ACL granting the sandbox account modify
-  access. The verified integration copy remains in the Codex workspace.
 - Live smoke testing measured the local host clock roughly 13 seconds behind
   Binance. Production use requires clock synchronization and offset monitoring.
+- Authenticated Binance Testnet acceptance requires user-provided Testnet
+  credentials through the credential-provider boundary.
 
 ## Next
 
-- A002B rerun the performance harness on target hardware and establish
-  measured throughput/latency gates.
-- A002C run authenticated Binance Testnet acceptance after test credentials
-  and host clock synchronization are supplied.
-- Production calibration of clock-health and recorder supervision thresholds.
-- Binance Options instrument and stream mapping when option work enters scope.
+1. Establish CI checks for compile, regression, Ruff, MyPy and coverage.
+2. Implement persistent OMS recovery and REST/user-stream reconciliation.
+3. Synchronize the host clock and calibrate clock-health thresholds.
+4. Run A002C authenticated Binance Testnet acceptance.
+5. Run A002B target-host soak and latency-distribution acceptance.
+6. Add supervision, operator controls and production recovery runbooks.
+7. Add Binance Options instrument and stream mapping when venue-option work
+   enters scope.
 
 ## Verification
 

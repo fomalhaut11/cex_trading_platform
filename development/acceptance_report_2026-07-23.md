@@ -79,3 +79,16 @@ and refuses implicit blocking from an already running loop.
 - A verified 160-file source archive is available as
   `outputs/cex_quant_foundation_2026-07-23.zip`; extraction followed by the
   complete 218-test regression passed.
+
+## Follow-up Status
+
+Update on 2026-07-24:
+
+- The D-drive distribution issue described above was resolved after this
+  acceptance report was issued.
+- Git is now the authoritative version history.
+- Baseline commit `889572c3b62b2833143084b4eea79bf5a4bf7468` is available on
+  `main` at `https://github.com/fomalhaut11/cex_trading_platform`.
+
+This follow-up changes distribution status only. The deferred production gates
+above remain open unless explicitly closed by later acceptance evidence.
