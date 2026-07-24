@@ -38,8 +38,11 @@ Any reported type errors must be fixed before production acceptance; the gate
 must not be waived merely because runtime tests pass.
 
 The first local baseline passes 221 tests, strict MyPy and Ruff, with 87.07%
-branch coverage. The first remote workflow run and protected-branch enforcement
-must still be confirmed in GitHub.
+branch coverage. Remote GitHub Actions run `30086189167` passed quality and
+coverage plus regression on Python 3.11 and 3.14.
+
+Protected-branch enforcement remains a repository-policy decision because it
+changes whether maintainers may push directly to `main`.
 
 ## Host Clock
 

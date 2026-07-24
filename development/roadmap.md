@@ -43,8 +43,8 @@ the complete regression passes 218 tests.
 Status: In progress.
 
 1. Correct and maintain the documentation baseline.
-2. Confirm the implemented CI workflow remotely and require its checks on
-   protected branches.
+2. Require the successful CI checks on protected branches after the
+   direct-push policy is agreed.
 3. Add persistent OMS recovery and exchange reconciliation.
 4. Add secrets management, supervision, health endpoints and operator controls.
 5. Synchronize the deployment-host clock and calibrate health thresholds.

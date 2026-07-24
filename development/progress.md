@@ -80,10 +80,12 @@ target-host performance and authenticated Testnet gates.
   scanning.
 - Strict MyPy passes for all 64 source files.
 - Initial branch coverage measured at 87.07%; CI minimum set to 85%.
+- First complete remote GitHub Actions run passed quality/coverage and
+  regression jobs on Python 3.11 and 3.14; coverage artifact retained.
 
 ## In Progress
 
-- First remote GitHub Actions run and repository branch-protection planning.
+- Repository branch-protection planning.
 - Production recovery, reconciliation and operational-control planning.
 - External acceptance preparation.
 
@@ -96,7 +98,7 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Verify the first remote CI run and configure protected-branch checks.
+1. Configure protected-branch checks after agreeing the direct-push policy.
 2. Implement persistent OMS recovery and REST/user-stream reconciliation.
 3. Synchronize the host clock and calibrate clock-health thresholds.
 4. Run A002C authenticated Binance Testnet acceptance.

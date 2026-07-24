@@ -69,3 +69,12 @@ Local preflight on Python 3.14:
 - strict MyPy: passed for 64 source files;
 - branch coverage: 87.07%, above the 85% gate;
 - high-confidence secret scan: passed.
+
+Remote GitHub Actions run `30086189167` passed all three jobs on 2026-07-24:
+
+- quality and coverage;
+- regression on Python 3.11;
+- regression on Python 3.14.
+
+The run produced the `coverage-python-3.11` artifact. Official actions use
+their Node.js 24 releases and remain pinned to immutable commit identifiers.
