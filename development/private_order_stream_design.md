@@ -50,9 +50,9 @@ waiting. `PrivateOrderStreamSupervisor` recreates the authorized transport
 using the existing capped reconnect policy. Factory/authentication failures
 use the same backoff path.
 
-The supervisor's stop request is cooperative: it prevents another connection
-cycle. Deployment supervision remains responsible for cancelling or closing a
-currently blocked transport during process shutdown.
+T019 made the supervisor stop path interruptible. A stop request now cancels
+an active connection or reconnect delay, joins consumer and renewal tasks, and
+converges the connection lifecycle to `STOPPED`.
 
 ## Startup ordering
 

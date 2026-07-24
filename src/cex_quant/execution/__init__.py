@@ -49,6 +49,7 @@ from .gateway import (
 )
 from .private_stream import (
     Keepalive,
+    MonotonicNow,
     PrivateOrderStreamSession,
     PrivateOrderStreamSupervisor,
     PrivateStreamConnection,
@@ -84,6 +85,7 @@ __all__ = [
     "ExecutionTransportError",
     "InvalidExecutionRequestError",
     "Keepalive",
+    "MonotonicNow",
     "OrderReconciliationGateway",
     "PrivateOrderStreamSession",
     "PrivateOrderStreamSupervisor",

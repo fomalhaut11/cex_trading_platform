@@ -6,7 +6,7 @@ from pathlib import Path
 from types import TracebackType
 from unittest import IsolatedAsyncioTestCase, TestCase
 
-from cex_quant.core import AccountId
+from cex_quant.core import AccountId, MonotonicNanos
 from cex_quant.execution import (
     BinanceCredentials,
     BinanceFuturesUserStreamControlAdapter,
@@ -222,13 +222,18 @@ class FakeConnection:
         self._release = release
         self._index = 0
         self.closed = False
+        self.iteration_cancelled = False
 
     def __aiter__(self) -> FakeConnection:
         return self
 
     async def __anext__(self) -> bytes:
         if self._release is not None:
-            await self._release.wait()
+            try:
+                await self._release.wait()
+            except asyncio.CancelledError:
+                self.iteration_cancelled = True
+                raise
             self._release = None
         if self._index >= len(self._messages):
             raise StopAsyncIteration
@@ -307,6 +312,31 @@ class PrivateOrderStreamSessionTests(IsolatedAsyncioTestCase):
         )
         self.assertTrue(connection.closed)
 
+    async def test_session_records_injected_monotonic_connection_time(
+        self,
+    ) -> None:
+        release = asyncio.Event()
+        connection = FakeConnection([], release=release)
+
+        async def on_snapshot(_: OrderReconciliationSnapshot) -> None:
+            self.fail("no snapshot expected")
+
+        session = PrivateOrderStreamSession(
+            processor=BinancePrivateOrderStreamProcessor(
+                product=BinanceProduct.USD_M
+            ),
+            on_snapshot=on_snapshot,
+            monotonic_now=lambda: MonotonicNanos(123_456_789),
+        )
+
+        task = asyncio.create_task(session.run_once(FakeTransport(connection)))
+        while session.lifecycle.state is not ConnectionState.ACTIVE:
+            await asyncio.sleep(0)
+
+        self.assertEqual(session.lifecycle.connected_at_ns, 123_456_789)
+        release.set()
+        await task
+
     async def test_supervisor_recreates_transport_after_rotation(self) -> None:
         transports = [
             FakeTransport(
@@ -384,6 +414,144 @@ class PrivateOrderStreamSessionTests(IsolatedAsyncioTestCase):
         self.assertEqual(attempts, 2)
         self.assertEqual(delays, [0.25])
         self.assertIsNone(supervisor.last_error)
+
+    async def test_supervisor_uses_exponential_backoff_for_consecutive_failures(
+        self,
+    ) -> None:
+        attempts = 0
+        delays: list[float] = []
+
+        async def factory() -> FakeTransport:
+            nonlocal attempts
+            attempts += 1
+            raise RuntimeError("authorization unavailable")
+
+        async def on_snapshot(_: OrderReconciliationSnapshot) -> None:
+            self.fail("no snapshot expected")
+
+        async def record_sleep(delay: float) -> None:
+            delays.append(delay)
+
+        supervisor = PrivateOrderStreamSupervisor(
+            session=PrivateOrderStreamSession(
+                processor=BinancePrivateOrderStreamProcessor(
+                    product=BinanceProduct.USD_M
+                ),
+                on_snapshot=on_snapshot,
+            ),
+            transport_factory=factory,
+            sleep=record_sleep,
+        )
+
+        self.assertEqual(await supervisor.run(max_cycles=4), 4)
+        self.assertEqual(attempts, 4)
+        self.assertEqual(delays, [0.25, 0.5, 1.0])
+        self.assertIsInstance(supervisor.last_error, RuntimeError)
+
+    async def test_supervisor_backs_off_for_consecutive_session_failures(
+        self,
+    ) -> None:
+        delays: list[float] = []
+
+        async def factory() -> FakeTransport:
+            return FakeTransport(FakeConnection([b"not-json"]))
+
+        async def on_snapshot(_: OrderReconciliationSnapshot) -> None:
+            self.fail("no snapshot expected")
+
+        async def record_sleep(delay: float) -> None:
+            delays.append(delay)
+
+        supervisor = PrivateOrderStreamSupervisor(
+            session=PrivateOrderStreamSession(
+                processor=BinancePrivateOrderStreamProcessor(
+                    product=BinanceProduct.USD_M
+                ),
+                on_snapshot=on_snapshot,
+            ),
+            transport_factory=factory,
+            sleep=record_sleep,
+        )
+
+        self.assertEqual(await supervisor.run(max_cycles=3), 3)
+        self.assertEqual(delays, [0.25, 0.5])
+        self.assertIsInstance(
+            supervisor.last_error,
+            BinanceOrderNormalizationError,
+        )
+
+    async def test_stop_interrupts_active_connection_and_closes_it(
+        self,
+    ) -> None:
+        release = asyncio.Event()
+        connection = FakeConnection([], release=release)
+
+        async def factory() -> FakeTransport:
+            return FakeTransport(connection)
+
+        async def on_snapshot(_: OrderReconciliationSnapshot) -> None:
+            self.fail("no snapshot expected")
+
+        session = PrivateOrderStreamSession(
+            processor=BinancePrivateOrderStreamProcessor(
+                product=BinanceProduct.USD_M
+            ),
+            on_snapshot=on_snapshot,
+        )
+        supervisor = PrivateOrderStreamSupervisor(
+            session=session,
+            transport_factory=factory,
+        )
+
+        task = asyncio.create_task(supervisor.run())
+        while session.lifecycle.state is not ConnectionState.ACTIVE:
+            await asyncio.sleep(0)
+        supervisor.request_stop()
+
+        self.assertEqual(await asyncio.wait_for(task, timeout=1), 1)
+        self.assertTrue(connection.closed)
+        self.assertTrue(connection.iteration_cancelled)
+        self.assertEqual(session.lifecycle.state, ConnectionState.STOPPED)
+
+    async def test_stop_interrupts_backoff_without_leaking_sleep_task(
+        self,
+    ) -> None:
+        sleep_entered = asyncio.Event()
+        sleep_cancelled = asyncio.Event()
+
+        async def factory() -> FakeTransport:
+            raise RuntimeError("authorization unavailable")
+
+        async def on_snapshot(_: OrderReconciliationSnapshot) -> None:
+            self.fail("no snapshot expected")
+
+        async def blocking_sleep(_: float) -> None:
+            sleep_entered.set()
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                sleep_cancelled.set()
+                raise
+
+        session = PrivateOrderStreamSession(
+            processor=BinancePrivateOrderStreamProcessor(
+                product=BinanceProduct.USD_M
+            ),
+            on_snapshot=on_snapshot,
+        )
+        supervisor = PrivateOrderStreamSupervisor(
+            session=session,
+            transport_factory=factory,
+            sleep=blocking_sleep,
+        )
+
+        task = asyncio.create_task(supervisor.run())
+        await sleep_entered.wait()
+        supervisor.request_stop()
+
+        self.assertEqual(await asyncio.wait_for(task, timeout=1), 1)
+        self.assertTrue(sleep_cancelled.is_set())
+        self.assertEqual(session.lifecycle.state, ConnectionState.STOPPED)
 
     async def test_renewal_failure_ends_connection_fail_closed(self) -> None:
         connection = FakeConnection([], release=asyncio.Event())
