@@ -66,9 +66,11 @@ _VENUE_TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
     OrderStatus.SUBMITTING: frozenset(
         {
             OrderStatus.OPEN,
+            OrderStatus.CANCEL_PENDING,
             OrderStatus.PARTIALLY_FILLED,
             OrderStatus.FILLED,
             OrderStatus.CANCELED,
+            OrderStatus.EXPIRED,
             OrderStatus.REJECTED,
             OrderStatus.FAILED,
         }
@@ -76,31 +78,38 @@ _VENUE_TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
     OrderStatus.OPEN: frozenset(
         {
             OrderStatus.OPEN,
+            OrderStatus.CANCEL_PENDING,
             OrderStatus.PARTIALLY_FILLED,
             OrderStatus.FILLED,
             OrderStatus.CANCELED,
+            OrderStatus.EXPIRED,
             OrderStatus.FAILED,
         }
     ),
     OrderStatus.PARTIALLY_FILLED: frozenset(
         {
             OrderStatus.PARTIALLY_FILLED,
+            OrderStatus.CANCEL_PENDING,
             OrderStatus.FILLED,
             OrderStatus.CANCELED,
+            OrderStatus.EXPIRED,
             OrderStatus.FAILED,
         }
     ),
     OrderStatus.CANCEL_PENDING: frozenset(
         {
             OrderStatus.OPEN,
+            OrderStatus.CANCEL_PENDING,
             OrderStatus.PARTIALLY_FILLED,
             OrderStatus.FILLED,
             OrderStatus.CANCELED,
+            OrderStatus.EXPIRED,
             OrderStatus.FAILED,
         }
     ),
     OrderStatus.FILLED: frozenset(),
     OrderStatus.CANCELED: frozenset(),
+    OrderStatus.EXPIRED: frozenset(),
     OrderStatus.REJECTED: frozenset(),
     OrderStatus.FAILED: frozenset(),
 }

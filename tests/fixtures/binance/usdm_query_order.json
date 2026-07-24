@@ -1,0 +1,18 @@
+{
+  "avgPrice": "0.00000",
+  "clientOrderId": "client-usdm-1",
+  "cumQuote": "0",
+  "executedQty": "0",
+  "orderId": 1573346959,
+  "origQty": "0.40",
+  "price": "60000",
+  "reduceOnly": false,
+  "side": "BUY",
+  "positionSide": "LONG",
+  "status": "NEW",
+  "symbol": "BTCUSDT",
+  "time": 1720000001000,
+  "updateTime": 1720000001100,
+  "timeInForce": "GTC",
+  "type": "LIMIT"
+}

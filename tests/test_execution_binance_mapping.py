@@ -13,11 +13,13 @@ from cex_quant.core import (
 from cex_quant.execution import (
     CancelOrder,
     InvalidExecutionRequestError,
+    QueryOrder,
     UnsupportedExecutionFeatureError,
 )
 from cex_quant.execution.adapters import (
     BinanceProduct,
     map_binance_cancel,
+    map_binance_query_order,
     map_binance_submit,
 )
 from cex_quant.instruments import InstrumentId, InstrumentKind
@@ -196,6 +198,25 @@ class BinanceExecutionMappingTest(TestCase):
 
         self.assertEqual(request.method, "DELETE")
         self.assertEqual(request.path, "/dapi/v1/order")
+        self.assertEqual(
+            dict(request.parameters),
+            {
+                "symbol": "BTCUSDT",
+                "origClientOrderId": "alpha:BTC:000001",
+            },
+        )
+
+    def test_query_uses_get_and_original_client_id_unchanged(self) -> None:
+        command = QueryOrder(
+            account_id=AccountId("primary"),
+            instrument_id=instrument(InstrumentKind.PERPETUAL),
+            client_order_id=ClientOrderId("alpha:BTC:000001"),
+        )
+
+        request = map_binance_query_order(BinanceProduct.USD_M, command)
+
+        self.assertEqual(request.method, "GET")
+        self.assertEqual(request.path, "/fapi/v1/order")
         self.assertEqual(
             dict(request.parameters),
             {

@@ -24,9 +24,11 @@ class ReconciliationSource(StrEnum):
 _VENUE_STATUSES = frozenset(
     {
         OrderStatus.OPEN,
+        OrderStatus.CANCEL_PENDING,
         OrderStatus.PARTIALLY_FILLED,
         OrderStatus.FILLED,
         OrderStatus.CANCELED,
+        OrderStatus.EXPIRED,
         OrderStatus.REJECTED,
         OrderStatus.FAILED,
     }

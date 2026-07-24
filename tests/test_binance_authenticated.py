@@ -20,8 +20,10 @@ from cex_quant.execution import (
     BinanceHttpTransportFailure,
     CancelOrder,
     ExecutionOutcome,
+    ExecutionQueryError,
     ExecutionStateUnknownError,
     ExecutionTransportError,
+    QueryOrder,
     canonical_query,
     hmac_sha256_hex,
 )
@@ -197,6 +199,67 @@ class AuthenticatedBinanceAdapterTest(IsolatedAsyncioTestCase):
         request = transport.calls[0][1]
         self.assertEqual(request.method, "DELETE")
         self.assertIn("origClientOrderId=strategy-1", request.query)
+
+    async def test_query_returns_reconciliation_snapshot(self) -> None:
+        transport = CapturingTransport(
+            response(
+                200,
+                {
+                    "symbol": "BTCUSDT",
+                    "orderId": 12345,
+                    "clientOrderId": "strategy-1",
+                    "executedQty": "0.005",
+                    "cummulativeQuoteQty": "300.0",
+                    "status": "PARTIALLY_FILLED",
+                    "updateTime": 1_700_000_000_120,
+                },
+            )
+        )
+        adapter, _ = self.build_adapter(transport)
+        command = QueryOrder(
+            account_id=AccountId("primary"),
+            instrument_id=instrument(),
+            client_order_id=ClientOrderId("strategy-1"),
+        )
+
+        snapshot = await adapter.query_order(command)
+
+        self.assertIsNotNone(snapshot)
+        assert snapshot is not None
+        self.assertEqual(snapshot.status.value, "partially_filled")
+        self.assertEqual(snapshot.venue_order_id, "12345")
+        request = transport.calls[0][1]
+        self.assertEqual(request.method, "GET")
+        self.assertIn("origClientOrderId=strategy-1", request.query)
+
+    async def test_query_not_found_is_explicit_none(self) -> None:
+        adapter, _ = self.build_adapter(
+            CapturingTransport(
+                response(400, {"code": -2013, "msg": "Order does not exist."})
+            )
+        )
+        command = QueryOrder(
+            account_id=AccountId("primary"),
+            instrument_id=instrument(),
+            client_order_id=ClientOrderId("strategy-1"),
+        )
+
+        self.assertIsNone(await adapter.query_order(command))
+
+    async def test_query_business_error_is_typed(self) -> None:
+        adapter, _ = self.build_adapter(
+            CapturingTransport(
+                response(400, {"code": -1121, "msg": "Invalid symbol."})
+            )
+        )
+        command = QueryOrder(
+            account_id=AccountId("primary"),
+            instrument_id=instrument(),
+            client_order_id=ClientOrderId("strategy-1"),
+        )
+
+        with self.assertRaisesRegex(ExecutionQueryError, "-1121"):
+            await adapter.query_order(command)
 
     async def test_business_error_becomes_typed_rejection(self) -> None:
         transport = CapturingTransport(

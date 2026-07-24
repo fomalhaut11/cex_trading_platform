@@ -165,6 +165,25 @@ class OmsStateTests(unittest.TestCase):
                 event("update-2", OrderStatus.CANCELED, "0")
             )
 
+    def test_expired_is_a_distinct_terminal_venue_outcome(self) -> None:
+        state = OrderStateMachine(request())
+        state.mark_submitting(at_ns=UnixNanos(30))
+        expired = state.apply_venue_update(
+            event(
+                "update-1",
+                OrderStatus.EXPIRED,
+                "0",
+                reason="binance_status=EXPIRED",
+            )
+        )
+
+        self.assertTrue(expired.after.is_terminal)
+        self.assertEqual(expired.after.status, OrderStatus.EXPIRED)
+        with self.assertRaises(InvalidOrderTransitionError):
+            state.apply_venue_update(
+                event("update-2", OrderStatus.CANCELED, "0")
+            )
+
     def test_mismatched_order_identity_is_rejected(self) -> None:
         state = OrderStateMachine(request())
         state.mark_submitting(at_ns=UnixNanos(30))

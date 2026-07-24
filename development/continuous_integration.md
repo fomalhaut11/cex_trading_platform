@@ -38,8 +38,8 @@ check is evidence to investigate, not a gate to bypass.
 
 The first branch-coverage baseline is 87.07%. CI enforces a minimum of 85%.
 
-The T016 local preflight passes 228 tests and strict MyPy across 66 source
-files with 86.69% branch coverage. The historical first baseline remains
+The T017 local preflight passes 242 tests and strict MyPy across 67 source
+files with 86.53% branch coverage. The historical first baseline remains
 recorded below for traceability.
 The threshold protects against broad regressions while leaving room to add
 meaningful failure-path tests. It must not encourage shallow tests written only

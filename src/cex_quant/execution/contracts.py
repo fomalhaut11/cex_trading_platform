@@ -23,6 +23,18 @@ class CancelOrder:
         _validate_identifier(self.client_order_id, field_name="client_order_id")
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class QueryOrder:
+    """Query venue state by the unchanged original client order identifier."""
+
+    account_id: AccountId
+    instrument_id: InstrumentId
+    client_order_id: ClientOrderId
+
+    def __post_init__(self) -> None:
+        _validate_identifier(self.client_order_id, field_name="client_order_id")
+
+
 class ExecutionOutcome(StrEnum):
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -83,5 +95,6 @@ __all__ = [
     "CancelOrder",
     "CancelResult",
     "ExecutionOutcome",
+    "QueryOrder",
     "SubmitResult",
 ]

@@ -1,0 +1,15 @@
+{
+  "symbol": "BTCUSDT",
+  "orderId": 42,
+  "clientOrderId": "client-spot-1",
+  "price": "60000.00000000",
+  "origQty": "0.00200000",
+  "executedQty": "0.00100000",
+  "cummulativeQuoteQty": "60.00000000",
+  "status": "PARTIALLY_FILLED",
+  "timeInForce": "GTC",
+  "type": "LIMIT",
+  "side": "BUY",
+  "time": 1720000000000,
+  "updateTime": 1720000000100
+}

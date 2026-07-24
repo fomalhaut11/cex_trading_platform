@@ -2,9 +2,9 @@
 
 from typing import Protocol
 
-from cex_quant.oms import OrderRequest
+from cex_quant.oms import OrderReconciliationSnapshot, OrderRequest
 
-from .contracts import CancelOrder, CancelResult, SubmitResult
+from .contracts import CancelOrder, CancelResult, QueryOrder, SubmitResult
 
 
 class ExecutionGateway(Protocol):
@@ -19,6 +19,15 @@ class ExecutionGateway(Protocol):
         """Cancel the order identified by its original client order ID."""
 
         ...
+
+
+class OrderReconciliationGateway(Protocol):
+    """Read-only venue lookup used after unknown state or OMS restart."""
+
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot | None: ...
 
 
 class ExecutionGatewayError(Exception):
@@ -41,11 +50,17 @@ class ExecutionStateUnknownError(ExecutionGatewayError):
     """Transport failed after send and venue acceptance is unknown."""
 
 
+class ExecutionQueryError(ExecutionGatewayError):
+    """A read-only venue order query was rejected or unusable."""
+
+
 __all__ = [
     "ExecutionGateway",
     "ExecutionGatewayError",
+    "ExecutionQueryError",
     "ExecutionStateUnknownError",
     "ExecutionTransportError",
     "InvalidExecutionRequestError",
+    "OrderReconciliationGateway",
     "UnsupportedExecutionFeatureError",
 ]

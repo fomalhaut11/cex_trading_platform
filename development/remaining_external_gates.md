@@ -89,10 +89,12 @@ thread/process health over a sustained soak.
 
 The offline OMS recovery kernel now provides checksummed journaling,
 deterministic restart reconstruction, non-terminal candidate discovery and
-venue-neutral reconciliation. Production acceptance still requires:
+venue-neutral reconciliation. Binance REST query and private order-event
+normalization are also complete. Production acceptance still requires:
 
-- concrete Binance REST query and user-data-event normalization;
-- authenticated restart reconciliation evidence;
+- authenticated private-stream subscription, renewal and reconnect handling;
+- startup query orchestration and authenticated restart reconciliation
+  evidence;
 - operator kill switch and an explicitly controlled reduce-only mode;
 - supervised process restart and health reporting;
 - credential storage and rotation procedures;

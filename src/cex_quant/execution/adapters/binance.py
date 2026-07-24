@@ -18,7 +18,7 @@ from cex_quant.oms import (
     TimeInForce,
 )
 
-from ..contracts import CancelOrder
+from ..contracts import CancelOrder, QueryOrder
 from ..gateway import (
     InvalidExecutionRequestError,
     UnsupportedExecutionFeatureError,
@@ -119,6 +119,24 @@ def map_binance_cancel(
     )
 
 
+def map_binance_query_order(
+    product: BinanceProduct,
+    command: QueryOrder,
+) -> BinanceRequest:
+    """Map a signed query by the original client order ID."""
+
+    _validate_product(product)
+    _validate_product_kind(product, command.instrument_id.kind)
+    return BinanceRequest(
+        method="GET",
+        path=_PATHS[product],
+        parameters={
+            "symbol": command.instrument_id.symbol,
+            "origClientOrderId": str(command.client_order_id),
+        },
+    )
+
+
 def _validate_product_kind(
     product: BinanceProduct, kind: InstrumentKind
 ) -> None:
@@ -167,5 +185,6 @@ __all__ = [
     "BinanceProduct",
     "BinanceRequest",
     "map_binance_cancel",
+    "map_binance_query_order",
     "map_binance_submit",
 ]

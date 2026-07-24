@@ -16,6 +16,14 @@ Every submission carries a non-empty `ClientOrderId`. This identifier is the
 idempotency key and adapters must pass it across the venue boundary unchanged.
 Cancellation uses that same original client identifier.
 
+Recovery queries use a separate read-oriented
+`OrderReconciliationGateway` protocol:
+
+- `query_order(QueryOrder) -> OrderReconciliationSnapshot | None`
+
+This keeps venue observation out of the submit/cancel command gateway while
+allowing the authenticated Binance adapter to implement both protocols.
+
 ## Canonical command rules
 
 - The OMS owns side, type, time-in-force and position-side enums and validates
@@ -37,7 +45,7 @@ typed exception so callers cannot accidentally handle it as a venue response.
 
 The Binance mapper emits immutable method, path and string parameters only:
 
-| Product | Submit / cancel path | Client ID fields |
+| Product | Submit / cancel / query path | Client ID fields |
 | --- | --- | --- |
 | Spot | `/api/v3/order` | `newClientOrderId` / `origClientOrderId` |
 | USD-M | `/fapi/v1/order` | `newClientOrderId` / `origClientOrderId` |
@@ -56,6 +64,10 @@ combination before transport.
 The canonical interface can carry option orders, but no Binance Options
 request mapper is provided in this milestone. This avoids inventing API
 semantics without an explicitly verified product contract.
+
+Query uses `GET`; submit and cancel use `POST` and `DELETE`. Query responses
+and private order events are normalized by the Binance reconciliation adapter
+before crossing into OMS.
 
 ## Verification
 

@@ -52,6 +52,7 @@ class OrderStatus(StrEnum):
     FILLED = "filled"
     CANCEL_PENDING = "cancel_pending"
     CANCELED = "canceled"
+    EXPIRED = "expired"
     REJECTED = "rejected"
     FAILED = "failed"
 
@@ -60,6 +61,7 @@ TERMINAL_ORDER_STATUSES = frozenset(
     {
         OrderStatus.FILLED,
         OrderStatus.CANCELED,
+        OrderStatus.EXPIRED,
         OrderStatus.REJECTED,
         OrderStatus.FAILED,
     }

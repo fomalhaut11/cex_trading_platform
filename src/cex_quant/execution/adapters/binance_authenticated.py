@@ -15,16 +15,18 @@ from types import MappingProxyType
 from typing import Any, Protocol
 from urllib.parse import quote
 
-from cex_quant.core import AccountId, VenueOrderId
-from cex_quant.oms import OrderRequest
+from cex_quant.core import AccountId, UnixNanos, VenueOrderId
+from cex_quant.oms import OrderReconciliationSnapshot, OrderRequest
 
 from ..contracts import (
     CancelOrder,
     CancelResult,
     ExecutionOutcome,
+    QueryOrder,
     SubmitResult,
 )
 from ..gateway import (
+    ExecutionQueryError,
     ExecutionStateUnknownError,
     ExecutionTransportError,
 )
@@ -32,8 +34,10 @@ from .binance import (
     BinanceProduct,
     BinanceRequest,
     map_binance_cancel,
+    map_binance_query_order,
     map_binance_submit,
 )
+from .binance_reconciliation import normalize_binance_order_query
 
 
 class BinanceCredentials:
@@ -135,7 +139,7 @@ def hmac_sha256_hex(secret: str, payload: str) -> str:
 
 @dataclass(slots=True, kw_only=True)
 class AuthenticatedBinanceExecutionAdapter:
-    """Signed submit/cancel gateway for one Binance product."""
+    """Signed submit, cancel and query gateway for one Binance product."""
 
     product: BinanceProduct
     credential_provider: BinanceCredentialProvider = field(repr=False)
@@ -185,6 +189,34 @@ class AuthenticatedBinanceExecutionAdapter:
             client_order_id=command.client_order_id,
             outcome=ExecutionOutcome.ACCEPTED,
             venue_order_id=_venue_order_id(payload),
+        )
+
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot | None:
+        """Query by client order ID; return None only for Binance -2013."""
+
+        response = await self._send(
+            command.account_id,
+            map_binance_query_order(self.product, command),
+        )
+        payload = self._decode_response(response)
+        if response.status_code >= 400:
+            if _error_code(payload) == "-2013":
+                return None
+            raise ExecutionQueryError(
+                f"Binance order query failed: "
+                f"{_error_code(payload)} {_error_message(payload)}"
+            )
+        received_ms = self.timestamp_ms()
+        if not isinstance(received_ms, int) or received_ms < 0:
+            raise ValueError("timestamp_ms must return a non-negative int")
+        return normalize_binance_order_query(
+            self.product,
+            dict(payload),
+            received_at_ns=UnixNanos(received_ms * 1_000_000),
+            expected_client_order_id=command.client_order_id,
         )
 
     async def _send(

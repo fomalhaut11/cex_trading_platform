@@ -15,6 +15,11 @@ from cex_quant.core import (
     VenueId,
     VenueOrderId,
 )
+from cex_quant.execution import (
+    normalize_binance_order_query,
+    normalize_binance_user_order_update,
+)
+from cex_quant.execution.adapters import BinanceProduct
 from cex_quant.instruments import InstrumentId, InstrumentKind
 from cex_quant.oms import (
     JsonLinesOmsJournal,
@@ -175,6 +180,62 @@ class OmsRecoveryAcceptanceTests(unittest.TestCase):
                 self.assertEqual(
                     final.cumulative_filled_quantity.as_decimal(),
                     2,
+                )
+
+    def test_binance_rest_and_user_stream_payloads_converge(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            journal_path = Path(directory) / "oms.jsonl"
+            with JsonLinesOmsJournal(journal_path) as journal:
+                oms = _service(journal)
+                request = oms.create_order(_intent(), _decision())
+                oms.mark_submitting(
+                    request.client_order_id,
+                    at_ns=UnixNanos(160),
+                )
+                rest = normalize_binance_order_query(
+                    BinanceProduct.USD_M,
+                    {
+                        "avgPrice": "0",
+                        "clientOrderId": "recovery-order-1",
+                        "executedQty": "0",
+                        "orderId": 99,
+                        "status": "NEW",
+                        "updateTime": 1,
+                    },
+                    received_at_ns=UnixNanos(1_000_000),
+                    expected_client_order_id=request.client_order_id,
+                )
+                stream = normalize_binance_user_order_update(
+                    BinanceProduct.USD_M,
+                    {
+                        "e": "ORDER_TRADE_UPDATE",
+                        "E": 3,
+                        "T": 2,
+                        "o": {
+                            "c": "recovery-order-1",
+                            "ap": "60000",
+                            "x": "TRADE",
+                            "X": "FILLED",
+                            "i": 99,
+                            "z": "2",
+                            "t": 7,
+                        },
+                    },
+                    expected_client_order_id=request.client_order_id,
+                )
+
+                self.assertEqual(
+                    oms.reconcile(rest).disposition,
+                    ReconciliationDisposition.APPLIED,
+                )
+                filled = oms.reconcile(stream)
+                self.assertEqual(filled.order.status, OrderStatus.FILLED)
+
+            with JsonLinesOmsJournal(journal_path) as journal:
+                recovered = _service(journal)
+                self.assertEqual(
+                    recovered.order(request.client_order_id).status,
+                    OrderStatus.FILLED,
                 )
 
 

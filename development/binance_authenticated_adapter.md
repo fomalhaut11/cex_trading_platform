@@ -11,7 +11,7 @@ mapper and adds:
 - HMAC-SHA256 signing;
 - `timestamp` and bounded `recvWindow`;
 - the `X-MBX-APIKEY` header;
-- typed immediate acceptance, rejection, and unknown-state outcomes.
+- typed immediate acceptance, rejection, query, and unknown-state outcomes.
 
 It does not implement an HTTP client, retry orders, send real orders during
 tests, or infer Binance Options semantics.
@@ -51,6 +51,18 @@ when clock health is acceptable.
 
 Unknown state must be reconciled by query/user-data processing. It must not be
 blindly retried as a new client order.
+
+## Order query
+
+The adapter implements a signed product-specific `GET` query using the
+original client order identifier. Successful Spot, USD-M and COIN-M responses
+are normalized to `OrderReconciliationSnapshot`. Binance error code `-2013`
+means an explicit not-found observation and returns `None`; other HTTP 4xx
+responses remain typed `ExecutionQueryError` failures.
+
+The injected HTTP transport remains responsible for actual network I/O. Live
+private-stream lifecycle and restart orchestration are separate application
+responsibilities.
 
 ## References
 

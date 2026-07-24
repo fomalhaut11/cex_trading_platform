@@ -11,9 +11,9 @@ turning storage or a venue response into live mutable state. It provides:
 - one venue-neutral observation contract for REST queries and user streams;
 - fail-closed behavior after any durability failure.
 
-Concrete Binance REST query and user-data-stream normalization remain adapter
-work. Credentials, HTTP payloads and Binance status strings do not enter this
-module.
+Concrete Binance REST query and user-data-stream normalization are implemented
+in the execution adapter. Credentials, HTTP payloads and Binance status
+strings do not enter this module.
 
 ## Journal
 
@@ -76,5 +76,6 @@ Reconciliation:
 - does not resubmit an uncertain order.
 
 This completes the deterministic offline recovery and convergence kernel.
-Authenticated Binance query/cancel/user-stream integration and restart
-acceptance remain part of the Testnet gate.
+Binance query responses and private order events are covered by offline
+restart acceptance. Live authenticated stream lifecycle, reconnect/startup
+orchestration and Testnet evidence remain external gates.

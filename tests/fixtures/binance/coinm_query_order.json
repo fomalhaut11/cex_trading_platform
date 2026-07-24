@@ -1,0 +1,19 @@
+{
+  "avgPrice": "59990.0",
+  "clientOrderId": "client-coinm-1",
+  "cumBase": "0.00001667",
+  "executedQty": "1",
+  "orderId": 1573346960,
+  "origQty": "2",
+  "price": "60000",
+  "reduceOnly": false,
+  "side": "SELL",
+  "positionSide": "SHORT",
+  "status": "EXPIRED",
+  "symbol": "BTCUSD_PERP",
+  "pair": "BTCUSD",
+  "time": 1720000002000,
+  "updateTime": 1720000002100,
+  "timeInForce": "GTC",
+  "type": "LIMIT"
+}
