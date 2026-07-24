@@ -30,7 +30,7 @@ from cex_quant.market_data import VenueOptionAnalyticsUpdate
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class TestEvent:
+class ExampleEvent:
     metadata: EventMetadata
     price: float
 
@@ -59,7 +59,7 @@ class FeatureRegistryTests(unittest.TestCase):
         registry.register(
             FeatureDefinition(
                 ref=second,
-                event_types=(TestEvent,),
+                event_types=(ExampleEvent,),
                 dependencies=(first,),
                 calculator=lambda context: None,
             )
@@ -67,7 +67,7 @@ class FeatureRegistryTests(unittest.TestCase):
         registry.register(
             FeatureDefinition(
                 ref=first,
-                event_types=(TestEvent,),
+                event_types=(ExampleEvent,),
                 calculator=lambda context: None,
             )
         )
@@ -84,7 +84,7 @@ class FeatureRegistryTests(unittest.TestCase):
         missing_registry.register(
             FeatureDefinition(
                 ref=first,
-                event_types=(TestEvent,),
+                event_types=(ExampleEvent,),
                 dependencies=(second,),
                 calculator=lambda context: None,
             )
@@ -97,7 +97,7 @@ class FeatureRegistryTests(unittest.TestCase):
             cyclic_registry.register(
                 FeatureDefinition(
                     ref=ref,
-                    event_types=(TestEvent,),
+                    event_types=(ExampleEvent,),
                     dependencies=(dependency,),
                     calculator=lambda context: None,
                 )
@@ -120,7 +120,7 @@ class OnlineFeatureEngineTests(unittest.TestCase):
         registry.register(
             FeatureDefinition(
                 ref=self.double_ref,
-                event_types=(TestEvent,),
+                event_types=(ExampleEvent,),
                 dependencies=(self.price_ref,),
                 calculator=lambda context: FeatureOutput(
                     value=context.dependencies[self.price_ref].value * 2.0,
@@ -131,7 +131,7 @@ class OnlineFeatureEngineTests(unittest.TestCase):
         registry.register(
             FeatureDefinition(
                 ref=self.price_ref,
-                event_types=(TestEvent,),
+                event_types=(ExampleEvent,),
                 calculator=lambda context: FeatureOutput(
                     value=context.event.price,  # type: ignore[attr-defined]
                     unit="USD",
@@ -144,7 +144,7 @@ class OnlineFeatureEngineTests(unittest.TestCase):
 
     def test_updates_dependencies_in_same_event_and_attaches_lineage(self) -> None:
         report = self.engine.on_event(
-            TestEvent(metadata=metadata("event-1", 100), price=42.5)
+            ExampleEvent(metadata=metadata("event-1", 100), price=42.5)
         )
 
         self.assertEqual(report.updated, (self.price_ref, self.double_ref))
@@ -161,7 +161,7 @@ class OnlineFeatureEngineTests(unittest.TestCase):
         self.assertEqual(double.metadata.dependency_refs, (self.price_ref,))
 
     def test_snapshots_are_deterministic_and_immutable(self) -> None:
-        event = TestEvent(metadata=metadata("event-2", 200), price=10.0)
+        event = ExampleEvent(metadata=metadata("event-2", 200), price=10.0)
         self.engine.on_event(event)
         first = self.engine.snapshot()
         second = self.engine.snapshot()
@@ -180,7 +180,7 @@ class OnlineFeatureEngineTests(unittest.TestCase):
         )
         definition = FeatureDefinition(
             ref=ref,
-            event_types=(TestEvent,),
+            event_types=(ExampleEvent,),
             calculator=lambda context: (
                 FeatureOutput(value=context.event.price, unit="USD")  # type: ignore[attr-defined]
                 if context.event.price > 0  # type: ignore[attr-defined]
@@ -188,9 +188,9 @@ class OnlineFeatureEngineTests(unittest.TestCase):
             ),
         )
         engine = OnlineFeatureEngine(scope="BTC-USD", definitions=(definition,))
-        engine.on_event(TestEvent(metadata=metadata("one", 1), price=5.0))
+        engine.on_event(ExampleEvent(metadata=metadata("one", 1), price=5.0))
         report = engine.on_event(
-            TestEvent(metadata=metadata("two", 2), price=-1.0)
+            ExampleEvent(metadata=metadata("two", 2), price=-1.0)
         )
 
         self.assertEqual(

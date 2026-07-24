@@ -16,10 +16,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "mypy>=1.11",
-  "pytest>=8.3",
-  "pytest-cov>=5.0",
-  "ruff>=0.6",
+  "mypy==2.3.0",
+  "pytest==9.1.1",
+  "pytest-cov==7.1.0",
+  "ruff==0.16.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -44,3 +44,11 @@ mypy_path = "src"
 [tool.pytest.ini_options]
 addopts = "--strict-config --strict-markers"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["cex_quant"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true

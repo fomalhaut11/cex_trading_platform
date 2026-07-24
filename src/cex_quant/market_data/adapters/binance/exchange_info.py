@@ -14,6 +14,7 @@ from cex_quant.instruments import (
     Instrument,
     InstrumentId,
     InstrumentKind,
+    InstrumentSpecification,
     InstrumentStatus,
     PerpetualSpecification,
     SettlementType,
@@ -105,6 +106,7 @@ class BinanceExchangeInfoParser:
             else "status"
         )
         status = self._status(self._string(data, status_field, symbol))
+        specification: InstrumentSpecification
 
         if self._product is BinanceProduct.SPOT:
             kind = InstrumentKind.SPOT

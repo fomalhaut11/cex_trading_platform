@@ -29,6 +29,8 @@ class FixedPoint:
         if not decimal.is_finite():
             raise ValueError("fixed-point value must be finite")
         sign, digits, exponent = decimal.as_tuple()
+        if not isinstance(exponent, int):
+            raise ValueError("finite decimal must have an integer exponent")
         scale = max(-exponent, 0)
         raw = int("".join(str(digit) for digit in digits) or "0")
         if exponent > 0:

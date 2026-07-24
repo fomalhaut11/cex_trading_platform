@@ -75,18 +75,20 @@ target-host performance and authenticated Testnet gates.
 - Project files synchronized to `D:\cex_quant_codex_docs_v2`.
 - Current-phase, roadmap, external-gate and architecture documents reconciled
   with the implemented scope; CI requirements documented.
+- GitHub Actions CI implemented for Python 3.11 and 3.14 with compilation,
+  regression, Ruff, strict MyPy, branch coverage and high-confidence secret
+  scanning.
+- Strict MyPy passes for all 64 source files.
+- Initial branch coverage measured at 87.07%; CI minimum set to 85%.
 
 ## In Progress
 
-- CI implementation planning.
+- First remote GitHub Actions run and repository branch-protection planning.
 - Production recovery, reconciliation and operational-control planning.
 - External acceptance preparation.
 
 ## Open External Gates
 
-- MyPy cannot be installed in the current sandbox: package-index requests
-  stall and direct PyPI wheel downloads are rejected by the sandbox network
-  identity. Ruff and runtime tests remain green.
 - Live smoke testing measured the local host clock roughly 13 seconds behind
   Binance. Production use requires clock synchronization and offset monitoring.
 - Authenticated Binance Testnet acceptance requires user-provided Testnet
@@ -94,7 +96,7 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Establish CI checks for compile, regression, Ruff, MyPy and coverage.
+1. Verify the first remote CI run and configure protected-branch checks.
 2. Implement persistent OMS recovery and REST/user-stream reconciliation.
 3. Synchronize the host clock and calibrate clock-health thresholds.
 4. Run A002C authenticated Binance Testnet acceptance.
@@ -106,9 +108,11 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 218 passed.
+- `python -m unittest discover -s tests -v`: 221 passed.
 - `python -m unittest discover -s tests/acceptance -v`: 19 passed.
-- `ruff check src tests tools`: passed with Ruff 0.15.22.
+- `ruff check src tests tools`: passed with Ruff 0.16.0.
+- `python -m mypy`: passed with MyPy 2.3.0 for 64 source files.
+- Pytest branch coverage: 87.07%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

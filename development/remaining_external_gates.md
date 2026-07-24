@@ -23,26 +23,23 @@ $env:PYTHONPATH = "src"
 python -B -m unittest discover -s tests
 ```
 
-## CI and MyPy Strict
+## CI Baseline
 
-The project configuration enables strict MyPy checking, but the current local
-environment does not have MyPy or coverage tooling installed. CI must run:
+The GitHub Actions workflow and local preflight now run:
 
 - source compilation;
 - the complete deterministic regression suite;
 - Ruff;
 - MyPy in strict mode;
-- a measured coverage report.
-
-When package access is available:
-
-```powershell
-python -m pip install -e ".[dev]"
-python -m mypy
-```
+- branch coverage with an 85% minimum;
+- high-confidence secret scanning.
 
 Any reported type errors must be fixed before production acceptance; the gate
 must not be waived merely because runtime tests pass.
+
+The first local baseline passes 221 tests, strict MyPy and Ruff, with 87.07%
+branch coverage. The first remote workflow run and protected-branch enforcement
+must still be confirmed in GitHub.
 
 ## Host Clock
 

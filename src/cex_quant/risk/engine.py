@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from cex_quant.core import Money, Price, Quantity
+from cex_quant.core import Money, Price, Quantity, UnixNanos
 from cex_quant.features import FeatureQuality
 from cex_quant.instruments import (
     ContractValueType,
@@ -148,8 +148,8 @@ class RiskEngine:
     @staticmethod
     def _check_freshness(
         *,
-        as_of_ns: object | None,
-        valid_until_ns: object | None,
+        as_of_ns: UnixNanos | None,
+        valid_until_ns: UnixNanos | None,
         now: int,
         max_age_ns: int,
         missing_reason: RiskRejectReason,

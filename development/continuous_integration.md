@@ -26,14 +26,30 @@ The initial pipeline should run on pull requests and pushes to `main`:
 The pipeline must not require exchange credentials or live network calls for
 the default test suite.
 
+The workflow also supports manual execution and runs the deterministic
+regression on Python 3.11 and 3.14. It uses read-only repository permissions,
+bounded job timeouts and GitHub-authored actions pinned to immutable commit
+identifiers.
+
 ## Merge Policy
 
 A change may merge only when every required check passes. A failing or missing
 check is evidence to investigate, not a gate to bypass.
 
-Coverage should first be measured and reviewed by module. A repository-wide
-minimum may be introduced only after the initial report exists; it must not
-encourage shallow tests written only to increase a percentage.
+The first branch-coverage baseline is 87.07%. CI enforces a minimum of 85%.
+The threshold protects against broad regressions while leaving room to add
+meaningful failure-path tests. It must not encourage shallow tests written only
+to increase a percentage.
+
+The generated `coverage.xml` report is retained as a workflow artifact for 14
+days.
+
+## Secret Scanning
+
+The repository-local scanner rejects a small set of high-confidence credential
+formats and is covered by deterministic unit tests. It is intentionally not a
+replacement for GitHub Secret Protection. Repository administrators should
+also enable GitHub Push Protection.
 
 ## Future Testnet Workflow
 
@@ -43,4 +59,13 @@ test account. It must never run against real-money endpoints.
 
 ## Status
 
-Planned. No GitHub Actions workflow has been added yet.
+Implemented in `.github/workflows/ci.yml`.
+
+Local preflight on Python 3.14:
+
+- compilation: passed;
+- deterministic regression: 221 tests passed;
+- Ruff: passed;
+- strict MyPy: passed for 64 source files;
+- branch coverage: 87.07%, above the 85% gate;
+- high-confidence secret scan: passed.

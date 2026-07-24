@@ -43,7 +43,8 @@ the complete regression passes 218 tests.
 Status: In progress.
 
 1. Correct and maintain the documentation baseline.
-2. Establish CI for compile, regression, Ruff, strict MyPy and coverage.
+2. Confirm the implemented CI workflow remotely and require its checks on
+   protected branches.
 3. Add persistent OMS recovery and exchange reconciliation.
 4. Add secrets management, supervision, health endpoints and operator controls.
 5. Synchronize the deployment-host clock and calibrate health thresholds.
