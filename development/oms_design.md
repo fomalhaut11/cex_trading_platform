@@ -55,9 +55,13 @@ cancellation again after a partial fill.
   lifecycle and cumulative-fill invariants; the visible last time never moves
   backwards.
 
-## Deferred work
+## Recovery extension
 
-This foundation does not perform venue I/O, generate venue-specific payloads,
-persist recovery journals, reconcile open orders after restart, or calculate
-fees and portfolio positions. Those belong to later execution, recovery and
-portfolio tasks.
+The append-only journal, deterministic restart replay and venue-neutral
+REST/user-stream reconciliation kernel are specified in
+`oms_recovery_design.md`. Recovery reuses this state machine rather than
+installing mutable database snapshots as canonical state.
+
+OMS still does not perform venue I/O, generate venue-specific payloads or
+calculate fees and portfolio positions. Concrete Binance query and user-stream
+normalization remain execution-adapter work.

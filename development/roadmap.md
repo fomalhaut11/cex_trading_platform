@@ -45,7 +45,8 @@ Status: In progress.
 1. Correct and maintain the documentation baseline.
 2. Require the successful CI checks on protected branches after the
    direct-push policy is agreed.
-3. Add persistent OMS recovery and exchange reconciliation.
+3. Integrate the completed persistent OMS recovery kernel with Binance order
+   query and user-data-stream adapters.
 4. Add secrets management, supervision, health endpoints and operator controls.
 5. Synchronize the deployment-host clock and calibrate health thresholds.
 6. Run authenticated Binance Testnet acceptance.

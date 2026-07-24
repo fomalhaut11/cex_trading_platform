@@ -82,11 +82,18 @@ target-host performance and authenticated Testnet gates.
 - Initial branch coverage measured at 87.07%; CI minimum set to 85%.
 - First complete remote GitHub Actions run passed quality/coverage and
   regression jobs on Python 3.11 and 3.14; coverage artifact retained.
+- T016 checksummed append-only OMS journal, deterministic restart replay,
+  fail-closed durability latch and venue-neutral REST/user-stream
+  reconciliation kernel.
+- A003 offline restart acceptance covering uncertain `SUBMITTING` recovery,
+  REST convergence, user-stream fill completion and a second deterministic
+  restart.
 
 ## In Progress
 
 - Repository branch-protection planning.
-- Production recovery, reconciliation and operational-control planning.
+- Binance order-query/user-stream reconciliation adapter planning.
+- Production operational-control planning.
 - External acceptance preparation.
 
 ## Open External Gates
@@ -99,7 +106,8 @@ target-host performance and authenticated Testnet gates.
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Implement persistent OMS recovery and REST/user-stream reconciliation.
+2. Map Binance order query and user-data stream reports into the completed OMS
+   reconciliation boundary.
 3. Synchronize the host clock and calibrate clock-health thresholds.
 4. Run A002C authenticated Binance Testnet acceptance.
 5. Run A002B target-host soak and latency-distribution acceptance.
@@ -110,11 +118,11 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 221 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 19 passed.
+- `python -m unittest discover -s tests -v`: 228 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 20 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 64 source files.
-- Pytest branch coverage: 87.07%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 66 source files.
+- Pytest branch coverage: 86.69%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

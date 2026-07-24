@@ -11,9 +11,11 @@ The project is available in both of these locations:
 - working copy: `D:\cex_quant_codex_docs_v2`;
 - Git remote: `https://github.com/fomalhaut11/cex_trading_platform`.
 
-The Git baseline is commit
-`889572c3b62b2833143084b4eea79bf5a4bf7468` on `main`. The local and remote
-commit identifiers were verified equal after the initial push.
+Git `origin/main` is the authoritative current baseline. The initial
+`889572c3b62b2833143084b4eea79bf5a4bf7468` commit is retained only as
+historical baseline evidence; it must not be described as the current release
+candidate. Before acceptance, local `HEAD` and `origin/main` must be verified
+equal and the successful CI run must reference that exact commit.
 
 The earlier release archive remains a historical offline artifact, but Git is
 now the authoritative version history. A fresh checkout must pass:
@@ -85,10 +87,12 @@ thread/process health over a sustained soak.
 
 ## Recovery and Operations
 
-Production acceptance also requires:
+The offline OMS recovery kernel now provides checksummed journaling,
+deterministic restart reconstruction, non-terminal candidate discovery and
+venue-neutral reconciliation. Production acceptance still requires:
 
-- persistent OMS recovery and restart reconstruction;
-- reconciliation of REST acknowledgements and user-data events;
+- concrete Binance REST query and user-data-event normalization;
+- authenticated restart reconciliation evidence;
 - operator kill switch and an explicitly controlled reduce-only mode;
 - supervised process restart and health reporting;
 - credential storage and rotation procedures;

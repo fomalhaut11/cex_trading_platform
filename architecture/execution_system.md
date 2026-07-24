@@ -14,9 +14,10 @@ Execution Gateway → Exchange
 
 Maintain:
 
--   order status
--   fills
--   cancellations
--   reconciliation
+- order status;
+- fills;
+- cancellations;
+- reconciliation;
+- durable restart reconstruction.
 
 Execution is not strategy logic.

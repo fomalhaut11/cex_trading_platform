@@ -18,10 +18,12 @@
 | T013 | Runtime pipeline composition | Complete | T005-T012 |
 | T014 | Authenticated Binance execution adapter | Complete | T011, T013 |
 | T015 | Concrete runtime port adapters and application assembly | Complete | T013-T014 |
+| T016 | Durable OMS journal, restart replay and reconciliation kernel | Complete | T010, T015 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
-| A002C | Binance Testnet authenticated acceptance | External | T015 |
+| A002C | Binance Testnet authenticated acceptance | External | T016 |
+| A003 | Offline OMS restart and reconciliation acceptance | Complete | T016 |
 
 ## Current Acceptance Baseline
 

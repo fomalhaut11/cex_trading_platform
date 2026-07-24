@@ -12,6 +12,8 @@ from .oms import (
     CanonicalOmsApplicationService,
     OmsIdentityPolicy,
     OmsInvariantError,
+    OmsPersistenceError,
+    OmsRecoveryError,
     OrderParameters,
     OrderPolicy,
 )
@@ -27,6 +29,8 @@ __all__ = [
     "MarketStateUpdater",
     "OmsIdentityPolicy",
     "OmsInvariantError",
+    "OmsPersistenceError",
+    "OmsRecoveryError",
     "OrderParameters",
     "OrderPolicy",
 ]
