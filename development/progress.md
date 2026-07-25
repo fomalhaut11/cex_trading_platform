@@ -113,45 +113,56 @@ target-host performance and authenticated Testnet gates.
   transports with complete renewal, cancellation and lease cleanup.
 - A007 offline transport/clock acceptance from the default Testnet profile
   through concrete HTTP framing to healthy clock samples.
+- T021 protocol-neutral aggregate health queries with stable ordered child
+  reports, worst-status aggregation and sanitized fail-closed check failures.
+- Fail-closed operator controller that starts halted, requires explicit
+  activation, supports bounded idempotent commands and exposes immutable
+  operational snapshots.
+- Strict operator risk gate that rejects every intent while halted and permits
+  reduce-only intents only when both strategy and global exposure shrink
+  without crossing through zero.
+- A008 scenario acceptance proving activation, permitted reduction, rejected
+  expansion and emergency halt all stop or reach OMS/execution at the intended
+  boundary.
 
 ## In Progress
 
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
-- Production operational-control planning.
+- Deployment secrets, operator authentication and durable command-audit
+  planning.
 - External acceptance preparation.
 
 ## Open External Gates
 
-- Live smoke testing measured the local host clock roughly 13 seconds behind
-  Binance. Production use requires clock synchronization and offset monitoring.
-- The 2026-07-25 credential-free Testnet server-time smoke completed TLS/HTTP
-  exchange for Spot, USD-M and COIN-M, but every endpoint returned HTTP 451.
-  The deployment network/region must permit Testnet before clock or
-  authenticated acceptance evidence can be collected.
+- The Singapore VPN route now reaches all three Binance Testnet public time
+  endpoints. A route change requires the credential-free smoke to be repeated.
+- Windows Time is running automatically, but VPN Fake-IP routing currently
+  blocks NTP over UDP/123. One-time HTTPS venue-time correction produced
+  healthy offsets of -23.967 ms, +32.652 ms and +44.133 ms for Spot, USD-M
+  and COIN-M respectively. A persistent approved time source is still needed.
 - Authenticated Binance Testnet acceptance requires user-provided Testnet
   credentials through the credential-provider boundary.
 
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Resolve the Testnet HTTP 451 deployment-network restriction.
-3. Repeat public server-time smoke, then synchronize the host clock and
-   calibrate clock-health thresholds.
-4. Add aggregate runtime health reporting and operator controls.
-5. Run A002C authenticated Binance Testnet acceptance.
-6. Run A002B target-host soak and latency-distribution acceptance.
-7. Add production recovery runbooks and Binance Options mapping when each
+2. Add authenticated secrets delivery and durable operator command audit.
+3. Configure a persistent approved host time source and collect clock
+   distributions for threshold calibration.
+4. Run A002C authenticated Binance Testnet acceptance.
+5. Run A002B target-host soak and latency-distribution acceptance.
+6. Add production recovery runbooks and Binance Options mapping when each
    enters scope.
 
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 316 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 25 passed.
+- `python -m unittest discover -s tests -v`: 326 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 26 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 75 source files.
-- Pytest branch coverage: 86.29%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 76 source files.
+- Pytest branch coverage: 86.50%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

@@ -48,11 +48,24 @@ changes whether maintainers may push directly to `main`.
 
 ## Host Clock
 
-The earlier public Binance smoke test measured the host about 13 seconds
-behind venue time. Before Testnet or production:
+On 2026-07-25 the Singapore-VPN public probes initially measured the host
+about 18.9 seconds from venue time. Windows Time was stopped. It is now
+running with automatic startup, but the VPN's Fake-IP mode maps NTP hosts to
+`198.18.1.x` and does not currently pass UDP/123, so ordinary NTP polling
+remains unavailable through that route.
 
-1. synchronize the Windows host using an approved NTP source;
-2. verify the venue clock monitor reports `HEALTHY`;
+The host was corrected once from the Binance Spot Testnet HTTPS time endpoint
+using the request midpoint. Immediate independent probes then reported:
+
+- Spot: -23.967 ms offset, 318.610 ms RTT, `HEALTHY`;
+- USD-M: +32.652 ms offset, 436.006 ms RTT, `HEALTHY`;
+- COIN-M: +44.133 ms offset, 472.832 ms RTT, `HEALTHY`.
+
+Before authenticated Testnet or production:
+
+1. provide a persistent approved time source outside the VPN's blocked NTP
+   path, or explicitly route NTP outside that VPN;
+2. retain venue-clock monitoring and fail closed if offset drifts;
 3. record offset, RTT and sample-age distributions;
 4. calibrate warning and critical thresholds from those measurements.
 
@@ -64,11 +77,13 @@ Testnet requires a user-provided test account and credentials. Credentials
 must enter through `BinanceCredentialProvider`; they must not be written to
 source, fixtures, logs, exception messages or the recorder.
 
-On 2026-07-25 the credential-free server-time smoke reached the configured
-Spot, USD-M and COIN-M Testnet origins over TLS, and each returned HTTP 451.
-No server-time sample was therefore accepted. The selected deployment
-network/region must provide permitted Testnet access before this gate can run;
-switching to production endpoints is not an authorized workaround.
+The earlier credential-free server-time smoke returned HTTP 451 from all
+three Testnet origins. After selecting a Singapore VPN route on 2026-07-25,
+the project transport reached the configured Spot, USD-M and COIN-M Testnet
+origins successfully and all three public clock monitors reported `HEALTHY`.
+The public connectivity prerequisite is therefore resolved for the current
+route. A route change requires this smoke to be repeated; switching to
+production endpoints is not an authorized workaround.
 
 The Testnet gate must cover:
 
@@ -98,13 +113,14 @@ deterministic restart reconstruction, non-terminal candidate discovery and
 venue-neutral reconciliation. Binance REST query, private order-event
 normalization, renewal/reconnect supervision and startup query orchestration
 are also complete. Concrete bounded REST transport, private WebSocket resource
-ownership and public server-time probing are complete offline. Production
-acceptance still requires:
+ownership, public server-time probing, aggregate health queries, an operator
+kill switch and strict reduce-only enforcement are complete offline.
+Production acceptance still requires:
 
 - authenticated Testnet evidence for Spot signature subscription and Futures
   listen-key renewal/reconnect;
 - authenticated restart reconciliation evidence on the selected host;
-- operator kill switch and an explicitly controlled reduce-only mode;
+- authenticated operator command transport and durable command audit/restore;
 - supervised process restart and health reporting;
 - credential storage and rotation procedures;
 - deployment, rollback, reconciliation and incident runbooks;

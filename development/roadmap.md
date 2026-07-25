@@ -50,7 +50,10 @@ Status: In progress.
 4. Add concrete HTTP/private WebSocket transport ownership and public
    server-time probing. **Complete (T020/A007).**
 5. Add secrets management, aggregate health endpoints and operator controls.
+   **Health aggregation and operator controls complete (T021/A008);
+   deployment secrets adapter remains.**
 6. Synchronize the deployment-host clock and calibrate health thresholds.
+   **Public Testnet probes healthy; persistent approved time source remains.**
 7. Run authenticated Binance Testnet acceptance.
 8. Run target-host soak, burst, durability and latency-distribution acceptance.
 9. Publish deployment, rollback, recovery and incident runbooks.

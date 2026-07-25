@@ -40,6 +40,8 @@ class RiskRejectReason(StrEnum):
     STRATEGY_INTENT_RATE_LIMIT = "strategy_intent_rate_limit"
     GLOBAL_INTENT_RATE_LIMIT = "global_intent_rate_limit"
     UNSUPPORTED_NOTIONAL_MODEL = "unsupported_notional_model"
+    OPERATOR_HALTED = "operator_halted"
+    REDUCE_ONLY_VIOLATION = "reduce_only_violation"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
