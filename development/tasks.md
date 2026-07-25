@@ -24,6 +24,7 @@
 | T019 | Binance environment configuration and private-stream application supervision | Complete | T018 |
 | T020 | Concrete Binance HTTP/private WebSocket transport and clock probing | Complete | T019 |
 | T021 | Aggregate runtime health reporting and operator controls | Complete | T020 |
+| T022 | Secure credential delivery and durable operator recovery | Complete | T021 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -34,6 +35,7 @@
 | A006 | Offline environment and private-stream supervision acceptance | Complete | T019 |
 | A007 | Offline transport ownership and server-time acceptance | Complete | T020 |
 | A008 | Offline runtime health and operator-control acceptance | Complete | T021 |
+| A009 | Offline credential rotation and operator restart acceptance | Complete | T022 |
 
 ## Current Acceptance Baseline
 

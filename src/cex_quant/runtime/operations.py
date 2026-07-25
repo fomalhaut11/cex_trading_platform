@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from decimal import Decimal
 from enum import StrEnum
@@ -72,6 +73,22 @@ class OperatorCommandConflictError(RuntimeError):
     """Raised when one idempotency key is reused for a different command."""
 
 
+class OperatorControlDurabilityError(RuntimeError):
+    """Raised after a journal failure has latched trading halted."""
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class OperatorCommandRecord:
+    command: OperatorCommand
+    snapshot: OperatorControlSnapshot
+
+
+class OperatorCommandJournal(Protocol):
+    def read(self) -> Iterator[OperatorCommandRecord]: ...
+
+    def append(self, record: OperatorCommandRecord) -> None: ...
+
+
 class OperatorController:
     """Thread-safe, bounded and idempotent in-process trading authority."""
 
@@ -82,6 +99,7 @@ class OperatorController:
         *,
         clock: Clock,
         command_history_size: int = 256,
+        journal: OperatorCommandJournal | None = None,
     ) -> None:
         if (
             not isinstance(command_history_size, int)
@@ -91,6 +109,8 @@ class OperatorController:
             raise ValueError("command_history_size must be a positive int")
         self._clock = clock
         self._history_size = command_history_size
+        self._journal = journal
+        self._journal_failed = False
         self._lock = Lock()
         self._history: OrderedDict[
             str, tuple[OperatorCommand, OperatorControlSnapshot]
@@ -103,6 +123,8 @@ class OperatorController:
             actor="",
             reason="explicit operator activation is required",
         )
+        if journal is not None:
+            self._restore(journal)
 
     @property
     def snapshot(self) -> OperatorControlSnapshot:
@@ -113,15 +135,31 @@ class OperatorController:
         if not isinstance(command, OperatorCommand):
             raise ValueError("command must be an OperatorCommand")
         with self._lock:
-            previous = self._history.get(command.command_id)
-            if previous is not None:
-                previous_command, previous_snapshot = previous
-                if previous_command != command:
-                    raise OperatorCommandConflictError(
-                        "operator command id was reused with different content"
-                    )
-                self._history.move_to_end(command.command_id)
-                return previous_snapshot
+            if self._journal_failed:
+                raise OperatorControlDurabilityError(
+                    "operator command journal is unavailable"
+                )
+            if self._journal is not None:
+                previous = self._find_durable(command.command_id)
+                if previous is not None:
+                    previous_command, previous_snapshot = previous
+                    if previous_command != command:
+                        raise OperatorCommandConflictError(
+                            "operator command id was reused with "
+                            "different content"
+                        )
+                    return previous_snapshot
+            else:
+                previous = self._history.get(command.command_id)
+                if previous is not None:
+                    previous_command, previous_snapshot = previous
+                    if previous_command != command:
+                        raise OperatorCommandConflictError(
+                            "operator command id was reused with "
+                            "different content"
+                        )
+                    self._history.move_to_end(command.command_id)
+                    return previous_snapshot
 
             mode = {
                 OperatorAction.ACTIVATE: OperatorMode.ACTIVE,
@@ -136,17 +174,36 @@ class OperatorController:
                 actor=command.actor,
                 reason=command.reason,
             )
+            if self._journal is not None:
+                try:
+                    self._journal.append(
+                        OperatorCommandRecord(
+                            command=command,
+                            snapshot=snapshot,
+                        )
+                    )
+                except Exception:
+                    self._latch_journal_failure()
+                    raise OperatorControlDurabilityError(
+                        "operator command journal append failed"
+                    ) from None
             self._snapshot = snapshot
-            self._history[command.command_id] = (command, snapshot)
-            while len(self._history) > self._history_size:
-                self._history.popitem(last=False)
+            self._remember(command, snapshot)
             return snapshot
 
     def health(self) -> HealthReport:
         snapshot = self.snapshot
-        if snapshot.mode is OperatorMode.ACTIVE:
+        if self._journal_failed:
+            status = HealthStatus.UNHEALTHY
+            issues: tuple[HealthIssue, ...] = (
+                HealthIssue(
+                    code="JOURNAL_FAILED",
+                    message="operator command journal is unavailable",
+                ),
+            )
+        elif snapshot.mode is OperatorMode.ACTIVE:
             status = HealthStatus.HEALTHY
-            issues: tuple[HealthIssue, ...] = ()
+            issues = ()
         elif snapshot.mode is OperatorMode.REDUCE_ONLY:
             status = HealthStatus.DEGRADED
             issues = (
@@ -168,6 +225,110 @@ class OperatorController:
             status=status,
             observed_at_ns=self._clock.wall_time_ns(),
             issues=issues,
+        )
+
+    def _restore(self, journal: OperatorCommandJournal) -> None:
+        seen: set[str] = set()
+        expected_generation = 1
+        try:
+            for record in journal.read():
+                self._validate_record(
+                    record,
+                    expected_generation=expected_generation,
+                    seen=seen,
+                )
+                command = record.command
+                snapshot = record.snapshot
+                seen.add(command.command_id)
+                expected_generation += 1
+                self._snapshot = snapshot
+                self._remember(command, snapshot)
+        except Exception:
+            self._latch_journal_failure()
+            raise OperatorControlDurabilityError(
+                "operator command journal recovery failed"
+            ) from None
+
+    def _find_durable(
+        self,
+        command_id: str,
+    ) -> tuple[OperatorCommand, OperatorControlSnapshot] | None:
+        assert self._journal is not None
+        found: tuple[OperatorCommand, OperatorControlSnapshot] | None = None
+        final_snapshot: OperatorControlSnapshot | None = None
+        seen: set[str] = set()
+        expected_generation = 1
+        try:
+            for record in self._journal.read():
+                self._validate_record(
+                    record,
+                    expected_generation=expected_generation,
+                    seen=seen,
+                )
+                seen.add(record.command.command_id)
+                expected_generation += 1
+                final_snapshot = record.snapshot
+                if record.command.command_id == command_id:
+                    found = record.command, record.snapshot
+            if (
+                final_snapshot is None
+                and self._snapshot.generation != 0
+            ) or (
+                final_snapshot is not None
+                and final_snapshot != self._snapshot
+            ):
+                raise ValueError("operator journal changed outside controller")
+        except Exception:
+            self._latch_journal_failure()
+            raise OperatorControlDurabilityError(
+                "operator command journal read failed"
+            ) from None
+        return found
+
+    @staticmethod
+    def _validate_record(
+        record: OperatorCommandRecord,
+        *,
+        expected_generation: int,
+        seen: set[str],
+    ) -> None:
+        if not isinstance(record, OperatorCommandRecord):
+            raise ValueError("invalid operator journal record")
+        command = record.command
+        snapshot = record.snapshot
+        expected_mode = {
+            OperatorAction.ACTIVATE: OperatorMode.ACTIVE,
+            OperatorAction.ENABLE_REDUCE_ONLY: OperatorMode.REDUCE_ONLY,
+            OperatorAction.HALT: OperatorMode.HALTED,
+        }[command.action]
+        if (
+            command.command_id in seen
+            or snapshot.generation != expected_generation
+            or snapshot.mode is not expected_mode
+            or snapshot.command_id != command.command_id
+            or snapshot.actor != command.actor
+            or snapshot.reason != command.reason
+        ):
+            raise ValueError("inconsistent operator journal record")
+
+    def _remember(
+        self,
+        command: OperatorCommand,
+        snapshot: OperatorControlSnapshot,
+    ) -> None:
+        self._history[command.command_id] = (command, snapshot)
+        while len(self._history) > self._history_size:
+            self._history.popitem(last=False)
+
+    def _latch_journal_failure(self) -> None:
+        self._journal_failed = True
+        self._snapshot = OperatorControlSnapshot(
+            mode=OperatorMode.HALTED,
+            generation=self._snapshot.generation,
+            changed_at_ns=self._clock.wall_time_ns(),
+            command_id="",
+            actor="",
+            reason="operator command journal failure",
         )
 
 
@@ -368,6 +529,9 @@ __all__ = [
     "OperatorAction",
     "OperatorCommand",
     "OperatorCommandConflictError",
+    "OperatorCommandJournal",
+    "OperatorCommandRecord",
+    "OperatorControlDurabilityError",
     "OperatorControlSnapshot",
     "OperatorController",
     "OperatorMode",

@@ -18,6 +18,11 @@ from .binance_authenticated import (
     canonical_query,
     hmac_sha256_hex,
 )
+from .binance_credentials import (
+    BinanceCredentialBinding,
+    BinanceCredentialError,
+    EnvironmentBinanceCredentialProvider,
+)
 from .binance_http_transport import (
     AsyncioBinanceHttpTransport,
     BinanceHttpTimeouts,
@@ -50,6 +55,8 @@ from .binance_reconciliation import (
 __all__ = [
     "AsyncioBinanceHttpTransport",
     "AuthenticatedBinanceExecutionAdapter",
+    "BinanceCredentialBinding",
+    "BinanceCredentialError",
     "BinanceCredentialProvider",
     "BinanceCredentials",
     "BinanceFuturesPrivateStreamTransport",
@@ -71,6 +78,7 @@ __all__ = [
     "BinanceRequest",
     "BinanceSpotPrivateStreamTransport",
     "BinanceUserStreamLeaseExpiredError",
+    "EnvironmentBinanceCredentialProvider",
     "RestBaseUrlResolver",
     "TlsConnectionOpener",
     "build_spot_user_stream_subscription",

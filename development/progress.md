@@ -124,12 +124,23 @@ target-host performance and authenticated Testnet gates.
 - A008 scenario acceptance proving activation, permitted reduction, rejected
   expansion and emergency halt all stop or reach OMS/execution at the intended
   boundary.
+- T022 explicit per-account environment credential bindings that read fresh
+  values on every request, support external rotation and sanitize all lookup
+  failures and representations.
+- Checksummed, sequenced and bounded operator-command JSONL audit with an
+  fsync-before-mutation boundary, exact restart restoration and durable
+  idempotency beyond the in-memory command cache.
+- Journal corruption, external modification, append failure or record-limit
+  failure latches operator authority `HALTED` and reports `JOURNAL_FAILED`.
+- A009 acceptance proving credential rotation changes the next signed request,
+  no credential enters the operator journal and reduce-only authority is
+  restored exactly after restart.
 
 ## In Progress
 
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
-- Deployment secrets, operator authentication and durable command-audit
+- Deployment secret injection and authenticated operator-command transport
   planning.
 - External acceptance preparation.
 
@@ -147,7 +158,8 @@ target-host performance and authenticated Testnet gates.
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Add authenticated secrets delivery and durable operator command audit.
+2. Configure deployment secret injection and authenticated operator command
+   transport around the completed T022 adapters.
 3. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
 4. Run A002C authenticated Binance Testnet acceptance.
@@ -158,11 +170,11 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 326 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 26 passed.
+- `python -m unittest discover -s tests -v`: 336 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 27 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 76 source files.
-- Pytest branch coverage: 86.50%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 78 source files.
+- Pytest branch coverage: 86.43%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

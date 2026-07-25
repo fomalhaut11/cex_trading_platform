@@ -114,14 +114,15 @@ venue-neutral reconciliation. Binance REST query, private order-event
 normalization, renewal/reconnect supervision and startup query orchestration
 are also complete. Concrete bounded REST transport, private WebSocket resource
 ownership, public server-time probing, aggregate health queries, an operator
-kill switch and strict reduce-only enforcement are complete offline.
+kill switch, strict reduce-only enforcement, explicit environment credential
+delivery and durable operator command recovery are complete offline.
 Production acceptance still requires:
 
 - authenticated Testnet evidence for Spot signature subscription and Futures
   listen-key renewal/reconnect;
 - authenticated restart reconciliation evidence on the selected host;
-- authenticated operator command transport and durable command audit/restore;
+- authenticated operator command transport and external audit retention;
 - supervised process restart and health reporting;
-- credential storage and rotation procedures;
+- deployment secret injection, storage and rotation procedures;
 - deployment, rollback, reconciliation and incident runbooks;
 - fault tests for slow or full storage, network loss and process termination.
