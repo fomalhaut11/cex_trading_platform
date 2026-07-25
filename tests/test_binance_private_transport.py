@@ -240,9 +240,19 @@ class FuturesPrivateTransportTests(IsolatedAsyncioTestCase):
         connection = Connection([b'{"e":"ORDER_TRADE_UPDATE"}'])
         connector = Connector(connection)
         control = Control(BinanceProduct.USD_M)
+        renewal_started = asyncio.Event()
+        renewal_parked = asyncio.Event()
+        hold_later_renewals = asyncio.Event()
+        sleep_calls = 0
 
-        async def immediate_sleep(_: float) -> None:
-            await asyncio.sleep(0)
+        async def controlled_sleep(_: float) -> None:
+            nonlocal sleep_calls
+            sleep_calls += 1
+            if sleep_calls == 1:
+                renewal_started.set()
+                return
+            renewal_parked.set()
+            await hold_later_renewals.wait()
 
         transport = BinanceFuturesPrivateStreamTransport(
             product=BinanceProduct.USD_M,
@@ -252,7 +262,7 @@ class FuturesPrivateTransportTests(IsolatedAsyncioTestCase):
             connector=connector,
             keepalive_interval_seconds=1,
             operation_timeout_seconds=0.1,
-            sleep=immediate_sleep,
+            sleep=controlled_sleep,
         )
 
         async with transport.connect() as stream:
@@ -260,7 +270,11 @@ class FuturesPrivateTransportTests(IsolatedAsyncioTestCase):
                 await anext(stream),
                 b'{"e":"ORDER_TRADE_UPDATE"}',
             )
-            await asyncio.sleep(0)
+            await renewal_started.wait()
+            async with asyncio.timeout(0.1):
+                while "keepalive" not in control.calls:
+                    await asyncio.sleep(0)
+                await renewal_parked.wait()
 
         self.assertEqual(control.calls[0], "open")
         self.assertIn("keepalive", control.calls)
