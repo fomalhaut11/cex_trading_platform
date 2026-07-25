@@ -115,13 +115,16 @@ normalization, renewal/reconnect supervision and startup query orchestration
 are also complete. Concrete bounded REST transport, private WebSocket resource
 ownership, public server-time probing, aggregate health queries, an operator
 kill switch, strict reduce-only enforcement, explicit environment credential
-delivery and durable operator command recovery are complete offline.
+delivery, durable operator command recovery, signed operator authentication,
+per-action authorization and mandatory deployment composition are complete
+offline.
 Production acceptance still requires:
 
 - authenticated Testnet evidence for Spot signature subscription and Futures
   listen-key renewal/reconnect;
 - authenticated restart reconciliation evidence on the selected host;
-- authenticated operator command transport and external audit retention;
+- TLS/mTLS operator network termination, rate limiting and external audit
+  retention around the completed authentication boundary;
 - supervised process restart and health reporting;
 - deployment secret injection, storage and rotation procedures;
 - deployment, rollback, reconciliation and incident runbooks;

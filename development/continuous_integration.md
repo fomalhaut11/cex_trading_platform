@@ -83,3 +83,8 @@ Remote GitHub Actions run `30086189167` passed all three jobs on 2026-07-24:
 
 The run produced the `coverage-python-3.11` artifact. Official actions use
 their Node.js 24 releases and remain pinned to immutable commit identifiers.
+
+The latest completed remote baseline before T023 is run `30148922690`.
+It passes 336 regressions on Python 3.11 and 3.14, strict MyPy across 78 source
+files, Ruff and 86.43% branch coverage. T023 adds authenticated operator and
+deployment scenarios; its exact remote evidence is recorded after push.

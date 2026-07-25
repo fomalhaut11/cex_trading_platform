@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-07-24
+Last updated: 2026-07-25
 
 ## Current Phase
 
@@ -135,13 +135,23 @@ target-host performance and authenticated Testnet gates.
 - A009 acceptance proving credential rotation changes the next signed request,
   no credential enters the operator journal and reduce-only authority is
   restored exactly after restart.
+- T023 canonical HMAC-SHA256 operator envelopes with bounded freshness,
+  deployment-derived actor identity, explicit per-action authorization and
+  fresh environment-backed key rotation.
+- Durable replay safety that treats exact redelivery as an idempotent retry,
+  rejects changed content and cannot roll authority back across restart.
+- Concrete operator and trading deployment roots that own the audit journal
+  and make operator health and risk gating mandatory in the application.
+- A010 offline acceptance covering invalid, expired, unauthorized and replayed
+  commands, restart restoration, independent safety authority and secret
+  exclusion.
 
 ## In Progress
 
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
-- Deployment secret injection and authenticated operator-command transport
-  planning.
+- Network termination and external audit integration around the completed
+  authenticated operator-command boundary.
 - External acceptance preparation.
 
 ## Open External Gates
@@ -158,8 +168,8 @@ target-host performance and authenticated Testnet gates.
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Configure deployment secret injection and authenticated operator command
-   transport around the completed T022 adapters.
+2. Configure TLS/mTLS network termination, rate limiting, external audit and
+   deployment secret injection around the completed T023 operator boundary.
 3. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
 4. Run A002C authenticated Binance Testnet acceptance.
@@ -170,11 +180,11 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 336 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 27 passed.
+- `python -m unittest discover -s tests -v`: 346 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 28 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 78 source files.
-- Pytest branch coverage: 86.43%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 80 source files.
+- Pytest branch coverage: 86.22%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

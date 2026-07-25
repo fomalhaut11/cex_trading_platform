@@ -52,7 +52,8 @@ Status: In progress.
 5. Add secrets management, aggregate health endpoints and operator controls.
    **Health aggregation and operator controls complete (T021/A008);
    credential delivery and durable operator recovery complete (T022/A009);
-   deployment secret injection and operator authentication remain.**
+   authenticated operator boundary and mandatory deployment composition
+   complete (T023/A010); network termination and external audit remain.**
 6. Synchronize the deployment-host clock and calibrate health thresholds.
    **Public Testnet probes healthy; persistent approved time source remains.**
 7. Run authenticated Binance Testnet acceptance.
