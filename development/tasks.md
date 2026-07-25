@@ -22,6 +22,7 @@
 | T017 | Binance order query and private order-event normalization | Complete | T014, T016 |
 | T018 | Private order-stream lifecycle and startup reconciliation | Complete | T017 |
 | T019 | Binance environment configuration and private-stream application supervision | Complete | T018 |
+| T020 | Concrete Binance HTTP/private WebSocket transport and clock probing | Complete | T019 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -30,6 +31,7 @@
 | A004 | Offline Binance recovery-protocol acceptance | Complete | T017 |
 | A005 | Offline private-stream startup race acceptance | Complete | T018 |
 | A006 | Offline environment and private-stream supervision acceptance | Complete | T019 |
+| A007 | Offline transport ownership and server-time acceptance | Complete | T020 |
 
 ## Current Acceptance Baseline
 

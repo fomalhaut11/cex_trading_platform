@@ -105,6 +105,14 @@ target-host performance and authenticated Testnet gates.
   immutable readiness snapshots, fail-closed degradation and bounded shutdown.
 - A006 offline environment and supervision acceptance covering Testnet
   defaults, production guarding, readiness opening and connection cleanup.
+- T020 bounded asyncio Binance REST transport with strict request validation,
+  bounded HTTP framing and explicit before/after-send failure semantics.
+- Three-product public server-time adapters and an interruptible, bounded
+  clock-probe service feeding the existing midpoint health monitor.
+- Owned Spot signature-subscription and Futures listen-key WebSocket
+  transports with complete renewal, cancellation and lease cleanup.
+- A007 offline transport/clock acceptance from the default Testnet profile
+  through concrete HTTP framing to healthy clock samples.
 
 ## In Progress
 
@@ -117,29 +125,33 @@ target-host performance and authenticated Testnet gates.
 
 - Live smoke testing measured the local host clock roughly 13 seconds behind
   Binance. Production use requires clock synchronization and offset monitoring.
+- The 2026-07-25 credential-free Testnet server-time smoke completed TLS/HTTP
+  exchange for Spot, USD-M and COIN-M, but every endpoint returned HTTP 451.
+  The deployment network/region must permit Testnet before clock or
+  authenticated acceptance evidence can be collected.
 - Authenticated Binance Testnet acceptance requires user-provided Testnet
   credentials through the credential-provider boundary.
 
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Implement concrete HTTP/WebSocket transport ownership and public
-   server-time probing against the configured Testnet endpoints.
-3. Synchronize the host clock and calibrate clock-health thresholds.
-4. Run A002C authenticated Binance Testnet acceptance.
-5. Run A002B target-host soak and latency-distribution acceptance.
-6. Add operator controls and production recovery runbooks.
-7. Add Binance Options instrument and stream mapping when venue-option work
+2. Resolve the Testnet HTTP 451 deployment-network restriction.
+3. Repeat public server-time smoke, then synchronize the host clock and
+   calibrate clock-health thresholds.
+4. Add aggregate runtime health reporting and operator controls.
+5. Run A002C authenticated Binance Testnet acceptance.
+6. Run A002B target-host soak and latency-distribution acceptance.
+7. Add production recovery runbooks and Binance Options mapping when each
    enters scope.
 
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 286 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 24 passed.
+- `python -m unittest discover -s tests -v`: 316 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 25 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 72 source files.
-- Pytest branch coverage: 86.33%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 75 source files.
+- Pytest branch coverage: 86.29%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

@@ -64,6 +64,12 @@ Testnet requires a user-provided test account and credentials. Credentials
 must enter through `BinanceCredentialProvider`; they must not be written to
 source, fixtures, logs, exception messages or the recorder.
 
+On 2026-07-25 the credential-free server-time smoke reached the configured
+Spot, USD-M and COIN-M Testnet origins over TLS, and each returned HTTP 451.
+No server-time sample was therefore accepted. The selected deployment
+network/region must provide permitted Testnet access before this gate can run;
+switching to production endpoints is not an authorized workaround.
+
 The Testnet gate must cover:
 
 - signed account request and server-time validation;
@@ -91,7 +97,9 @@ The offline OMS recovery kernel now provides checksummed journaling,
 deterministic restart reconstruction, non-terminal candidate discovery and
 venue-neutral reconciliation. Binance REST query, private order-event
 normalization, renewal/reconnect supervision and startup query orchestration
-are also complete. Production acceptance still requires:
+are also complete. Concrete bounded REST transport, private WebSocket resource
+ownership and public server-time probing are complete offline. Production
+acceptance still requires:
 
 - authenticated Testnet evidence for Spot signature subscription and Futures
   listen-key renewal/reconnect;

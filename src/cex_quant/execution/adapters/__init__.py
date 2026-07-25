@@ -18,6 +18,12 @@ from .binance_authenticated import (
     canonical_query,
     hmac_sha256_hex,
 )
+from .binance_http_transport import (
+    AsyncioBinanceHttpTransport,
+    BinanceHttpTimeouts,
+    RestBaseUrlResolver,
+    TlsConnectionOpener,
+)
 from .binance_private_stream import (
     BinanceFuturesUserStreamControlAdapter,
     BinanceFuturesUserStreamLease,
@@ -28,6 +34,12 @@ from .binance_private_stream import (
     build_spot_user_stream_subscription,
     parse_spot_user_stream_subscription,
 )
+from .binance_private_transport import (
+    BinanceFuturesPrivateStreamTransport,
+    BinancePrivateWebSocketConnection,
+    BinancePrivateWebSocketConnector,
+    BinanceSpotPrivateStreamTransport,
+)
 from .binance_reconciliation import (
     BinanceOrderNormalizationError,
     BinanceOrderNormalizationErrorCode,
@@ -36,13 +48,16 @@ from .binance_reconciliation import (
 )
 
 __all__ = [
+    "AsyncioBinanceHttpTransport",
     "AuthenticatedBinanceExecutionAdapter",
     "BinanceCredentialProvider",
     "BinanceCredentials",
+    "BinanceFuturesPrivateStreamTransport",
     "BinanceFuturesUserStreamControlAdapter",
     "BinanceFuturesUserStreamLease",
     "BinanceHttpRequest",
     "BinanceHttpResponse",
+    "BinanceHttpTimeouts",
     "BinanceHttpTransport",
     "BinanceHttpTransportFailure",
     "BinanceOrderNormalizationError",
@@ -50,9 +65,14 @@ __all__ = [
     "BinancePrivateOrderStreamProcessor",
     "BinancePrivateStreamDisposition",
     "BinancePrivateStreamMessage",
+    "BinancePrivateWebSocketConnection",
+    "BinancePrivateWebSocketConnector",
     "BinanceProduct",
     "BinanceRequest",
+    "BinanceSpotPrivateStreamTransport",
     "BinanceUserStreamLeaseExpiredError",
+    "RestBaseUrlResolver",
+    "TlsConnectionOpener",
     "build_spot_user_stream_subscription",
     "canonical_query",
     "hmac_sha256_hex",

@@ -47,12 +47,13 @@ Status: In progress.
    direct-push policy is agreed.
 3. Complete the Binance environment and private-stream application
    supervision boundary. **Complete (T019/A006).**
-4. Add concrete transport ownership, secrets management, health endpoints and
-   operator controls.
-5. Synchronize the deployment-host clock and calibrate health thresholds.
-6. Run authenticated Binance Testnet acceptance.
-7. Run target-host soak, burst, durability and latency-distribution acceptance.
-8. Publish deployment, rollback, recovery and incident runbooks.
+4. Add concrete HTTP/private WebSocket transport ownership and public
+   server-time probing. **Complete (T020/A007).**
+5. Add secrets management, aggregate health endpoints and operator controls.
+6. Synchronize the deployment-host clock and calibrate health thresholds.
+7. Run authenticated Binance Testnet acceptance.
+8. Run target-host soak, burst, durability and latency-distribution acceptance.
+9. Publish deployment, rollback, recovery and incident runbooks.
 
 Exit criterion: every gate in `remaining_external_gates.md` is passed with
 recorded evidence. Completion authorizes a production-release review, not an

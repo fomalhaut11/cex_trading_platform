@@ -14,6 +14,12 @@ from .adapters.binance_authenticated import (
     canonical_query,
     hmac_sha256_hex,
 )
+from .adapters.binance_http_transport import (
+    AsyncioBinanceHttpTransport,
+    BinanceHttpTimeouts,
+    RestBaseUrlResolver,
+    TlsConnectionOpener,
+)
 from .adapters.binance_private_stream import (
     BinanceFuturesUserStreamControlAdapter,
     BinanceFuturesUserStreamLease,
@@ -23,6 +29,12 @@ from .adapters.binance_private_stream import (
     BinanceUserStreamLeaseExpiredError,
     build_spot_user_stream_subscription,
     parse_spot_user_stream_subscription,
+)
+from .adapters.binance_private_transport import (
+    BinanceFuturesPrivateStreamTransport,
+    BinancePrivateWebSocketConnection,
+    BinancePrivateWebSocketConnector,
+    BinanceSpotPrivateStreamTransport,
 )
 from .adapters.binance_reconciliation import (
     BinanceOrderNormalizationError,
@@ -60,13 +72,16 @@ from .private_stream import (
 )
 
 __all__ = [
+    "AsyncioBinanceHttpTransport",
     "AuthenticatedBinanceExecutionAdapter",
     "BinanceCredentialProvider",
     "BinanceCredentials",
+    "BinanceFuturesPrivateStreamTransport",
     "BinanceFuturesUserStreamControlAdapter",
     "BinanceFuturesUserStreamLease",
     "BinanceHttpRequest",
     "BinanceHttpResponse",
+    "BinanceHttpTimeouts",
     "BinanceHttpTransport",
     "BinanceHttpTransportFailure",
     "BinanceOrderNormalizationError",
@@ -74,6 +89,9 @@ __all__ = [
     "BinancePrivateOrderStreamProcessor",
     "BinancePrivateStreamDisposition",
     "BinancePrivateStreamMessage",
+    "BinancePrivateWebSocketConnection",
+    "BinancePrivateWebSocketConnector",
+    "BinanceSpotPrivateStreamTransport",
     "BinanceUserStreamLeaseExpiredError",
     "CancelOrder",
     "CancelResult",
@@ -92,9 +110,11 @@ __all__ = [
     "PrivateStreamConnection",
     "PrivateStreamTransport",
     "QueryOrder",
+    "RestBaseUrlResolver",
     "Sleep",
     "SnapshotHandler",
     "SubmitResult",
+    "TlsConnectionOpener",
     "TransportFactory",
     "UnsupportedExecutionFeatureError",
     "build_spot_user_stream_subscription",
