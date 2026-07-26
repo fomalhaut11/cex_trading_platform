@@ -12,12 +12,14 @@ from cex_quant.runtime import (
     OperatorCommandEnvelope,
     OperatorControlDeploymentConfig,
     OperatorControlRuntime,
+    OperatorEndpointDeploymentConfig,
     OperatorKeyBinding,
     OperatorMode,
     TradingDeploymentRuntime,
     operator_command_signature,
 )
 from tests.test_operator_auth import SECRET
+from tests.test_operator_endpoint import MemoryAuditSink, request
 from tests.test_runtime_operations import AllowRisk, ManualClock
 
 
@@ -167,6 +169,43 @@ class OperatorControlDeploymentTests(TestCase):
             self.assertTrue(runtime.operator.closed)
             with self.assertRaisesRegex(RuntimeError, "closed"):
                 runtime.start()
+
+    def test_endpoint_audit_failure_durably_halts_operator_runtime(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "operator.jsonl"
+            config = self.config(path)
+            with OperatorControlRuntime(
+                config=config,
+                clock=ManualClock(1_500),
+                environ={"DEPLOYMENT_OPERATOR_SECRET": SECRET},
+            ) as runtime:
+                endpoint = runtime.create_endpoint(
+                    config=OperatorEndpointDeploymentConfig(
+                        max_requests_per_window=2,
+                    ),
+                    audit_sink=MemoryAuditSink(fail_at=2),
+                )
+                with self.assertRaisesRegex(RuntimeError, "audit"):
+                    endpoint.handle(request(key_id="admin-key"))
+                self.assertEqual(
+                    runtime.controller.snapshot.mode,
+                    OperatorMode.HALTED,
+                )
+                with self.assertRaisesRegex(RuntimeError, "already"):
+                    runtime.create_endpoint(
+                        config=OperatorEndpointDeploymentConfig(),
+                        audit_sink=MemoryAuditSink(),
+                    )
+
+            with OperatorControlRuntime(
+                config=config,
+                clock=ManualClock(2_500),
+                environ={"DEPLOYMENT_OPERATOR_SECRET": SECRET},
+            ) as restored:
+                self.assertEqual(
+                    restored.controller.snapshot.mode,
+                    OperatorMode.HALTED,
+                )
 
 
 if __name__ == "__main__":

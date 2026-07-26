@@ -26,6 +26,7 @@
 | T021 | Aggregate runtime health reporting and operator controls | Complete | T020 |
 | T022 | Secure credential delivery and durable operator recovery | Complete | T021 |
 | T023 | Authenticated operator boundary and secure deployment assembly | Complete | T022 |
+| T024 | Bounded mTLS operator endpoint, audit boundary and runbooks | Complete | T023 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -38,6 +39,7 @@
 | A008 | Offline runtime health and operator-control acceptance | Complete | T021 |
 | A009 | Offline credential rotation and operator restart acceptance | Complete | T022 |
 | A010 | Offline authenticated operator deployment acceptance | Complete | T023 |
+| A011 | Offline operator endpoint, audit and recovery acceptance | Complete | T024 |
 
 ## Current Acceptance Baseline
 

@@ -53,12 +53,16 @@ Status: In progress.
    **Health aggregation and operator controls complete (T021/A008);
    credential delivery and durable operator recovery complete (T022/A009);
    authenticated operator boundary and mandatory deployment composition
-   complete (T023/A010); network termination and external audit remain.**
+   complete (T023/A010); bounded mTLS identity adapter, external-audit port
+   and failure latching complete (T024/A011); concrete TLS termination and
+   remote audit service configuration remain.**
 6. Synchronize the deployment-host clock and calibrate health thresholds.
    **Public Testnet probes healthy; persistent approved time source remains.**
 7. Run authenticated Binance Testnet acceptance.
 8. Run target-host soak, burst, durability and latency-distribution acceptance.
 9. Publish deployment, rollback, recovery and incident runbooks.
+   **Initial operational runbooks complete (T024); target-host validation
+   remains.**
 
 Exit criterion: every gate in `remaining_external_gates.md` is passed with
 recorded evidence. Completion authorizes a production-release review, not an

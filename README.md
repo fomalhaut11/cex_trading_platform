@@ -28,3 +28,6 @@ the accepted ADRs before changing a public contract.
 Project status and quality gates are maintained in
 `development/progress.md`, `development/roadmap.md` and
 `development/continuous_integration.md`.
+
+Deployment, rollback/recovery and incident procedures are maintained in the
+`operations/` directory.

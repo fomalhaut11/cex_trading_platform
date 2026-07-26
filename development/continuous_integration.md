@@ -89,3 +89,7 @@ T023 implementation commit
 `30157323695` on 2026-07-25. The run passed 346 regressions on Python 3.11 and
 3.14, strict MyPy across 80 source files, Ruff, high-confidence secret
 scanning and the 85% branch-coverage gate.
+
+T024 local preflight passes 357 regressions on Python 3.11 and 3.14, 29
+acceptance scenarios, strict MyPy across 81 source files, Ruff, secret
+scanning and 86.19% branch coverage. Remote evidence is recorded after push.

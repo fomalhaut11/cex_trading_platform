@@ -14,6 +14,9 @@ from cex_quant.observability import Clock, HealthCheck
 
 from .application import TradingApplication
 from .operations import (
+    OperatorAction,
+    OperatorCommand,
+    OperatorControlDurabilityError,
     OperatorController,
     OperatorRiskGate,
     RiskEvaluator,
@@ -25,6 +28,11 @@ from .operator_auth import (
     EnvironmentOperatorKeyProvider,
     HmacOperatorCommandAuthenticator,
     OperatorKeyBinding,
+)
+from .operator_endpoint import (
+    OperatorAuditSink,
+    OperatorCommandEndpoint,
+    OperatorRequestRateLimiter,
 )
 from .pipeline import (
     FeaturePort,
@@ -87,6 +95,32 @@ class OperatorControlDeploymentConfig:
             raise ValueError("clock_skew_ns must be a non-negative int")
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class OperatorEndpointDeploymentConfig:
+    """Non-secret resource limits for the external operator endpoint."""
+
+    max_request_bytes: int = 4_096
+    max_concurrency: int = 4
+    max_requests_per_window: int = 10
+    rate_window_ns: int = 1_000_000_000
+    max_clients: int = 128
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("max_request_bytes", self.max_request_bytes),
+            ("max_concurrency", self.max_concurrency),
+            ("max_requests_per_window", self.max_requests_per_window),
+            ("rate_window_ns", self.rate_window_ns),
+            ("max_clients", self.max_clients),
+        ):
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < 1
+            ):
+                raise ValueError(f"{name} must be a positive int")
+
+
 class OperatorControlRuntime:
     """Own the journal, controller, authentication and health composition."""
 
@@ -99,6 +133,7 @@ class OperatorControlRuntime:
     ) -> None:
         if not isinstance(config, OperatorControlDeploymentConfig):
             raise ValueError("config must be an OperatorControlDeploymentConfig")
+        self._clock = clock
         self._journal = JsonLinesOperatorCommandJournal(
             config.journal_path,
             max_records=config.max_journal_records,
@@ -132,6 +167,7 @@ class OperatorControlRuntime:
             self._journal.close()
             raise
         self._closed = False
+        self._endpoint: OperatorCommandEndpoint | None = None
 
     @property
     def closed(self) -> bool:
@@ -144,6 +180,37 @@ class OperatorControlRuntime:
             delegate=delegate,
             controller=self.controller,
         )
+
+    def create_endpoint(
+        self,
+        *,
+        config: OperatorEndpointDeploymentConfig,
+        audit_sink: OperatorAuditSink,
+    ) -> OperatorCommandEndpoint:
+        if self._closed:
+            raise RuntimeError("operator control runtime is closed")
+        if not isinstance(config, OperatorEndpointDeploymentConfig):
+            raise ValueError(
+                "config must be an OperatorEndpointDeploymentConfig"
+            )
+        if self._endpoint is not None:
+            raise RuntimeError("operator endpoint is already assembled")
+        endpoint = OperatorCommandEndpoint(
+            clock=self._clock,
+            executor=self.commands,
+            audit_sink=audit_sink,
+            rate_limiter=OperatorRequestRateLimiter(
+                clock=self._clock,
+                max_requests=config.max_requests_per_window,
+                window_ns=config.rate_window_ns,
+                max_clients=config.max_clients,
+            ),
+            failure_handler=self._halt_for_endpoint_failure,
+            max_request_bytes=config.max_request_bytes,
+            max_concurrency=config.max_concurrency,
+        )
+        self._endpoint = endpoint
+        return endpoint
 
     def close(self) -> None:
         if self._closed:
@@ -158,6 +225,22 @@ class OperatorControlRuntime:
 
     def __exit__(self, *_: object) -> None:
         self.close()
+
+    def _halt_for_endpoint_failure(self, code: str) -> None:
+        snapshot = self.controller.snapshot
+        command = OperatorCommand(
+            command_id=(
+                "operator-endpoint-failure-"
+                f"{snapshot.generation + 1}-{int(self._clock.wall_time_ns())}"
+            ),
+            action=OperatorAction.HALT,
+            actor="operator-endpoint",
+            reason=f"fail closed after {code.lower()}",
+        )
+        try:
+            self.controller.apply(command)
+        except OperatorControlDurabilityError:
+            return
 
 
 class TradingDeploymentRuntime:
@@ -251,5 +334,6 @@ class TradingDeploymentRuntime:
 __all__ = [
     "OperatorControlDeploymentConfig",
     "OperatorControlRuntime",
+    "OperatorEndpointDeploymentConfig",
     "TradingDeploymentRuntime",
 ]

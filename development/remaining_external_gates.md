@@ -117,15 +117,18 @@ ownership, public server-time probing, aggregate health queries, an operator
 kill switch, strict reduce-only enforcement, explicit environment credential
 delivery, durable operator command recovery, signed operator authentication,
 per-action authorization and mandatory deployment composition are complete
-offline.
+offline. The bounded mTLS identity adapter, strict request decoder, rate and
+concurrency limits, external-audit port and durable endpoint-failure halt are
+also complete offline.
 Production acceptance still requires:
 
 - authenticated Testnet evidence for Spot signature subscription and Futures
   listen-key renewal/reconnect;
 - authenticated restart reconciliation evidence on the selected host;
-- TLS/mTLS operator network termination, rate limiting and external audit
-  retention around the completed authentication boundary;
+- concrete TLS/mTLS termination, protected identity forwarding and external
+  audit service retention around the completed bounded adapter;
 - supervised process restart and health reporting;
 - deployment secret injection, storage and rotation procedures;
-- deployment, rollback, reconciliation and incident runbooks;
+- target-host exercise and approval of the deployment, rollback, recovery and
+  incident runbooks;
 - fault tests for slow or full storage, network loss and process termination.

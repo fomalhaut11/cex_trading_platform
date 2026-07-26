@@ -10,6 +10,10 @@ Exchange -> market_data -> market_state -> features -> strategy
 `runtime` assembles the flow. `recorder`, `monitoring`, `operations_api` and
 `storage` consume bounded side channels and cannot block the trading path.
 
+`runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
+It accepts identity only after external mTLS validation and owns no public
+listener. Concrete TLS termination remains a deployment boundary.
+
 ## Dependency Rules
 
 1. `core` depends on no business domain.
@@ -28,4 +32,3 @@ Exchange -> market_data -> market_state -> features -> strategy
 
 The initial `trading-core` process contains the core flow. A module becomes a
 service only for measured scaling, language-runtime or fault-domain reasons.
-

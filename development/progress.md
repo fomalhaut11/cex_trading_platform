@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-07-25
+Last updated: 2026-07-26
 
 ## Current Phase
 
@@ -145,13 +145,23 @@ target-host performance and authenticated Testnet gates.
 - A010 offline acceptance covering invalid, expired, unauthorized and replayed
   commands, restart restoration, independent safety authority and secret
   exclusion.
+- T024 bounded operator endpoint with mandatory mTLS identity, strict JSON
+  schema, bounded request/client state, rate limiting and non-blocking
+  concurrency admission.
+- Secret-free external-audit contracts with certificate fingerprint evidence,
+  received/terminal ordering, health latching and durable system halt on
+  audit, executor, durability or monotonic-clock failure.
+- A011 offline endpoint and restart acceptance proving dual mTLS/HMAC
+  authentication, replay idempotency, bounded rejection paths and restored
+  authority.
+- Initial deployment, rollback/recovery and incident-response runbooks.
 
 ## In Progress
 
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
-- Network termination and external audit integration around the completed
-  authenticated operator-command boundary.
+- Concrete TLS termination, protected identity forwarding and remote audit
+  service configuration around the completed bounded endpoint.
 - External acceptance preparation.
 
 ## Open External Gates
@@ -168,23 +178,23 @@ target-host performance and authenticated Testnet gates.
 ## Next
 
 1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Configure TLS/mTLS network termination, rate limiting, external audit and
-   deployment secret injection around the completed T023 operator boundary.
+2. Configure concrete TLS/mTLS termination, protected identity forwarding,
+   remote audit retention and deployment secret injection around T024.
 3. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
 4. Run A002C authenticated Binance Testnet acceptance.
 5. Run A002B target-host soak and latency-distribution acceptance.
-6. Add production recovery runbooks and Binance Options mapping when each
-   enters scope.
+6. Exercise and approve the initial runbooks on the target host; add Binance
+   Options mapping when it enters scope.
 
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 346 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 28 passed.
+- `python -m unittest discover -s tests -v`: 357 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 29 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 80 source files.
-- Pytest branch coverage: 86.22%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 81 source files.
+- Pytest branch coverage: 86.19%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.
