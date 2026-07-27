@@ -6,7 +6,7 @@
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
 |---|---|---|---|---|---|---|
-| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ACCEPTED — ADR drafting pending | `97d10e33f8d69c2535a542bee9f095aec1c312b9` | [Web GPT input](topics/funding_arbitrage/10_web_gpt_input.md) | [Resolution](topics/funding_arbitrage/90_resolution.md) |
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009 READY_FOR_REVIEW | `710440e6a94d2c59be89c01a5d41194caf652f8e` | [Resolution](topics/funding_arbitrage/90_resolution.md) | [ADR-009 draft](../adr/ADR-009-portfolio-decision-snapshot.md) |
 
 ## Completed and Reference Exchanges
 

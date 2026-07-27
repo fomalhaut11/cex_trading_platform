@@ -12,6 +12,7 @@ related:
   - 20_codex_response.md
   - 30_web_gpt_review.md
   - ../../../development/multi_leg_portfolio_trading_plan.md
+  - ../../../adr/ADR-009-portfolio-decision-snapshot.md
 external_share: allowed
 sensitivity: public-project
 ---
@@ -137,7 +138,7 @@ applications/
 
 | Order | Planned ADR | Scope | Required exit evidence | Status |
 |---:|---|---|---|---|
-| 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | TODO |
+| 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | DRAFT_READY_FOR_REVIEW |
 | 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | BLOCKED_BY_ADR_009 |
 | 3 | ADR-011 Parent-Child Order Model | Generic Order Group lifecycle、bounded children、partial、unknown、补偿和恢复 | 状态机、journal/replay 设计、两腿与三腿故障矩阵 | BLOCKED_BY_ADR_010 |
 | 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |

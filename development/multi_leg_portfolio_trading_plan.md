@@ -10,6 +10,9 @@ First validating application: Funding Arbitrage
 
 Production authorization: None
 
+ADR progress: ADR-009 proposed and ready for external architecture review;
+ADR-010 through ADR-014 remain blocked.
+
 ## 1. Purpose
 
 This plan defines how the existing single-instrument trading foundation can be
