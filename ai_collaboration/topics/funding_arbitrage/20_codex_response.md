@@ -2,7 +2,7 @@
 id: AI-20260727-003
 title: Codex Architecture Capacity Review for Funding Arbitrage
 origin: codex
-status: READY_FOR_REVIEW
+status: REVIEWED
 created: 2026-07-27
 code_baseline: 97d10e33f8d69c2535a542bee9f095aec1c312b9
 supersedes: none
