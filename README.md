@@ -31,3 +31,8 @@ Project status and quality gates are maintained in
 
 Deployment, rollback/recovery and incident procedures are maintained in the
 `operations/` directory.
+
+AI-assisted discussions, external review handoffs and their promotion history
+are exchanged through `ai_collaboration/`. That directory is not an
+architecture authority; accepted conclusions must be promoted to the
+appropriate ADR, architecture, interface, development or operations document.
