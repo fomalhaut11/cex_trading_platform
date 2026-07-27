@@ -4,7 +4,9 @@
 
 ## Active Topics
 
-当前没有正在讨论的主题。
+| ID | Topic | Origin | Status | Code baseline | Input | Current response |
+|---|---|---|---|---|---|---|
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | READY_FOR_REVIEW | `97d10e33f8d69c2535a542bee9f095aec1c312b9` | [Web GPT input](topics/funding_arbitrage/10_web_gpt_input.md) | [Codex response](topics/funding_arbitrage/20_codex_response.md) |
 
 ## Completed and Reference Exchanges
 

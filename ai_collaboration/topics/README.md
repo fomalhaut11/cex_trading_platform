@@ -1,6 +1,8 @@
 # Topic Bundles
 
-每个子目录代表一个独立讨论主题，命名为 `YYYY-MM-DD_short-kebab-topic`。
+每个子目录代表一个独立讨论主题。一次性主题使用
+`YYYY-MM-DD_short-kebab-topic`；长期迭代的领域主题可以使用稳定 ASCII snake_case，
+例如 `funding_arbitrage`。
 
 推荐文件顺序：
 

@@ -35,7 +35,7 @@ ai_collaboration/
     review_response.md
     resolution.md
   topics/
-    YYYY-MM-DD_short-topic/
+    YYYY-MM-DD_short-topic/ or stable_domain_topic/
       00_context.md
       10_web_gpt_input.md
       20_codex_response.md
@@ -69,12 +69,52 @@ DRAFT -> READY_FOR_REVIEW -> REVIEWED -> ACCEPTED -> PROMOTED
 ## 每个主题的工作流
 
 1. 在 `topics/YYYY-MM-DD_short-topic/` 创建 `00_context.md`，写明问题、范围、代码基线和
-   已知约束。
+   已知约束。预计长期迭代的领域主题可以使用稳定目录名，例如 `funding_arbitrage/`。
 2. 将网页版 GPT 的讨论成果整理进 `10_web_gpt_input.md`。不要只粘贴没有上下文的结论。
 3. Codex 核对仓库、测试和正式文档，在 `20_codex_response.md` 中逐项回应。
 4. 如需二次验收，将自包含材料交给网页版 GPT，并把回复放入 `30_web_gpt_review.md`。
 5. 在 `90_resolution.md` 记录采用、拒绝、修改和待办事项。
 6. 接受的内容更新到正式目录；在 resolution 和 `INDEX.md` 中记录目标文件及 Git commit。
+
+## 主题生命周期
+
+```text
+Discussion
+    |
+    v
+Proposal
+    |
+    v
+Code Verification
+    |
+    v
+Architecture Decision
+    |
+    v
+Implementation
+    |
+    v
+Validation
+    |
+    v
+Production Record
+```
+
+文档和正式成果的对应关系：
+
+```text
+10_web_gpt_input
+    -> 20_codex_response
+    -> 30_web_gpt_review
+    -> 90_resolution
+    -> ADR / architecture / interfaces
+    -> code + tests
+    -> acceptance evidence
+    -> production record
+```
+
+任何阶段都可以退回修改。`90_resolution` 未形成明确决议前，不应把讨论自动转成代码任务；
+离线验证、Testnet、生产审查和实盘授权仍是彼此独立的门禁。
 
 ## 互通链接规则
 
@@ -134,7 +174,8 @@ sensitivity: public-project | internal | restricted
 
 ## 命名约定
 
-- 主题目录：`YYYY-MM-DD_short-kebab-topic`；
+- 一次性主题目录：`YYYY-MM-DD_short-kebab-topic`；
+- 长期领域主题目录：稳定的 ASCII snake_case，例如 `funding_arbitrage`；
 - 文档 ID：`AI-YYYYMMDD-NNN`；
 - 文件名使用小写 ASCII 和下划线；
 - 标题和正文可以使用中文；
