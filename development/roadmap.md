@@ -80,3 +80,27 @@ Status: Planned and scope-driven.
   ownership or allowing venue payloads into the core.
 - Rust migration is considered only after profiling identifies a justified
   boundary.
+
+## Phase 6 - Portfolio Applications and Multi-Leg Trading
+
+Status: Planned and ADR-gated.
+
+- Add typed, deterministic application snapshots without introducing a
+  generic hot-path Event Bus solely for portfolio strategies.
+- Add bounded generic N-leg Basket intents while preserving the existing
+  single-leg `PositionTargetIntent`.
+- Extend Risk with whole-Basket preflight and continuous portfolio exposure
+  supervision.
+- Extend OMS with durable Parent Order Groups and canonical child orders;
+  existing Execution adapters remain child-order oriented.
+- Add normalized margin/collateral state and an idempotent Financial Ledger.
+- Add `applications/` as the concrete portfolio-strategy layer; Funding
+  Arbitrage is the first validating application.
+- Validate the generic core with Funding two-leg scenarios and a synthetic
+  three-leg fixture so the platform does not encode two-leg assumptions.
+
+Detailed topology, interface drafts, compatibility rules and acceptance gates
+are maintained in `multi_leg_portfolio_trading_plan.md`.
+
+Entry gate: ADR-009 through ADR-014 are reviewed in dependency order. Planning
+does not authorize implementation, Testnet or production trading.

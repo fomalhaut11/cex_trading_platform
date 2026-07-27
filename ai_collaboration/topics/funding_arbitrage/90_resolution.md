@@ -11,6 +11,7 @@ related:
   - 10_web_gpt_input.md
   - 20_codex_response.md
   - 30_web_gpt_review.md
+  - ../../../development/multi_leg_portfolio_trading_plan.md
 external_share: allowed
 sensitivity: public-project
 ---
@@ -52,20 +53,21 @@ sensitivity: public-project
 
 ### 2.2 Generic basket objective
 
-采用 venue-neutral Basket/Portfolio Target Intent 表达一个组合交易目标。Basket legs 在
+采用 venue-neutral、bounded N-leg Basket/Portfolio Target Intent 表达一个组合交易目标。
+Funding 的双腿只是第一个验证用例，不为两腿、三腿或四腿分别建立 OMS。Basket legs 在
 进入首个 venue submit 前必须共同完成完整性、余额、margin、freshness 和 portfolio-risk
 预检。
 
-具体类型名称、是否直接通用化以及 v1 字段由 ADR-010 决定。
+具体类型名称、leg 数量上限、是否直接通用化以及 v1 字段由 ADR-010 决定。
 
 ### 2.3 Durable parent-child OMS
 
-采用持久化 Parent Order Group 与 Child Orders。必须覆盖：
+采用通用、持久化 Parent Order Group 与 bounded Child Orders。必须覆盖：
 
 - idempotency；
 - child identity；
 - partial fill；
-- `PARTIALLY_HEDGED`；
+- generic `PARTIALLY_EXECUTED`；
 - unknown execution state；
 - hedge timeout；
 - compensation/recovery；
@@ -73,9 +75,10 @@ sensitivity: public-project
 - venue reconciliation；
 - operator halt。
 
-OMS Order Group 只拥有执行目标的生命周期。Carry Position 的 `ACTIVE/CLOSING/CLOSED`
-状态由 application aggregate 拥有，实际 venue position 仍由 Portfolio/Account State
-提供权威事实。
+OMS Order Group 只拥有执行目标的通用生命周期。Carry application 根据 child fills 和
+net Delta 将 `PARTIALLY_EXECUTED` 解释为 `PARTIALLY_HEDGED`。Carry Position 的
+`ACTIVE/CLOSING/CLOSED` 状态由 application aggregate 拥有，实际 venue position 仍由
+Portfolio/Account State 提供权威事实。
 
 ### 2.4 Portfolio risk
 
@@ -118,9 +121,10 @@ applications/
 | Funding Arbitrage 不应直接编码 | Adopt | 先完成 ADR 与核心能力 |
 | 当前不需要通用 Event Bus | Adopt | 使用确定性 correlated snapshot |
 | Atomic Snapshot | Modify | 定义为带来源时间和 skew 的逻辑一致快照 |
-| Generic Basket Intent | Adopt with ADR | 首腿提交前进行整篮子预检 |
-| Parent/Child OMS | Adopt | 必须持久化并支持 partial/unknown/restart |
-| `PARTIALLY_HEDGED` | Adopt | 作为 Order Group 的关键执行状态 |
+| Generic bounded N-leg Basket Intent | Adopt with ADR | 首腿提交前进行整篮子预检 |
+| Generic Parent/Child OMS | Adopt | 不按腿数拆模块；必须支持 partial/unknown/restart |
+| `PARTIALLY_EXECUTED` | Adopt | OMS 通用执行状态 |
+| `PARTIALLY_HEDGED` | Modify | Carry application 根据 OMS facts 和净 Delta 派生 |
 | `ACTIVE/CLOSED` Parent Order | Modify | 归属 Carry Position，不由 OMS 长期持有 |
 | Portfolio Risk | Adopt | pre-trade basket risk + continuous supervision |
 | Funding/fee/PnL ledger | Adopt | funding 与 commission 分类型核算 |
@@ -134,8 +138,8 @@ applications/
 | Order | Planned ADR | Scope | Required exit evidence | Status |
 |---:|---|---|---|---|
 | 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | TODO |
-| 2 | ADR-010 Basket Intent Architecture | Trading Objective、legs、identity、版本与整篮子预检 | schema、依赖规则、单腿 intent 兼容策略 | BLOCKED_BY_ADR_009 |
-| 3 | ADR-011 Parent-Child Order Model | Order Group lifecycle、child、partial、unknown、补偿和恢复 | 状态机、journal/replay 设计、故障矩阵 | BLOCKED_BY_ADR_010 |
+| 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | BLOCKED_BY_ADR_009 |
+| 3 | ADR-011 Parent-Child Order Model | Generic Order Group lifecycle、bounded children、partial、unknown、补偿和恢复 | 状态机、journal/replay 设计、两腿与三腿故障矩阵 | BLOCKED_BY_ADR_010 |
 | 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |
 | 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
 | 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、依赖、聚合和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | BLOCKED_BY_ADR_009_010_011_012_013 |
