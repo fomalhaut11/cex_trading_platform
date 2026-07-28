@@ -140,8 +140,8 @@ applications/
 
 | Order | Planned ADR | Scope | Required exit evidence | Status |
 |---:|---|---|---|---|
-| 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | DRAFT_READY_FOR_REVIEW |
-| 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | BLOCKED_BY_ADR_009 |
+| 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | ACCEPTED_2026_07_28 |
+| 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | READY_TO_DRAFT |
 | 3 | ADR-011 Parent-Child Order Model | Generic Order Group lifecycle、bounded children、partial、unknown、补偿和恢复 | 状态机、journal/replay 设计、两腿与三腿故障矩阵 | BLOCKED_BY_ADR_010 |
 | 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |
 | 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
@@ -192,7 +192,7 @@ Funding Arbitrage application implementation只能在下列条件同时满足后
 
 开始核心能力实现不等于允许 Testnet。Testnet 还需要独立凭证、外部环境和恢复验收。
 
-## 7. Next Action
+## 7. Original Next Action — Completed
 
 下一项工作是起草：
 
@@ -212,7 +212,7 @@ ADR-009 应先解决：
 - fail-closed behavior；
 - 与现有 per-instrument Market State、Feature State、Account State 的兼容关系。
 
-在 ADR-009 获得 Web GPT 和用户审查前，不开始 ADR-010 或代码实现。
+该审查门禁已于 2026-07-28 完成。后续状态见第 9 节。
 
 ## 8. Authorization Boundary
 
@@ -255,10 +255,12 @@ aggregate 根据 OMS 和 Portfolio 权威事实派生。
 ```text
 Web GPT review: ACCEPT
 Codex verification: NO STRUCTURAL REVISION REQUIRED
-Project owner decision: PENDING
-ADR-009 status: Proposed
-Implementation: NOT AUTHORIZED
+Project owner decision: ACCEPT
+ADR-009 status: Accepted
+Generic Snapshot implementation: AUTHORIZED AS T025/T026/A012
+Funding application implementation: NOT AUTHORIZED
 ```
 
-项目负责人明确选择 `ACCEPT`、`REVISE` 或 `REJECT` 后，才能更新 ADR 状态和
-后续任务。完整逐项答复见 `40_codex_adr009_review_response.md`。
+项目负责人于 2026-07-28 明确接受 ADR-009。通用 Snapshot Infrastructure
+进入 T025、T026 和 A012；ADR-010 可以开始起草。完整逐项答复见
+`40_codex_adr009_review_response.md`。

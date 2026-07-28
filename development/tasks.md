@@ -27,6 +27,8 @@
 | T022 | Secure credential delivery and durable operator recovery | Complete | T021 |
 | T023 | Authenticated operator boundary and secure deployment assembly | Complete | T022 |
 | T024 | Bounded mTLS operator endpoint, audit boundary and runbooks | Complete | T023 |
+| T025 | Generic decision-snapshot contracts, policy and readiness assessment | Planned | ADR-009 |
+| T026 | Deterministic bounded snapshot coordinator and replay integration | Planned | T025 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -40,6 +42,7 @@
 | A009 | Offline credential rotation and operator restart acceptance | Complete | T022 |
 | A010 | Offline authenticated operator deployment acceptance | Complete | T023 |
 | A011 | Offline operator endpoint, audit and recovery acceptance | Complete | T024 |
+| A012 | Offline decision-snapshot contract, coherence, replay and restart acceptance | Planned | T025-T026 |
 
 ## Current Acceptance Baseline
 
@@ -47,3 +50,9 @@
 - No venue-native payload crosses an adapter boundary.
 - Unit tests run offline and deterministic state tests support replay.
 - Contract, ownership or schema changes update documentation in the same change.
+
+## Authorized Next Work
+
+ADR-009 was accepted by the project owner on 2026-07-28. T025, T026 and A012
+are authorized for implementation. They cover generic Snapshot Infrastructure
+only and do not authorize Funding Arbitrage, Basket execution or Testnet.

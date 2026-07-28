@@ -1,6 +1,6 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: Planned — blocked by ADR-009 through ADR-014
+Status: Planned — ADR-009 accepted; application blocked by ADR-010 through ADR-014
 
 Created: 2026-07-27
 
@@ -10,8 +10,9 @@ First validating application: Funding Arbitrage
 
 Production authorization: None
 
-ADR progress: ADR-009 proposed and ready for external architecture review;
-ADR-010 through ADR-014 remain blocked.
+ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
+tasks T025/T026 and acceptance A012 are authorized. ADR-010 may now be drafted;
+ADR-011 through ADR-014 remain blocked by their declared dependencies.
 
 ## 1. Purpose
 
@@ -902,6 +903,9 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Draft ADR-009 Portfolio Snapshot Model using this plan as non-authoritative
-input. Do not implement source packages or assign implementation task IDs
-until the owning ADR is accepted.
+Implement T025/T026 and A012 within the accepted ADR-009 boundary, while
+drafting ADR-010 Basket Intent Architecture for separate review.
+
+Do not create Funding Arbitrage application code. Basket, OMS Order Group,
+Portfolio Risk, Financial Ledger and Carry implementation remain blocked by
+their owning ADRs.

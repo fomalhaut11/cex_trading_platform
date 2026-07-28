@@ -2,7 +2,7 @@
 id: AI-20260728-002
 title: Codex Response to Web GPT Review of ADR-009
 origin: codex
-status: READY_FOR_REVIEW
+status: REVIEWED
 created: 2026-07-28
 code_baseline: dfdbb11c0e9904efa1726c61bce48cf91987e1a1
 supersedes: none
@@ -31,7 +31,7 @@ Codex 接受 Web GPT 对 ADR-009 核心方向的确认。
 - 保留原有 Market、Feature、Account 和 Health 状态所有权。
 
 Web GPT 的接受是外部架构审查证据，不会自动把 ADR 状态从 `Proposed`
-改为 `Accepted`。还需要项目负责人明确决定。
+改为 `Accepted`。项目负责人已于 2026-07-28 另行明确接受。
 
 本答复不授权 Funding Arbitrage 实现、Testnet 或实盘交易。
 
@@ -276,25 +276,21 @@ HALTED
 这个修正已经记录在现有 `90_resolution.md`，因此不需要修改 ADR-009。
 它应在 ADR-011 和 ADR-014 中分别固化。
 
-## 5. 推荐下一步
+## 5. Decision Outcome and Next Step
 
-当前下一步不是写代码，也不是起草 ADR-010。
-
-应由项目负责人对 ADR-009 作出：
+项目负责人已于 2026-07-28 作出：
 
 ```text
 ACCEPT
-REVISE
-REJECT
 ```
 
-若项目负责人接受：
+因此：
 
-1. 更新 ADR-009 状态和审查溯源；
-2. 更新协作 resolution 和 index；
-3. 分配 Snapshot Infrastructure 的实现任务和测试 ID；
-4. 同时开始 ADR-010 草案；
-5. 只有 ADR-009 所属通用能力可以进入实现，Funding application 仍保持禁止。
+1. ADR-009 更新为 Accepted；
+2. 通用 Snapshot Infrastructure 分配为 T025/T026；
+3. 离线验收分配为 A012；
+4. ADR-010 可以开始起草；
+5. Funding application 仍保持禁止。
 
 ## 6. Non-Claims
 
@@ -305,3 +301,18 @@ REJECT
 - 验证真实 Binance account/margin/funding 数据；
 - 授权 Testnet；
 - 授权生产或真实资金交易。
+
+## 7. Project Owner Decision
+
+Decision: `ACCEPT`
+
+Decision date: 2026-07-28
+
+Authorized scope:
+
+- T025 generic snapshot contracts, policy and assessment;
+- T026 deterministic bounded runtime coordinator and replay integration;
+- A012 offline snapshot acceptance;
+- ADR-010 drafting and review.
+
+All other Non-Claims in section 6 remain in force.

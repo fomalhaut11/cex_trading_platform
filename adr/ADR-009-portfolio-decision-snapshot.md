@@ -2,10 +2,20 @@
 
 ## Status
 
-Proposed — ready for architecture review.
+Accepted — 2026-07-28.
 
-This ADR does not authorize implementation. It is the first decision required
-by the accepted Funding Arbitrage architecture resolution.
+Accepted by the project owner after Web GPT architecture review and Codex
+repository verification.
+
+Review evidence:
+
+- `ai_collaboration/topics/funding_arbitrage/31_web_gpt_adr009_review.md`;
+- `ai_collaboration/topics/funding_arbitrage/40_codex_adr009_review_response.md`;
+- `ai_collaboration/topics/funding_arbitrage/90_resolution.md`.
+
+This acceptance authorizes implementation of the generic Snapshot
+Infrastructure described by this ADR. It does not authorize Funding Arbitrage
+application code, Basket execution, Testnet or production trading.
 
 ## Context
 
@@ -754,17 +764,34 @@ documents yet.
 - healthy snapshot delivered to Strategy and referenced by Risk/intent;
 - synthetic three-source application proving no two-source assumption.
 
-## 17. Implementation Gate
+## 17. Implementation Authorization
 
-No source implementation starts until:
+The architecture-review gate was satisfied on 2026-07-28:
 
-1. Web GPT architecture review is recorded;
-2. the user accepts, revises or rejects this ADR;
-3. status changes from Proposed to Accepted;
-4. public interface names and dependency rules are resolved;
-5. implementation tasks and acceptance IDs are assigned.
+1. Web GPT accepted the architecture direction;
+2. Codex verified the review against the current repository;
+3. the project owner accepted this ADR;
+4. the public package and dependency boundaries in this ADR were retained;
+5. implementation tasks T025, T026 and acceptance A012 were assigned.
 
-ADR-010 remains blocked until ADR-009 is accepted.
+Authorized implementation scope:
+
+- generic `cex_quant.snapshots` contracts, policy and assessment;
+- deterministic runtime snapshot coordinator;
+- bounded recording/replay evidence for generic decision snapshots;
+- contract, readiness, coordinator, replay, restart and synthetic typed-
+  application tests;
+- required documentation and explicit package exports.
+
+Not authorized by this ADR:
+
+- `applications/carry/funding_arbitrage` implementation;
+- Basket Intent, Parent/Child OMS, Portfolio Risk or Financial Ledger code;
+- Testnet multi-leg execution;
+- production or real-money trading.
+
+ADR-010 may now be drafted and reviewed independently. Its implementation
+remains unauthorized until ADR-010 is accepted.
 
 ## 18. Review Questions
 
