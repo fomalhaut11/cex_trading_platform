@@ -2,10 +2,20 @@
 
 ## Status
 
-Proposed — ready for architecture review.
+Accepted — 2026-07-28.
 
-This ADR does not authorize implementation. ADR-009 is accepted and its
-generic Snapshot Infrastructure may proceed independently.
+Accepted by the project owner after a Codex compatibility review against the
+current `core`, `strategy`, `runtime`, `risk` and `oms` implementation.
+
+Review evidence:
+
+- `ai_collaboration/topics/funding_arbitrage/41_codex_adr010_compatibility_review.md`;
+- `ai_collaboration/topics/funding_arbitrage/90_resolution.md`.
+
+This acceptance authorizes only the generic Basket Intent contracts and
+Strategy compatibility work assigned to T027/T028/A013. It does not authorize
+Parent/Child OMS, Portfolio Risk, Funding Arbitrage, Testnet or production
+trading.
 
 ## Context
 
@@ -66,11 +76,11 @@ hard_cap = 16
 
 Every Basket:
 
-- has one strongly typed Basket identity;
+- reuses the existing cross-domain `IntentId` for its Basket identity;
 - has unique, deterministically ordered leg identities;
 - references the accepted `DecisionSnapshotId`;
 - has a mandatory finite validity deadline;
-- carries one strategy identity and objective classification;
+- carries one strategy identity and a versioned objective classification;
 - rejects duplicate account/instrument scopes;
 - is evaluated as a complete immutable value;
 - receives binary whole-Basket `ALLOW` or `REJECT` in V1;
@@ -86,7 +96,8 @@ Planned files:
 ```text
 src/cex_quant/
   core/
-    identifiers.py            # BasketIntentId, BasketLegId
+    identifiers.py            # BasketLegId, ObjectiveTypeId;
+                              # existing IntentId is reused
 
   strategy/
     model.py                  # DecisionIntent union remains public
@@ -119,18 +130,35 @@ applications, runtime or venue adapters.
 The following is the intended semantic API. Exact names may change during
 review, but the invariants are normative.
 
-### 2.1 Identities
+### 2.1 Identities and current-code compatibility
+
+The current code already defines:
+
+```python
+IntentId = NewType("IntentId", str)
+```
+
+Both `PositionTargetIntent` and Risk/OMS use `IntentId`. A Basket is another
+kind of decision intent, so it reuses this identity instead of introducing a
+parallel `BasketIntentId`.
 
 Add to `cex_quant.core`:
 
 ```python
-BasketIntentId = NewType("BasketIntentId", str)
 BasketLegId = NewType("BasketLegId", str)
+ObjectiveTypeId = NewType("ObjectiveTypeId", str)
 ```
 
-They are used by Strategy, Risk, OMS, Accounting and applications. They
-cannot be interchangeable with `IntentId`, `ClientOrderId` or raw strings at
-public typed boundaries.
+`BasketLegId` and `ObjectiveTypeId` cross Strategy, Risk, OMS, Accounting and
+application boundaries. They cannot be interchanged with `IntentId`,
+`ClientOrderId` or raw strings at typed public boundaries.
+
+Using the existing `IntentId` preserves:
+
+- one `intent_id` attribute across every `DecisionIntent`;
+- the existing `StrategyRuntime` duplicate-ID algorithm;
+- current Risk/OMS causation terminology;
+- simpler unions and replay tooling.
 
 ### 2.2 Leg
 
@@ -165,10 +193,10 @@ strategy scope explicitly permits it.
 ```python
 @dataclass(frozen=True, slots=True, kw_only=True)
 class BasketTargetIntent:
-    basket_intent_id: BasketIntentId
+    intent_id: IntentId
     strategy_id: StrategyId
     decision_snapshot_id: DecisionSnapshotId
-    objective_type: str
+    objective: ObjectiveTypeRef
     legs: tuple[BasketTargetLeg, ...]
     decision_time_ns: UnixNanos
     valid_until_ns: UnixNanos
@@ -179,20 +207,54 @@ class BasketTargetIntent:
 Required invariants:
 
 - Basket, Strategy and Snapshot IDs are non-empty;
-- `objective_type` is non-empty, trimmed, bounded metadata;
+- the objective reference is registered and versioned;
 - `policy_version` is positive;
 - validity is finite and cannot precede decision time;
 - leg count is between two and the hard cap;
 - configured policy may impose a lower maximum;
 - leg IDs are unique;
-- legs are ordered by `BasketLegId`;
+- legs are in canonical account/instrument order;
 - account/instrument scope pairs are unique;
 - all public collections are immutable tuples;
 - quantities use exact fixed point;
 - reasons and all string fields have hard length bounds;
 - the Basket contains no secret or venue-native object.
 
-`objective_type` supports stable classifications such as:
+Canonical leg order is the ascending tuple:
+
+```python
+(
+    str(leg.account_id),
+    str(leg.instrument_id.venue),
+    leg.instrument_id.kind.value,
+    leg.instrument_id.symbol,
+)
+```
+
+Duplicate `(account_id, instrument_id)` scopes are already rejected, so this
+key is unique inside one valid Basket. `leg_id` is not the sort key: leg IDs
+may be deterministically derived from the canonical scope, and using them as
+the ordering input creates an unnecessary identity/ordering dependency.
+
+The public dataclass rejects non-canonical order. It does not silently mutate
+caller input. A named construction helper may sort candidate legs before
+creating the immutable public value.
+
+### 2.4 Objective Type evolution
+
+Do not use one central `StrEnum`. A central enum would require core releases
+for every new application objective and would make historical renames unsafe.
+
+Use a versioned reference:
+
+```python
+@dataclass(frozen=True, slots=True, kw_only=True, order=True)
+class ObjectiveTypeRef:
+    objective_type_id: ObjectiveTypeId
+    version: int
+```
+
+Stable IDs use bounded lowercase ASCII namespaces, for example:
 
 ```text
 carry.open
@@ -201,10 +263,25 @@ rebalance
 calendar_spread.open
 ```
 
-It is metadata for policy selection and audit. It is not a Python import path,
-callback, expression or executable strategy definition.
+Rules:
 
-### 2.4 Construction policy
+- ID maximum length is 96;
+- segments use lowercase letters, digits and underscores;
+- dots separate ownership/meaning namespaces;
+- version is positive;
+- an existing `(id, version)` is never reinterpreted;
+- changed semantics require a new version or new ID;
+- deprecated references remain decodable for replay;
+- aliases may exist only in migration tooling, never in canonical records.
+
+An immutable `ObjectiveTypeRegistry` is built at composition time from
+metadata-only definitions. It validates references and ownership. It cannot
+store callbacks, import paths, Risk functions or application code.
+
+The objective is classification for policy and audit. It is not an execution
+plan, lifecycle state, recovery command or authorization.
+
+### 2.5 Construction policy
 
 Structural hard limits belong to the contract. Deployment limits use:
 
@@ -213,14 +290,14 @@ Structural hard limits belong to the contract. Deployment limits use:
 class BasketIntentPolicy:
     max_legs: int
     max_validity_ns: DurationNanos
-    allowed_objective_types: tuple[str, ...]
+    allowed_objectives: tuple[ObjectiveTypeRef, ...]
 ```
 
 Policy invariants:
 
 - `2 <= max_legs <= 16`;
 - validity is positive and below a hard duration cap;
-- objective types are unique and deterministically sorted;
+- objective references are registered, unique and deterministically sorted;
 - an empty allow-list means no objective is allowed, not “allow all”;
 - runtime configuration cannot raise the hard cap.
 
@@ -254,6 +331,67 @@ Compatibility rules:
 An application produces the complete Basket in one synchronous decision. It
 cannot emit one leg now and attach another later.
 
+### 3.1 Current implementation impact
+
+Current source inspection found:
+
+- `StrategyDecision.intents` is already typed through the `DecisionIntent`
+  alias, so its dataclass shape does not change;
+- `StrategyRuntime._validate_intents` currently accepts only
+  `PositionTargetIntent` and must add an explicit Basket branch;
+- duplicate intent checking already uses `set[IntentId]`, which remains valid
+  because Basket reuses `IntentId`;
+- current `StrategyInput` accepts only canonical market events and
+  `FeatureSnapshot`;
+- ADR-009 now publishes `DecisionSnapshotPublication[T]`.
+
+The additive Strategy input becomes:
+
+```python
+StrategyInput: TypeAlias = (
+    CanonicalMarketEvent
+    | FeatureSnapshot
+    | DecisionSnapshotPublication[object]
+)
+```
+
+For a decision publication, input scope is `metadata.scope`. Basket output
+must reference the same `metadata.snapshot_id`. Existing market-event and
+FeatureSnapshot behavior remains unchanged.
+
+The single-leg `TradingPipeline` remains explicitly typed to
+`PositionTargetIntent`. It must reject Basket output as unsupported before
+calling its single-leg Portfolio/Risk port. A later `basket_pipeline` from
+ADR-011/012 handles Basket decisions; the current pipeline must not iterate
+Basket legs as independent intents.
+
+### 3.2 Lifecycle boundary
+
+`BasketTargetIntent` is an immutable decision value. It has no mutable
+status/state machine.
+
+Its only temporal predicates are:
+
+```text
+not_yet_created
+valid at evaluation time
+expired at evaluation time
+```
+
+These are not persisted lifecycle states.
+
+Ownership remains:
+
+| Lifecycle | Owning ADR/domain |
+|---|---|
+| Strategy instance CREATED/RUNNING/STOPPED/FAILED | Existing Strategy Runtime |
+| Basket Risk ALLOW/REJECT and continuous risk action | ADR-012 / Risk |
+| Parent/Child execution state | ADR-011 / OMS Order Group |
+| PARTIALLY_HEDGED/HEDGED/ACTIVE/CLOSED | ADR-014 / Carry application |
+
+ADR-011 must not add economic Carry states to OMS. ADR-010 must not predefine
+Parent/Child status transitions.
+
 ## 4. Snapshot Causation
 
 Every Basket requires `decision_snapshot_id`.
@@ -263,7 +401,7 @@ The causation chain is:
 ```text
 ordered source observations
   -> DecisionSnapshotId
-  -> BasketIntentId
+  -> IntentId (BasketTargetIntent)
   -> Basket Risk decision
   -> OMS OrderGroupId
   -> child ClientOrderIds
@@ -368,7 +506,7 @@ Hard contract bounds:
 Runtime and deployment add lower operational bounds for:
 
 - Basket intents per Strategy decision;
-- active Baskets per Strategy/account;
+- admitted non-terminal Order Groups per Strategy/account under ADR-011;
 - aggregate legs per decision cycle;
 - total encoded size;
 - retained identity-conflict history;
@@ -384,7 +522,7 @@ contract.
 | Fewer than two or more than allowed legs | Reject construction/admission |
 | Duplicate leg ID | Reject |
 | Duplicate account/instrument scope | Reject |
-| Unsorted legs | Reject; do not silently reorder public input |
+| Non-canonical leg order | Reject; construction helper may sort before creation |
 | Empty/unknown objective type | Reject |
 | Missing/unknown Snapshot ID | Reject before OMS |
 | Expired Basket | Reject before OMS |
@@ -404,7 +542,7 @@ The Strategy decision recorder must persist:
 - all identities;
 - ordered legs;
 - exact fixed-point target quantities;
-- objective type and policy version;
+- versioned objective reference and policy version;
 - decision/expiry times;
 - Snapshot causation;
 - deterministic checksum.
@@ -442,8 +580,10 @@ Unchanged:
 Required implementation changes after acceptance:
 
 - add strongly typed IDs;
+- add versioned Objective Type contracts and registry;
 - add `strategy.basket`;
-- extend `DecisionIntent` and `StrategyDecision` typing;
+- extend `StrategyInput`, `DecisionIntent` and runtime validation without
+  changing the `StrategyDecision` dataclass shape;
 - add explicit unsupported-Basket behavior to single-leg composition;
 - add serialization and compatibility tests;
 - update package exports and interface documentation.
@@ -490,6 +630,22 @@ Rejected. It is unbounded, weakly typed and unsafe for schema evolution.
 Rejected. Risk, OMS, recovery, audit and accounting require stable shared
 causation.
 
+### New `BasketIntentId`
+
+Rejected after current-code review. Existing `IntentId` already expresses the
+cross-domain decision identity and is used by Strategy, Risk and OMS.
+
+### Central `ObjectiveType` enum
+
+Rejected. Application objective families must evolve without editing one
+global enum or reinterpreting historical values.
+
+### Sort legs only by `BasketLegId`
+
+Rejected. It makes canonical ordering depend on an identity that may itself be
+derived from leg scope. Canonical account/instrument order is explicit and
+semantic-neutral.
+
 ## 14. Consequences
 
 ### Positive
@@ -511,7 +667,8 @@ causation.
 ### Risks
 
 - a hard cap that is too high can create excessive Risk/OMS work;
-- an objective-type taxonomy can become an uncontrolled string namespace;
+- an Objective Type registry can become inconsistent if ownership and version
+  rules are not enforced;
 - account selection can leak policy into Strategy if configuration ownership
   is not explicit;
 - treating target quantities as order quantities would cause incorrect
@@ -525,13 +682,14 @@ causation.
 - empty, whitespace and oversized IDs/text;
 - fewer than two and more than 16 legs;
 - deployment maximum lower than hard cap;
-- duplicate and unsorted leg IDs;
+- duplicate leg IDs and non-canonical account/instrument order;
 - duplicate account/instrument pair;
 - same Instrument across different accounts;
 - zero close targets and mixed signed quantities;
 - exact fixed-point preservation;
 - expiry boundary and maximum validity;
 - objective allow-list and policy version;
+- Objective Type format, version, registration and historical replay;
 - immutable values and tuples.
 
 ### Identity and replay
@@ -547,6 +705,8 @@ causation.
 
 - all existing `PositionTargetIntent` tests unchanged;
 - existing single-leg runtime processes single intents identically;
+- Strategy Runtime accepts `DecisionSnapshotPublication` additively and
+  validates Basket snapshot causation;
 - single-leg runtime explicitly rejects Basket output;
 - no existing OMS journal schema changes.
 
@@ -559,32 +719,52 @@ causation.
 - no OMS group or child action exists before complete `ALLOW`;
 - synthetic two-leg and three-leg inputs use the same public contract.
 
-## 16. Implementation Gate
+## 16. Implementation Authorization
 
-No source implementation starts until:
+The review gate was satisfied on 2026-07-28:
 
-1. Web GPT architecture review is recorded;
-2. the project owner accepts, revises or rejects this ADR;
-3. status changes from Proposed to Accepted;
-4. hard cap, account scope and mandatory expiry are explicitly approved;
-5. implementation task and acceptance IDs are assigned.
+1. Codex inspected the current Intent, Strategy Runtime, core ID, Runtime
+   Pipeline and OMS contracts;
+2. the existing `IntentId` was retained for compatibility;
+3. Objective Type became a versioned registered reference;
+4. Basket lifecycle ownership was removed from ADR-010;
+5. canonical leg ordering was changed from leg-ID order to
+   account/instrument order;
+6. the project owner conditionally approved acceptance after these changes;
+7. T027, T028 and A013 were assigned.
 
-ADR-011 and ADR-012 remain blocked from implementation until ADR-010 is
-accepted. Drafting may proceed only where unresolved ADR-010 choices are
-clearly marked.
+Authorized implementation scope:
 
-## 17. Review Questions
+- `BasketLegId`, `ObjectiveTypeId` and versioned Objective Type registry;
+- immutable bounded `BasketTargetLeg` and `BasketTargetIntent`;
+- construction/admission policy and deterministic identity helpers;
+- additive `StrategyInput` and `DecisionIntent` unions;
+- Strategy Runtime Basket output and Snapshot causation validation;
+- explicit single-leg pipeline rejection of Basket output;
+- contract, compatibility, replay and two-/three-leg offline tests.
 
-1. Should Basket legs explicitly contain canonical `AccountId`, or should
-   account routing remain entirely in Runtime policy?
-2. Is a hard cap of 16 legs appropriate for V1?
-3. Should `valid_until_ns` be mandatory for every Basket?
-4. Is rejecting duplicate `(account_id, instrument_id)` while allowing the
-   same Instrument across accounts correct?
-5. Should callers be required to submit legs already sorted by `BasketLegId`,
-   with unsorted tuples rejected?
-6. Is binary whole-Basket `ALLOW/REJECT` sufficient for V1?
-7. Should `objective_type` remain bounded metadata, or use a centrally
-   registered identifier contract?
-8. Are the compatibility rules for existing `PositionTargetIntent` strict
-   enough?
+Not authorized:
+
+- Parent/Child OMS or Order Group lifecycle;
+- Basket Portfolio Risk implementation;
+- execution plan or child submission;
+- Financial Ledger or Carry application;
+- Testnet, production or real-money trading.
+
+ADR-011 and ADR-012 may now be drafted. Their implementations remain blocked
+until their own ADRs are accepted.
+
+## 17. Resolved Review Decisions
+
+| Question | Accepted decision |
+|---|---|
+| Account scope | Each leg contains canonical `AccountId` |
+| V1 hard cap | 16 legs |
+| Validity | `valid_until_ns` is mandatory |
+| Duplicate scope | Reject duplicate account/instrument; allow same Instrument across accounts |
+| Leg order | Canonical account/instrument order; reject non-canonical public values |
+| Risk result | Binary whole-Basket `ALLOW/REJECT` in V1 |
+| Objective Type | Versioned registered `ObjectiveTypeRef`, not central enum or raw string |
+| Intent identity | Reuse existing `IntentId`; add only `BasketLegId` |
+| StrategyDecision | Dataclass shape unchanged; unions and validation expand additively |
+| Lifecycle | OMS execution in ADR-011; application economics in ADR-014 |

@@ -33,3 +33,25 @@ The accepted ADR-009 implementation must add offline tests for:
 
 All existing single-instrument regression and acceptance tests remain
 mandatory. A012 requires no network or exchange credential.
+
+## A013 Basket Intent Acceptance
+
+The accepted ADR-010 implementation must add offline tests for:
+
+- common `IntentId`, unique `BasketLegId` and versioned Objective Type
+  references;
+- Objective Type format, registration, versioning and historical decoding;
+- two-to-16-leg hard bounds and lower deployment limits;
+- mandatory expiry and maximum validity;
+- canonical account/instrument order and duplicate-scope rejection;
+- same Instrument in different explicitly allowed accounts;
+- exact fixed-point target preservation, including zero close targets;
+- deterministic identity, serialization, redelivery and conflict behavior;
+- additive `DecisionIntent` and `StrategyInput` compatibility;
+- Basket-to-DecisionSnapshot causation validation;
+- unchanged single-leg Strategy and Pipeline results;
+- explicit Basket rejection by the single-leg pipeline before Risk/OMS;
+- the same public contract for synthetic two-leg and three-leg scenarios.
+
+A013 must prove that no OMS child order or Execution request can be produced
+by the ADR-010 implementation.

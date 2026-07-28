@@ -688,7 +688,7 @@ ADR 状态：
 | ADR | 主题 | 当前状态 |
 |---|---|---|
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
-| ADR-010 | Basket Intent | Proposed，待架构审查 |
+| ADR-010 | Basket Intent | Accepted；T027/T028/A013 待实现 |
 | ADR-011 | Parent-Child Order | 尚未起草/接受 |
 | ADR-012 | Portfolio Risk | 尚未起草/接受 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |

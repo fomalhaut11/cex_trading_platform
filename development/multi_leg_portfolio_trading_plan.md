@@ -1,6 +1,6 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: Planned — ADR-009 accepted; application blocked by ADR-010 through ADR-014
+Status: Planned — ADR-009/010 accepted; application blocked by ADR-011 through ADR-014
 
 Created: 2026-07-27
 
@@ -11,9 +11,9 @@ First validating application: Funding Arbitrage
 Production authorization: None
 
 ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
-tasks T025/T026 and acceptance A012 are complete. ADR-010 is Proposed and
-ready for architecture review; ADR-011 through ADR-014 remain blocked by
-their declared dependencies.
+tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
+current-code compatibility review; T027/T028/A013 are authorized. ADR-011
+through ADR-014 remain blocked by their declared dependencies.
 
 ## 1. Purpose
 
@@ -251,16 +251,22 @@ unchanged.
 
 ## 7. Proposed Public Contracts
 
-The following interfaces are drafts for ADR review. Names and fields are not
-yet accepted.
+Basket contracts in section 7.2 follow accepted ADR-010. OMS, Risk,
+Accounting and application contracts remain drafts until their owning ADRs
+are accepted.
 
 ### 7.1 Core identities
 
-Potential new strongly typed identifiers:
+Accepted ADR-010 reuses existing `IntentId` and adds:
 
 ```python
-BasketIntentId
 BasketLegId
+ObjectiveTypeId
+```
+
+Later ADRs may add:
+
+```python
 OrderGroupId
 CashFlowId
 LedgerEntryId
@@ -276,6 +282,7 @@ interchangeable strings at public boundaries.
 @dataclass(frozen=True, slots=True, kw_only=True)
 class BasketTargetLeg:
     leg_id: BasketLegId
+    account_id: AccountId
     instrument_id: InstrumentId
     target_quantity: Quantity
     reason: str = ""
@@ -283,27 +290,29 @@ class BasketTargetLeg:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class BasketTargetIntent:
-    intent_id: BasketIntentId
+    intent_id: IntentId
     strategy_id: StrategyId
+    decision_snapshot_id: DecisionSnapshotId
+    objective: ObjectiveTypeRef
     legs: tuple[BasketTargetLeg, ...]
     decision_time_ns: UnixNanos
-    valid_until_ns: UnixNanos | None
-    objective_type: str
+    valid_until_ns: UnixNanos
     policy_version: int
 ```
 
 Required invariants:
 
 - leg count is bounded;
-- leg IDs are unique and deterministically ordered;
+- leg IDs are unique;
+- legs use canonical account/instrument ordering;
+- duplicate account/instrument scopes are rejected;
 - instrument identities are canonical;
 - target quantities are exact fixed point;
 - the intent contains no account secret, order type, time-in-force, venue
   request or adapter object;
 - expiry cannot precede decision time;
-- duplicate instruments are either rejected in v1 or explicitly normalized
-  by a future accepted rule;
-- `objective_type` is metadata, not a runtime import path or executable code.
+- Objective Type is a versioned registered reference, not a runtime import
+  path or executable code.
 
 The strategy output type may become:
 
@@ -404,7 +413,7 @@ implementation:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ApprovedOrderGroupIntent:
     approval_id: str
-    basket_intent_id: BasketIntentId
+    source_intent_id: IntentId
     strategy_id: StrategyId
     approved_legs: tuple[ApprovedOrderLeg, ...]
     approved_at_ns: UnixNanos
@@ -414,7 +423,7 @@ class ApprovedOrderGroupIntent:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class OrderGroupView:
     order_group_id: OrderGroupId
-    basket_intent_id: BasketIntentId
+    source_intent_id: IntentId
     status: OrderGroupStatus
     children: tuple[OrderView, ...]
     created_at_ns: UnixNanos
@@ -568,7 +577,7 @@ It performs no network, filesystem, database or adapter I/O.
 class CarryPositionView:
     position_id: ApplicationPositionId
     pair: CarryPair
-    basket_intent_id: BasketIntentId
+    source_intent_id: IntentId
     order_group_ids: tuple[OrderGroupId, ...]
     target_legs: tuple[BasketTargetLeg, ...]
     actual_legs: tuple[ActualLeg, ...]
@@ -904,8 +913,8 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Submit ADR-010 Basket Intent Architecture for separate Web GPT and project-
-owner review.
+Implement T027/T028/A013 within ADR-010's contract-only boundary and draft
+ADR-011 Parent-Child Order Model for separate review.
 
 Do not create Funding Arbitrage application code. Basket, OMS Order Group,
 Portfolio Risk, Financial Ledger and Carry implementation remain blocked by

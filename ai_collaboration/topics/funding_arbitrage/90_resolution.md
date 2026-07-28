@@ -305,3 +305,51 @@ ADR-010 审查重点：
 - 与 `PositionTargetIntent` 的兼容性。
 
 在 ADR-010 被 Web GPT 审查并由项目负责人接受前，不实现 Basket 源码。
+
+## 11. ADR-010 Compatibility Review and Acceptance
+
+项目负责人要求 ADR-010 不能直接接受，必须先根据当前代码检查并修订：
+
+- Intent 模型兼容性；
+- core identifiers；
+- `StrategyDecision` 和 `StrategyRuntime`；
+- Objective Type 长期演进；
+- Basket lifecycle 所有权；
+- leg 排序策略。
+
+Codex 完成源码核对后，ADR-010 作出以下修订：
+
+```text
+Basket identity:
+  reuse existing IntentId
+
+New cross-domain IDs:
+  BasketLegId
+  ObjectiveTypeId
+
+Objective Type:
+  versioned registered ObjectiveTypeRef
+  no central enum
+  no raw executable string
+
+StrategyDecision:
+  dataclass shape unchanged
+  DecisionIntent union and runtime validation extend additively
+
+Strategy input:
+  add DecisionSnapshotPublication
+  validate Basket snapshot causation
+
+Basket lifecycle:
+  none in ADR-010
+  execution lifecycle -> ADR-011
+  economic lifecycle -> ADR-014
+
+Leg order:
+  canonical account/instrument key
+  not BasketLegId order
+```
+
+项目负责人此前给出的条件是完成这些检查和修改后接受。条件已满足，
+ADR-010 状态更新为 `Accepted`。T027/T028/A013 获得授权，但范围只包括
+Basket 契约和 Strategy 兼容性，不包括 OMS、Risk 或 Execution。
