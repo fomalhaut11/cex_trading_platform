@@ -1,7 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: Planned — ADR-009/010 accepted; ADR-011 Proposed; application blocked
-by ADR-011 through ADR-014
+Status: Planned — ADR-009/010/011 accepted; ADR-011 offline foundation
+authorized; application blocked by ADR-012 through ADR-014
 
 Created: 2026-07-27
 
@@ -13,10 +13,11 @@ Production authorization: None
 
 ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
 tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
-current-code compatibility review; T027/T028/A013 are complete. ADR-011
-is Proposed and awaits architecture review; its implementation is not
-authorized. ADR-012 through ADR-014 remain blocked by their declared
-dependencies.
+current-code compatibility review; T027/T028/A013 are complete. ADR-011 was
+accepted after incorporating the second Web GPT review; T029-T031/A014 are
+authorized for bounded offline implementation. ADR-012 through ADR-014 remain
+blocked by their declared dependencies, and external exposure-changing group
+submission is not authorized.
 
 ## 1. Purpose
 
@@ -271,6 +272,7 @@ Later ADRs may add:
 
 ```python
 OrderGroupId
+ExecutionPlanId
 GroupActionId
 PortfolioApprovalId
 ExecutionPermitId
@@ -411,13 +413,13 @@ An identity-equal whole-Basket admission is required to create one group,
 but that admission grants no permission to submit a child.
 
 Every exposure-changing child submit requires a fresh finite permit covering
-the exact child proposal, group revision, Risk snapshot and expiry.
+the exact Execution Action, group revision, Risk snapshot and expiry.
 ```
 
 ### 7.5 OMS boundary
 
-ADR-011 is Proposed and not yet accepted. It proposes that OMS own a durable
-execution-control group independent of the concrete Risk implementation:
+Accepted ADR-011 makes OMS own a durable execution-control group independent
+of the concrete Risk implementation:
 
 ```python
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -470,25 +472,67 @@ one-leg-to-one-child contract.
 
 ### 7.6 OMS service port
 
-ADR-011 proposes a caller-driven, single-writer runtime. Execution policy
-proposes actions but grants no authority. Risk grants one finite,
-single-consumption permit for one exact proposal:
+Accepted ADR-011 defines a caller-driven, single-writer runtime. A versioned
+Execution Plan proposes exact actions but grants no authority. Risk grants
+one finite, single-action permit for one exact action:
 
 ```python
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ExecutionPlanRef:
+    execution_plan_id: ExecutionPlanId
+    version: int
+    parameters_checksum: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ExecutionAction:
+    group_id: OrderGroupId
+    expected_group_revision: int
+    action_id: GroupActionId
+    basket_leg_id: BasketLegId
+    account_id: AccountId
+    instrument_id: InstrumentId
+    side: OrderSide
+    order_type: OrderType
+    quantity: Quantity
+    time_in_force: TimeInForce
+    limit_price: Price | None
+    stop_price: Price | None
+    reduce_only: bool
+    post_only: bool
+    position_side: PositionSide
+    execution_plan: ExecutionPlanRef
+    created_at_ns: UnixNanos
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ExecutionActionPermit:
+    permit_id: ExecutionPermitId
+    group_id: OrderGroupId
+    expected_group_revision: int
+    action_id: GroupActionId
+    action_checksum: str
+    risk_snapshot_id: DecisionSnapshotId
+    issued_at_ns: UnixNanos
+    valid_until_ns: UnixNanos
+    risk_policy_version: int
+
+
 class OrderGroupRuntime(Protocol):
     def create_group(
         self,
         admission: OrderGroupAdmission,
+        execution_plan: ExecutionPlanRef,
     ) -> OrderGroupView: ...
 
     def propose_next_actions(
         self,
         order_group_id: OrderGroupId,
-    ) -> tuple[ChildOrderProposal, ...]: ...
+    ) -> tuple[ExecutionAction, ...]: ...
 
     def prepare_child_submit(
         self,
-        proposal: ChildOrderProposal,
+        action: ExecutionAction,
         permit: ExecutionActionPermit,
     ) -> OrderRequest: ...
 
@@ -512,10 +556,14 @@ group/action/child mapping plus child submit intent before returning an
 All returned actions and collections are bounded and deterministically
 ordered. Action generation must be idempotent across retries and restarts.
 An unknown result prohibits blind replacement until venue reconciliation
-resolves the original child identity.
+resolves the original child identity. V1 permits at most one
+exposure-changing in-flight submit per group. A definitely-not-sent transport
+failure may receive at most one unchanged technical retransmission using the
+same action, child and `ClientOrderId`; changed order content creates a new
+action and child attempt.
 
 Execution ordering may require parallel-ready sets, linear stages or dynamic
-hedge sizing from actual fills. ADR-011 must define a versioned execution-plan
+hedge sizing from actual fills. ADR-011 defines a versioned execution-plan
 contract without embedding application callbacks inside durable OMS records.
 
 ### 7.7 Execution boundary
@@ -935,10 +983,11 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Review the Proposed ADR-011 Parent Order Group and Multi-leg Execution Model,
-resolve its open decisions, then accept or revise it. Do not implement
-Parent/Child OMS behavior before that ADR is accepted.
+ADR-011 is accepted. Implement T029, T030 and T031 in dependency order, then
+run A014. T031 must fail closed before an exposure-changing Order Group child
+reaches Execution; external group submission remains blocked until ADR-012.
 
 Do not create Funding Arbitrage application code. Basket decision contracts
-are complete; OMS Order Group, Portfolio Risk, Financial Ledger and Carry
-implementation remain blocked by their owning ADRs.
+are complete; only the bounded offline OMS Order Group foundation is now
+authorized. Portfolio Risk, Financial Ledger and Carry implementation remain
+blocked by their owning ADRs.

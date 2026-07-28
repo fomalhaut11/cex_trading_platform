@@ -89,13 +89,15 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   ADR-009 (T025/T026/A012).
 - Bounded generic N-leg Basket intents and single-leg compatibility are
   complete under ADR-010 (T027/T028/A013).
-- ADR-011 Parent Order Group and Multi-leg Execution Model is Proposed and
-  under architecture review; it authorizes no implementation yet.
+- ADR-011 Parent Order Group and Multi-leg Execution Model is accepted after
+  the second Web GPT review. T029-T031/A014 bounded offline foundation work is
+  authorized; external exposure-changing group submission remains blocked by
+  ADR-012.
 - Extend Risk with whole-Basket preflight and continuous portfolio exposure
   supervision. **Planned; requires accepted ADR-012.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
-  existing Execution adapters remain child-order oriented. **Planned;
-  requires accepted ADR-011.**
+  existing Execution adapters remain child-order oriented. **Authorized
+  offline as T029-T031/A014; external group submission blocked by ADR-012.**
 - Add normalized margin/collateral state and an idempotent Financial Ledger.
   **Planned; requires accepted ADR-013.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding

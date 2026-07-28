@@ -40,7 +40,25 @@ Parent/Child orders, execution sequencing or application lifecycle.
 
 The existing `runtime.TradingPipeline` remains single-leg. It rejects a
 `BasketTargetIntent` at the Strategy boundary before Portfolio, Risk, OMS and
-Execution. A future Basket pipeline is gated by ADR-011 and ADR-012.
+Execution.
+
+Accepted ADR-011 defines the future execution-control topology:
+
+```text
+BasketTargetIntent
+  -> OrderGroupAdmission
+  -> OMS Order Group + ExecutionPlanRef
+  -> ExecutionAction
+  -> ExecutionActionPermit        # issuance remains ADR-012
+  -> durable Child Order Attempt
+  -> existing OrderRequest
+  -> existing Execution adapter
+```
+
+T029-T031/A014 may implement and test the bounded offline group foundation.
+Until ADR-012 is accepted, runtime must fail closed before an
+exposure-changing group child reaches an Execution adapter. The current
+single-leg Pipeline remains the production regression path.
 
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
@@ -66,6 +84,11 @@ listener. Concrete TLS termination remains a deployment boundary.
 14. `strategy.basket` may depend on `core`, `instruments` and snapshot
     identity contracts, but cannot depend on Risk, OMS, Execution,
     applications, runtime or venue adapters.
+15. `oms` may consume accepted Basket contracts and generic permit evidence,
+    but cannot depend on a concrete Risk engine, execution planner, Carry
+    application, runtime or venue adapter.
+16. An Execution Plan proposes immutable actions but owns no Risk or operator
+    authority; only Runtime may coordinate the accepted boundaries.
 
 ## Process Boundaries
 

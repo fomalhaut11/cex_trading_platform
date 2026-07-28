@@ -144,7 +144,7 @@ applications/
 |---:|---|---|---|---|
 | 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | ACCEPTED_2026_07_28 |
 | 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | ACCEPTED_IMPLEMENTED_2026_07_28 |
-| 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | PROPOSED_REVIEW_REQUIRED |
+| 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、Execution Plan/Action、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | ACCEPTED_2026_07_28_T029_T031_A014_AUTHORIZED |
 | 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |
 | 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
 | 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、依赖、聚合和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | BLOCKED_BY_ADR_009_010_011_012_013 |
@@ -248,7 +248,7 @@ cex_quant.applications.<application>.<TypedSnapshot>
   -> 应用专属、强类型的最终决策输入
 ```
 
-同时保留本决议的所有权边界并由 Proposed ADR-011 进一步收紧：
+同时保留本决议的所有权边界并由 Accepted ADR-011 进一步收紧：
 `PARTIALLY_FILLED` 是 child fact；OMS group 使用独立控制状态；
 `PARTIALLY_HEDGED` 和 `HEDGED` 由 Carry application 根据 OMS 和 Portfolio
 权威事实派生。OMS group 的 `ACTIVE/CLOSED` 不等于 Carry position 的经济状态。
@@ -388,22 +388,31 @@ Single-leg Pipeline rejects Basket before Risk/OMS/Execution
 Ruff / compile / secret scan passed
 ```
 
-本次实现未创建 Parent/Child Order Group、子订单、交易所请求、组合 Risk
-或 Funding Arbitrage 应用。下一架构审查边界是 ADR-011。
+本次 ADR-010 实现未创建 Parent/Child Order Group、子订单、交易所请求、
+组合 Risk 或 Funding Arbitrage 应用。当时的下一架构审查边界是 ADR-011；
+该 ADR 现已在后续审查中接受。
 
-## 13. ADR-011 Proposal Review
+## 13. ADR-011 Review and Acceptance
 
 Web GPT 的 ADR-011 审查输入已固化为
 `60_web_gpt_adr011_review.md`。Codex 已检查当前 OMS model、`OrderRequest`、
 Execution adapter、journal、reconciliation 和实际 runtime composition，
 结果见 `61_codex_adr011_current_code_audit.md`。
 
-`ADR-011-parent-order-group-multi-leg-execution.md` 当前状态为 `Proposed`。
-它明确区分 Basket admission、child proposal 与单次 execution permission，
+`ADR-011-parent-order-group-multi-leg-execution.md` 当前状态为 `Accepted`。
+它明确区分 Basket admission、Order Group execution intent、
+Execution Plan、Execution Action、Child Order Attempt 与单次 execution permission，
 并规定 Parent Order Group 只拥有持久化执行控制和 child facts；实际
 Portfolio exposure、Delta、basis、margin 和 `HEDGED` 判断仍由 ADR-012
 及后续 Carry application 拥有。
 
-本轮只形成架构提案，不授权 Parent/Child OMS、组合 Risk、Funding
-Arbitrage、Testnet 或生产执行代码。供 Web GPT 继续审查的自包含摘要见
-`62_codex_adr011_proposal_handoff.md`。
+第二轮 Web GPT 审查已解决并被纳入八项技术问题：V1 单 exposure-changing
+in-flight submit、同一身份的有限技术重传、Risk 加 operator 恢复、Portfolio
+确认关闭、ADR-012 实现边界、ID 名称、16/8/64 operational bounds 和 mixed-version
+journal。Codex 逐项响应见 `63_codex_adr011_review_response.md`。
+
+项目负责人提交该条件审查并要求 Codex 读取执行；Codex 在全部修订完成后按
+审查流程将 ADR-011 提升为 `Accepted`。T029-T031/A014 获得有界离线授权，
+但 T031 必须在 exposure-changing Order Group child 到达 Execution adapter
+之前 fail closed。真实 Portfolio action permit、外部组合提交、Funding
+Arbitrage、Testnet 和生产执行仍由 ADR-012 及后续门禁阻断。

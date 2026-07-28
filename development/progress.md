@@ -178,10 +178,11 @@ target-host performance and authenticated Testnet gates.
 
 ## In Progress
 
-- ADR-011 Parent Order Group and Multi-leg Execution Model is `Proposed`.
-  Current-code audit, ownership boundaries, identity chain, state model,
-  durable handoff, restart recovery and review questions are documented.
-  No Parent/Child implementation is authorized before acceptance.
+- ADR-011 Parent Order Group and Multi-leg Execution Model is `Accepted`.
+  All eight Web GPT review decisions and Execution
+  Intent/Plan/Action/Child layering are incorporated. T029-T031 and A014 are
+  authorized for bounded offline implementation; external exposure-changing
+  group submission remains blocked by ADR-012.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -201,16 +202,19 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review ADR-011 with Web GPT and the project owner, resolve its eight open
-   decisions and accept or revise it; do not implement it before acceptance.
-2. Configure protected-branch checks after agreeing the direct-push policy.
-3. Configure concrete TLS/mTLS termination, protected identity forwarding,
+1. Implement T029 immutable Order Group and Execution Plan/Action/Permit
+   contracts, preserving all existing single-leg APIs.
+2. Implement T030 bounded group state, journal, replay and recovery.
+3. Implement T031 shared durable handoff with a fail-closed external group
+   submission gate, then run A014.
+4. Configure protected-branch checks after agreeing the direct-push policy.
+5. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-4. Configure a persistent approved host time source and collect clock
+6. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-5. Run A002C authenticated Binance Testnet acceptance.
-6. Run A002B target-host soak and latency-distribution acceptance.
-7. Exercise and approve the initial runbooks on the target host; add Binance
+7. Run A002C authenticated Binance Testnet acceptance.
+8. Run A002B target-host soak and latency-distribution acceptance.
+9. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification

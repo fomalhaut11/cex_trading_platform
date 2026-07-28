@@ -487,9 +487,10 @@ ADR-012 defines projected portfolio calculations and rejection reasons.
 `BasketTargetIntent` never enters an Execution adapter.
 
 After whole-Basket approval, Runtime converts it into the OMS-owned group
-admission defined by ADR-011. Proposed ADR-011 names this evidence
+admission defined by ADR-011. Accepted ADR-011 names this evidence
 `OrderGroupAdmission`; it may create one durable group but grants no child
-execution permission. OMS then derives bounded child proposals, while ADR-012
+execution permission. OMS then derives bounded `ExecutionAction` values,
+while ADR-012
 defines the exact finite permit required for an exposure-changing submit.
 
 Separation:

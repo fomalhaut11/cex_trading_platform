@@ -2,15 +2,20 @@
 
 ## Status
 
-Proposed — architecture review required.
+Accepted — 2026-07-28.
 
-This ADR is not accepted and authorizes no implementation, Testnet activity
-or production trading.
+This ADR authorizes only T029, T030, T031 and offline acceptance A014.
+Exposure-changing Order Group submission remains blocked until ADR-012 is
+accepted. It authorizes no Funding Arbitrage application, Testnet activity or
+production trading.
 
 Review inputs:
 
 - `ai_collaboration/topics/funding_arbitrage/60_web_gpt_adr011_review.md`;
 - `ai_collaboration/topics/funding_arbitrage/61_codex_adr011_current_code_audit.md`;
+- `ai_collaboration/topics/funding_arbitrage/62_codex_adr011_proposal_handoff.md`;
+- `ai_collaboration/topics/funding_arbitrage/63_codex_adr011_review_response.md`;
+- the second Web GPT review decisions recorded in section 29;
 - accepted ADR-009 and ADR-010;
 - the current OMS, Execution, journal and recovery implementation at commit
   `157ee6b4ba7446396ed36d07a55c5727dec6cd5a`.
@@ -75,7 +80,7 @@ stream event, the journal may contain only `CREATED`.
 `reconciliation_candidates()` currently excludes `CREATED`, so the possibly
 live order may not be queried at restart.
 
-ADR-011 proposes one shared durable execution handoff for both existing
+ADR-011 defines one shared durable execution handoff for both existing
 single-leg orders and future Order Group children. It must not create a safer
 Basket path while leaving the existing single-order composition ambiguous.
 
@@ -87,7 +92,7 @@ Introduce an OMS-owned Parent Order Group with these principles:
 
 1. A Basket admission approval may create one durable group and nothing else.
 2. Every exposure-changing child submit requires a separate finite,
-   single-use action permit over exact immutable content.
+   single-action permit over exact immutable content.
 3. One Basket leg may own zero or more child order attempts.
 4. Existing `OrderRequest`, `OrderStateMachine`, Execution adapters and child
    reconciliation remain the canonical child-order kernel.
@@ -101,8 +106,10 @@ Introduce an OMS-owned Parent Order Group with these principles:
 9. Restart replays one ordered OMS journal, reconciles all unresolved
    children, refreshes Portfolio state and requires fresh Risk/operator
    authority before new actions.
-10. V1 is bounded and single-writer. It introduces no universal Event Bus and
-    no hidden autonomous retry loop.
+10. Order Group execution intent, versioned execution plan, exact execution
+    action and canonical child attempt are separate layers.
+11. V1 is bounded and single-writer. It introduces no universal Event Bus and
+    no hidden autonomous economic retry loop.
 
 ## 1. Terminology
 
@@ -122,25 +129,52 @@ The OMS aggregate that preserves Basket causation, owns group control state,
 maps Basket legs to child attempts and derives a complete immutable group
 view.
 
-### Child order
+### Order Group execution intent
+
+The durable OMS intention to move toward one admitted Basket target under one
+versioned execution plan. It is represented by the Order Group and its plan
+reference. It is not an exchange command or action permission.
+
+### Execution plan
+
+A versioned, immutable policy reference plus bounded parameters describing
+how the group may propose actions. It contains no runtime callback, venue
+session or Risk authority.
+
+### Execution action
+
+One exact immutable proposed attempt to advance one Basket leg at one group
+revision. It is identified by `GroupActionId`. An action contains order
+content but no permission and cannot reach Execution without an exact permit.
+
+### Child order attempt
 
 One existing canonical `OrderRequest` and `OrderStateMachine` associated with
 exactly one Basket leg and one group action.
 
-### Child proposal
-
-A deterministic, immutable suggestion for one next child order. A proposal
-contains no permission and cannot reach Execution.
-
 ### Execution action permit
 
-A fresh, single-use authorization for one exact child proposal at one exact
-group revision. ADR-012 owns its Risk issuance semantics.
+A fresh, finite authorization bound to one exact execution action at one
+exact group revision. It cannot authorize another action or child identity.
+ADR-012 owns its Risk issuance semantics.
 
-### Execution policy
+Required layering:
 
-A versioned composition-time policy that proposes the next bounded action.
-It is not part of Strategy and no callback/import path is persisted.
+```text
+BasketTargetIntent
+  -> OrderGroupAdmission
+  -> Order Group execution intent
+  -> ExecutionPlanRef
+  -> ExecutionAction
+  -> ExecutionActionPermit
+  -> Child Order Attempt
+  -> existing ExecutionGateway
+```
+
+A changed maker/taker choice, price, quantity or other order content creates a
+new `ExecutionAction` and child identity. A bounded technical retransmission
+with unchanged content and the same `ClientOrderId` remains the same action
+and child attempt.
 
 ## 2. Package Topology
 
@@ -149,16 +183,18 @@ Planned after acceptance:
 ```text
 src/cex_quant/
   core/
-    identifiers.py              # OrderGroupId, GroupActionId,
-                                # PortfolioApprovalId, ExecutionPermitId
+    identifiers.py              # OrderGroupId, ExecutionPlanId,
+                                # GroupActionId, PortfolioApprovalId,
+                                # ExecutionPermitId
 
   oms/
-    group_model.py              # admissions, proposals, permits, views
+    group_model.py              # admissions, plans, actions, permits, views
     group_state.py              # group control and child mapping
     journal.py                  # version-aware legacy + group facts
 
   runtime/
     order_group_runtime.py      # single-writer orchestration
+    execution_planning.py       # registered plans propose actions only
     execution_handoff.py        # durable-before-I/O shared handoff
     execution_router.py         # account/instrument -> existing gateway
 
@@ -172,7 +208,7 @@ Ownership:
 |---|---|
 | Strategy | Immutable Basket target |
 | Portfolio Risk | Basket admission and per-action permit decisions |
-| execution policy | Deterministic child proposal, no authority |
+| execution plan/planner | Deterministic execution action, no authority |
 | OMS | Group/child identity, lifecycle, journal and canonical views |
 | Runtime | Ordered calls between Risk, OMS and Execution |
 | Execution | One child venue request and normalized immediate result |
@@ -190,6 +226,7 @@ Proposed cross-domain IDs:
 ```text
 PortfolioApprovalId
 OrderGroupId
+ExecutionPlanId
 GroupActionId
 ExecutionPermitId
 ```
@@ -211,6 +248,7 @@ DecisionSnapshotId
   -> IntentId (Basket)
   -> PortfolioApprovalId (group admission only)
   -> OrderGroupId
+  -> ExecutionPlanId + version
   -> BasketLegId
   -> GroupActionId
   -> ExecutionPermitId
@@ -225,10 +263,13 @@ V1 rules:
 - changed admission content with the same identity is a conflict;
 - `OrderGroupId` is replay-stable under an explicit identity policy;
 - one `GroupActionId` identifies one immutable action;
-- one action maps to at most one `ClientOrderId`;
+- one action maps to exactly one child attempt and at most one
+  `ClientOrderId`;
 - a child belongs to exactly one group and one Basket leg;
 - one Basket leg may have multiple child attempts;
-- a changed order proposal requires a new action and child identity;
+- changed order content requires a new action and child identity;
+- a technical retransmission keeps the same action, child and
+  `ClientOrderId`;
 - an unknown child identity cannot be replaced until reconciliation resolves
   its venue state.
 
@@ -237,7 +278,8 @@ Recommended default derivation:
 ```text
 OrderGroupId = hash(IntentId, PortfolioApprovalId)
 GroupActionId = hash(OrderGroupId, group_revision, BasketLegId,
-                     action_kind, leg_attempt_sequence)
+                     execution_plan_checksum, action_kind,
+                     leg_attempt_sequence)
 ClientOrderId = venue-safe deterministic encoding of GroupActionId
 ```
 
@@ -276,22 +318,45 @@ Admission invariants:
 
 ADR-012 may add typed Risk evidence, but it cannot weaken these invariants.
 
-## 5. Execution Policy and Proposal
+## 5. Execution Intent, Plan and Action
 
-Strategy specifies final targets only. A versioned execution policy proposes
-how to approach them.
+Strategy specifies final targets only. Group admission creates one durable
+execution intent to approach that target. A versioned execution plan then
+proposes exact actions.
 
 Proposed reference:
 
 ```python
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ExecutionPolicyRef:
-    execution_policy_id: ExecutionPolicyId
+class ExecutionPlanRef:
+    execution_plan_id: ExecutionPlanId
     version: int
+    parameters_checksum: str
 ```
 
-The durable group stores only the reference and immutable policy parameters.
-It cannot store a callback, module path or arbitrary object.
+The durable group stores only this reference and separately bounded immutable
+policy parameters. It cannot store a callback, module path or arbitrary
+object.
+
+Runtime composition selects the plan from a bounded registry using accepted
+configuration and objective metadata. An unknown plan ID/version, checksum
+mismatch or unbounded parameter set fails before group creation. The planner
+implementation may live in `runtime.execution_planning`; OMS owns only the
+immutable plan evidence and resulting action facts.
+
+V1 group creation takes both admission evidence and the plan reference:
+
+```python
+create_group(
+    admission: OrderGroupAdmission,
+    execution_plan: ExecutionPlanRef,
+) -> OrderGroupView
+```
+
+The registered plan and its bounded parameters become immutable
+`GroupCreated` evidence. Admission still grants no child permission. Changing
+the plan in place is unsupported in V1; the group is suspended or closed and
+the change requires a future reviewed lifecycle rule.
 
 A planner receives immutable views and proposes at most one V1 child action
 per call:
@@ -303,17 +368,17 @@ class OrderGroupPlanner(Protocol):
         group: OrderGroupView,
         portfolio: object,
         now_ns: UnixNanos,
-    ) -> ChildOrderProposal | None: ...
+    ) -> ExecutionAction | None: ...
 ```
 
 The exact Portfolio view becomes typed under ADR-012. Planner I/O, implicit
 clock access and exchange calls are prohibited.
 
-Proposed child content:
+Proposed action content:
 
 ```python
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ChildOrderProposal:
+class ExecutionAction:
     group_id: OrderGroupId
     expected_group_revision: int
     action_id: GroupActionId
@@ -329,18 +394,29 @@ class ChildOrderProposal:
     reduce_only: bool
     post_only: bool
     position_side: PositionSide
-    execution_policy: ExecutionPolicyRef
+    execution_plan: ExecutionPlanRef
     created_at_ns: UnixNanos
 ```
 
-The proposal:
+The action:
 
 - references one existing Basket leg;
 - uses a positive order quantity, not a final target;
 - cannot alter Basket target content;
 - is deterministic from explicit inputs;
 - is content-checksummed;
-- is not an Execution command.
+- is not an Execution command;
+- maps to exactly one child attempt after permission and durable preparation;
+- must be replaced by a new `GroupActionId` if maker/taker choice, price,
+  quantity or any order content changes.
+
+The relation is:
+
+```text
+one Basket leg
+  -> zero or more sequential ExecutionActions
+      -> exactly one Child Order Attempt per action
+```
 
 ## 6. Per-Action Permission
 
@@ -353,7 +429,7 @@ class ExecutionActionPermit:
     group_id: OrderGroupId
     expected_group_revision: int
     action_id: GroupActionId
-    proposal_checksum: str
+    action_checksum: str
     risk_snapshot_id: DecisionSnapshotId
     issued_at_ns: UnixNanos
     valid_until_ns: UnixNanos
@@ -364,7 +440,7 @@ OMS accepts a child submit only when:
 
 - group is `ACTIVE`;
 - group revision matches;
-- action and proposal checksum match exactly;
+- action identity and checksum match exactly;
 - Basket leg/account/instrument match admission;
 - permit is fresh and unconsumed;
 - Basket/group deadline permits an ordinary action;
@@ -372,16 +448,66 @@ OMS accepts a child submit only when:
 - group and configured child bounds are not exceeded;
 - no unresolved identity conflicts exist.
 
-One permit authorizes one exact submit action. It cannot be reused for:
+One permit is consumed by and latched to one exact action. It cannot authorize:
 
 - another leg;
 - another quantity or price;
 - cancel/replace;
 - a later group revision;
 - a different Portfolio/Risk snapshot;
-- a retry with changed content.
+- a retry with changed content;
+- a new action or child attempt.
+
+A bounded transport retransmission is not a new economic action. It uses the
+already prepared child, the same latched permit causation, action and
+`ClientOrderId`; the permit cannot be detached or consumed by another action.
+Retransmission is allowed only if all of these hold:
+
+- transport evidence proves the prior attempt was definitely not sent;
+- action content is byte-for-byte identity-equal;
+- permit, Basket and group deadlines remain fresh;
+- no intervening child, exposure, control or recovery fact invalidated the
+  persisted action's retry eligibility;
+- operator and runtime health gates are rechecked;
+- the configured technical retransmission budget is not exhausted.
+
+The retransmission is journaled as another transport attempt for the same
+child. It does not create a new `GroupActionId`, `ClientOrderId` or child.
+V1 permits at most one technical retransmission per action.
 
 Basket admission alone fails every one of these checks.
+
+### 6.1 Execution Action and Transmission State
+
+Execution action state is separate from group control and canonical child
+order state:
+
+```text
+PROPOSED
+  -> PREPARED
+     -> TRANSMITTING
+        -> ACKNOWLEDGED
+        -> REJECTED
+        -> RETRY_ELIGIBLE -> TRANSMITTING
+        -> UNKNOWN
+```
+
+- `PROPOSED` has no permit and produces no journal or external effect.
+- `PREPARED` means the exact action, permit causation, child mapping and submit
+  intent are durable.
+- `RETRY_ELIGIBLE` is reachable only with proof that the prior transport
+  attempt was not sent.
+- `UNKNOWN` means the request may have reached the venue and forces group
+  `RECOVERY_REQUIRED`.
+- a maker-to-taker change is a new action and child, never a technical
+  retransmission.
+
+The existing child enters at least `SUBMITTING` at `PREPARED`. A
+definitely-not-sent transport fact does not terminally fail that child while
+one permitted technical retransmission remains. Exhaustion, expiry or
+operator refusal resolves the child as local `FAILED` without an external
+order. Venue lifecycle after acknowledgement continues through the existing
+`OrderStateMachine`.
 
 ## 7. Durable Group Control Lifecycle
 
@@ -409,7 +535,7 @@ Admission and group identity are durable. No child submit is allowed.
 
 ### `ACTIVE`
 
-The group may request proposals and permits. Every external action still
+The group may request actions and permits. Every external action still
 requires its own checks.
 
 ### `SUSPENDED`
@@ -525,8 +651,11 @@ Each group has a positive monotonically increasing revision. Every accepted
 group mutation, child creation, submit outcome, cancel fact and venue update
 increments it.
 
-Proposal and permit both bind to the same expected revision. Any intervening
-fill, cancel, operator action or recovery event makes them stale.
+An action and its first permit both bind to the same expected revision. Any
+intervening fill, cancel, operator action or recovery event before durable
+preparation makes them stale. After preparation, bounded technical
+transmission attempts are governed by the persisted action state and cannot
+be turned into a changed economic action.
 
 OMS remains single writer. Runtime serializes calls and cannot mutate group
 or child state directly.
@@ -539,10 +668,10 @@ implicit retry task or universal hot-path Event Bus.
 One shared handoff is required:
 
 ```text
-proposal
+execution action
   -> fresh action permit
   -> OMS validates exact group revision/content
-  -> OMS appends child mapping + submit intent
+  -> OMS appends action + child mapping + submit intent
   -> fsync succeeds
   -> operator authority rechecked
   -> ExecutionGateway.submit(existing OrderRequest)
@@ -553,7 +682,10 @@ proposal
 OMS should expose an atomic semantic operation comparable to:
 
 ```python
-prepare_child_submit(authorized_action) -> OrderRequest
+prepare_child_submit(
+    action: ExecutionAction,
+    permit: ExecutionActionPermit,
+) -> OrderRequest
 ```
 
 The returned `OrderRequest` is the first value that may cross to Execution.
@@ -583,7 +715,7 @@ The runtime must report every gateway result to OMS.
 |---|---|
 | Accepted with venue ID | Persist acknowledgement; child remains reconcilable until authoritative lifecycle/fill fact |
 | Venue rejection | Persist terminal rejected child with zero or authoritative reported fill |
-| Definitely not sent | Persist terminal local failure; a new proposal may be reviewed |
+| Definitely not sent | Persist transport proof; same child becomes `RETRY_ELIGIBLE` for at most one unchanged same-ID retransmission, otherwise local `FAILED` |
 | Possibly sent / timeout | Persist unknown action; group enters `RECOVERY_REQUIRED` |
 | Malformed response after possible send | Treat as unknown |
 
@@ -598,27 +730,33 @@ changing venue adapters.
 
 V1 rules:
 
-- no blind automatic retry;
-- exact retry with the same `ClientOrderId` is considered only when the
-  transport proves the request was not sent;
+- no automatic creation of a new economic action or child;
+- at most one technical retransmission of the already prepared action is
+  allowed with the same `ClientOrderId`, only when transport proves the prior
+  attempt was not sent;
+- retransmission requires identity-equal content, unexpired authority,
+  rechecked health/operator gates and persisted `RETRY_ELIGIBLE`;
 - possibly-sent actions require read-only query/reconciliation;
 - a replacement order receives a new `GroupActionId` and `ClientOrderId`;
 - no replacement is created while the prior child is unknown;
-- every retry/replace consumes configured attempt and action budgets;
+- every changed maker/taker, price, quantity or other order choice is a new
+  action and child attempt;
+- every replacement consumes configured child/action budgets;
+- every technical retransmission consumes its separate one-retry V1 budget;
 - partial fill plus cancel/replace creates multiple children under the same
   Basket leg.
 
-Whether definitely-not-sent retry may be automatic is an open review question.
-The recommended V1 default requires an explicit new runtime action.
+This permits transport recovery without silently creating a new trading
+decision.
 
 ## 14. Execution Ordering and Concurrency
 
 The contract is N-leg and does not hard-code Funding or two legs.
 
-Recommended V1 default:
+Accepted V1 hard rule:
 
 ```text
-max new in-flight child submissions per group = 1
+max exposure-changing in-flight child submissions per group = 1
 ```
 
 This does not mean one child per leg. A planner may:
@@ -630,11 +768,10 @@ This does not mean one child per leg. A planner may:
 5. propose a dynamically sized hedge child;
 6. continue under new permits.
 
-Parallel stages require atomic batch permit and revision semantics that are
-not defined here. The schema must not prevent a future reviewed extension,
-but V1 should not imply exchange atomicity.
-
-The project owner and Web GPT must explicitly review this default.
+Parallel exposure-changing stages require atomic batch permit and recovery
+semantics that are not defined here. The schema must not prevent a future
+reviewed extension, but V1 does not imply exchange atomicity. Enabling
+parallel exposure-changing submits requires a future ADR.
 
 ## 15. Multi-venue and Multi-account Routing
 
@@ -687,7 +824,7 @@ records definitely-not-sent and Execution is not invoked.
 
 ## 18. Journal Evolution
 
-ADR-011 proposes one OMS journal, not separate order and group journals.
+ADR-011 defines one OMS journal, not separate order and group journals.
 
 New facts should include:
 
@@ -695,6 +832,7 @@ New facts should include:
 GroupCreated
 GroupControlChanged
 GroupChildSubmitPrepared
+ChildTransportAttempted
 ChildSubmitOutcome
 GroupClosed
 ```
@@ -752,8 +890,8 @@ Reconciliation candidates include:
 REST `not found` remains unresolved. It is not proof the order never existed.
 
 No group automatically returns to `ACTIVE` merely because child queries
-finished. Recommended V1 requires fresh Portfolio Risk assessment and explicit
-resume authorization.
+finished. V1 requires completed reconciliation, fresh Portfolio Risk
+assessment and explicit operator resume authorization.
 
 ## 20. Database Boundary
 
@@ -775,19 +913,23 @@ journal gap.
 
 ## 21. Boundedness
 
-Proposed hard/configured limits:
+Accepted review bounds:
 
 - Basket legs: reuse ADR-010 hard cap 16;
-- child attempts per leg: configured, recommended hard cap 8;
-- total child orders per group: configured, recommended hard cap 64;
+- child attempts per leg: hard cap 8;
+- total child orders per group: hard cap 64;
+- technical retransmissions per action: hard cap 1;
 - unresolved actions per group: configured and fail-closed at capacity;
-- new in-flight submits: V1 default and proposed maximum 1;
+- exposure-changing in-flight submits per group: hard cap 1;
 - active groups per strategy/account: configured;
 - retained terminal groups/idempotency digests: bounded and durable;
 - group journal record size: bounded and larger than the maximum encoded
   Basket envelope only after explicit review;
 - planner work per call and runtime actions per cycle: bounded;
 - recovery queries and stream startup buffer: bounded.
+
+Configured limits may be lower than hard limits. These are operational safety
+bounds, not limits on an economic portfolio model.
 
 Reaching a capacity limit suspends the group and permits no new submit. It
 does not evict an unknown child or forget Basket idempotency.
@@ -803,12 +945,12 @@ dropping identity history.
 | Basket admission redelivery | Idempotent existing group |
 | Changed admission under same ID | Conflict; no action |
 | Basket approval without action permit | No child creation or submit |
-| Stale group revision | Reject permit/proposal |
+| Stale group revision before preparation | Reject permit/action |
 | Expired permit | Reject before child creation |
-| Proposal/permit checksum mismatch | Reject before child creation |
+| Action/permit checksum mismatch | Reject before child creation |
 | Journal append/fsync failure | No external call; latch halted |
 | Operator halt before submit | No external call |
-| Definitely-not-sent transport failure | Persist local terminal attempt |
+| Definitely-not-sent transport failure | Same child may receive one unchanged same-ID technical retransmission; otherwise local terminal failure |
 | Possibly-sent failure or timeout | Recovery required; query, no resubmit |
 | Immediate venue rejection | Persist terminal child rejection |
 | Partial child fill | Update leg fill vector; reassess before next action |
@@ -851,7 +993,7 @@ the shared safe submit handoff.
 
 - no credential enters Basket, group, permit, journal or planner;
 - account IDs remain canonical internal identities;
-- proposal and permit text is bounded and contains no arbitrary venue payload;
+- action and permit text is bounded and contains no arbitrary venue payload;
 - action checksums detect content mismatch but do not authenticate operators;
 - operator commands remain under the existing mTLS/HMAC/audit boundary;
 - unknown execution state is never sanitized into success or failure;
@@ -949,8 +1091,11 @@ the same safe handoff.
 
 - Basket admission creates a group and produces zero exchange calls;
 - no action permit means no child;
-- permit is exact, finite, single-use and revision-bound;
-- changed proposal or stale permit fails before journal mutation;
+- permit is exact, finite, single-action and revision-bound at preparation;
+- changed action or stale permit fails before journal mutation;
+- definitely-not-sent permits at most one same-action, same-child and
+  same-`ClientOrderId` technical retransmission;
+- retransmission never creates a new economic action;
 - operator halt race prevents submit.
 
 ### Group and leg model
@@ -1019,8 +1164,8 @@ possibly-live order.
 
 ## 28. Implementation Dependency
 
-After ADR-011 acceptance, group contracts, state, journal evolution and the
-shared durable execution handoff may be assigned implementation tasks.
+Under this accepted ADR, group contracts, state, journal evolution and the
+shared durable execution handoff are assigned to T029-T031.
 
 No exposure-changing group child may reach an Execution adapter until
 ADR-012 accepts:
@@ -1033,36 +1178,57 @@ ADR-012 accepts:
 Offline ADR-011 state tests may use synthetic signed permits. Testnet and
 production remain separately gated.
 
-## 29. Open Review Decisions
+## 29. Review Decisions Incorporated
 
-Web GPT and the project owner must review:
+Web GPT resolved the eight requested review questions on 2026-07-28:
 
-1. **V1 concurrency:** accept one new in-flight submit per group, or define a
-   bounded atomic action-batch permit now?
-2. **Definitely-not-sent retry:** require a new explicit action, or permit a
-   bounded automatic retry with the same `ClientOrderId`?
-3. **Recovery resume:** require fresh Risk plus explicit operator resume
-   every time, or permit automatic return to `SUSPENDED` after complete
-   reconciliation?
-4. **Closure:** require a fresh Portfolio/Risk target confirmation for
-   `TARGET_CONFIRMED`?
-5. **Implementation sequencing:** implement group foundation after ADR-011
-   acceptance but block external child submission until ADR-012?
-6. **Identity names:** accept `PortfolioApprovalId` and
-   `ExecutionPermitId`, or choose more specific stable names before code?
-7. **Hard bounds:** accept recommended 8 attempts per leg and 64 children per
-   group, or choose lower limits?
-8. **Journal migration:** accept mixed V1/new-version records in one ordered
-   journal rather than a one-time rewrite?
+| Question | Incorporated decision |
+|---|---|
+| V1 concurrency | Hard maximum one exposure-changing in-flight submit per group; parallel mode requires a future ADR |
+| Definitely-not-sent retry | No new economic action automatically; allow at most one unchanged same-`ClientOrderId` technical retransmission with definite not-sent proof |
+| Recovery resume | Completed reconciliation, fresh Portfolio Risk and explicit operator resume are all mandatory |
+| Group closure | `TARGET_CONFIRMED` requires fresh authoritative Portfolio/Risk confirmation |
+| Implementation sequence | After acceptance, offline group model/journal/state/recovery may proceed; external exposure-changing group submit remains blocked by ADR-012 |
+| Identity names | `PortfolioApprovalId` and `ExecutionPermitId` accepted |
+| Operational bounds | Hard 16 legs, 8 children per leg and 64 children per group; configured limits may be lower |
+| Journal evolution | One ordered mixed-version journal; immutable history is not rewritten in place |
 
-## 30. Acceptance Gate
+The review also required explicit layering:
 
-This ADR may move to `Accepted` only after:
+```text
+Order Group execution intent
+  -> ExecutionPlanRef
+  -> ExecutionAction
+  -> ExecutionActionPermit
+  -> Child Order Attempt
+```
 
-1. Web GPT reviews the current-code gap and ownership split;
-2. the project owner resolves section 29;
-3. interface names and hard bounds are fixed;
-4. journal backward compatibility is explicit;
-5. ADR-012 dependencies are not accidentally implemented here;
-6. tasks and acceptance IDs are assigned;
-7. no Parent/Child code has been written before acceptance.
+That layering is incorporated in sections 1, 5 and 6.
+
+## 30. Acceptance Record
+
+The gate was satisfied on 2026-07-28:
+
+1. Web GPT reviewed the Proposed handoff and supplied eight conditional
+   decisions plus the Execution Plan/Action distinction.
+2. The project owner supplied that review to Codex with an instruction to
+   read and act; the review explicitly directs promotion after revision.
+3. Codex incorporated every decision before promotion.
+4. Interface names and hard bounds are fixed.
+5. Mixed-version journal backward compatibility is explicit.
+6. ADR-012 dependencies remain outside this ADR.
+7. No Parent/Child code was written before acceptance.
+
+Authorized scope after acceptance:
+
+```text
+T029  immutable group/plan/action/permit contracts and identifiers
+T030  bounded group state, journal, replay and recovery model
+T031  shared durable submit handoff and fail-closed group runtime boundary
+A014  deterministic offline ADR-011 acceptance
+```
+
+T031 must keep exposure-changing Order Group calls from reaching any
+Execution adapter until ADR-012 is accepted. Offline synthetic permits may
+exercise preparation, state and recovery without granting live execution
+authority.

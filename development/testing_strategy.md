@@ -60,3 +60,38 @@ by the ADR-010 implementation.
 
 Evidence: `tests/acceptance/test_basket_intents.py`, the Basket unit and
 Strategy compatibility suites, and the unchanged single-leg regression.
+
+## A014 Parent Order Group Acceptance
+
+Status: Authorized by accepted ADR-011; not yet implemented.
+
+T029-T031 must add deterministic offline tests for:
+
+- strong `OrderGroupId`, `ExecutionPlanId`, `GroupActionId`,
+  `PortfolioApprovalId` and `ExecutionPermitId` identities;
+- immutable admission, plan, action, permit and group-view contracts;
+- exact action/permit checksum, revision, expiry and single-action binding;
+- two-to-16-leg groups with zero children at creation;
+- zero-to-eight sequential actions and child attempts per Basket leg;
+- the 64-child group hard bound and lower configured limits;
+- exactly one exposure-changing in-flight submit per group;
+- unchanged maker/taker, price, quantity and identity rules;
+- at most one definitely-not-sent technical retransmission with the same
+  action, child and `ClientOrderId`;
+- possibly-sent and unknown outcomes entering `RECOVERY_REQUIRED` with no
+  retransmission;
+- child `PARTIALLY_FILLED` facts without an OMS `HEDGED` state;
+- `TARGET_CONFIRMED` requiring fresh synthetic Portfolio/Risk evidence;
+- mixed legacy and group journal replay without rewriting old facts;
+- restart beginning halted, complete reconciliation, fresh Risk and explicit
+  operator resume;
+- durable-before-external-I/O fault injection at every handoff boundary;
+- unchanged existing `OrderRequest`, child state machine, Execution adapters
+  and single-leg Pipeline behavior;
+- the concrete single-leg runtime persisting `SUBMITTING` before gateway and
+  returning immediate outcomes to OMS.
+
+A014 must also prove a negative boundary: no exposure-changing Order Group
+child reaches an Execution adapter. Synthetic permits may test durable
+preparation, state and recovery only. Real action-permit issuance and group
+submission remain blocked until ADR-012.
