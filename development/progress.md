@@ -175,14 +175,28 @@ target-host performance and authenticated Testnet gates.
 - A013 offline compatibility and replay acceptance covering unchanged
   `PositionTargetIntent`, BTC Spot `+10`/Perpetual `-10`, a three-leg option
   spread with Delta hedge, Snapshot mismatch and zero child execution.
+- T029 immutable `OrderGroupId`, plan/action/permit contracts, exact
+  checksums, bounded codecs and single-action permit binding.
+- T030 generic two-to-16-leg Order Group state with one unresolved action,
+  exact signed child-fill vectors, 8-attempt/64-child hard limits, lower
+  deployment limits, mixed V1/V2 OMS journal replay and
+  `RECOVERY_REQUIRED`.
+- T031 shared durable submit handoff for the existing single-leg Pipeline:
+  `SUBMITTING` is persisted before external I/O and immediate accepted,
+  rejected, definitely-not-sent or unknown outcomes return to OMS.
+- The grouped runtime prepares and replays synthetic child attempts offline
+  but raises `GroupedExecutionBlockedError` before any Execution adapter;
+  real permit issuance and external grouped submission remain ADR-012 gates.
+- A014 offline acceptance covers two-leg Spot/Perpetual and three-leg
+  option-spread/Delta-hedge groups, exact permits, same-ID technical retry,
+  unknown recovery, hard/configured bounds, closure evidence, durability,
+  mixed replay and unchanged single-leg behavior.
 
 ## In Progress
 
-- ADR-011 Parent Order Group and Multi-leg Execution Model is `Accepted`.
-  All eight Web GPT review decisions and Execution
-  Intent/Plan/Action/Child layering are incorporated. T029-T031 and A014 are
-  authorized for bounded offline implementation; external exposure-changing
-  group submission remains blocked by ADR-012.
+- ADR-012 Portfolio Risk Extension architecture review. No portfolio Delta,
+  basis, margin, liquidation calculation or real action-permit issuance has
+  been implemented.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -202,30 +216,29 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Implement T029 immutable Order Group and Execution Plan/Action/Permit
-   contracts, preserving all existing single-leg APIs.
-2. Implement T030 bounded group state, journal, replay and recovery.
-3. Implement T031 shared durable handoff with a fail-closed external group
-   submission gate, then run A014.
-4. Configure protected-branch checks after agreeing the direct-push policy.
-5. Configure concrete TLS/mTLS termination, protected identity forwarding,
+1. Draft and review ADR-012 Portfolio Risk Extension against the implemented
+   immutable group views and permit-validation boundary.
+2. Keep grouped external submission blocked until ADR-012 is accepted and
+   its implementation/acceptance tasks are explicitly authorized.
+3. Configure protected-branch checks after agreeing the direct-push policy.
+4. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-6. Configure a persistent approved host time source and collect clock
+5. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-7. Run A002C authenticated Binance Testnet acceptance.
-8. Run A002B target-host soak and latency-distribution acceptance.
-9. Exercise and approve the initial runbooks on the target host; add Binance
+6. Run A002C authenticated Binance Testnet acceptance.
+7. Run A002B target-host soak and latency-distribution acceptance.
+8. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 397 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 34 passed.
+- `python -m unittest discover -s tests -q`: 420 passed.
+- `python -m unittest discover -s tests/acceptance -q`: 36 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 88 source files.
-- Pytest branch coverage: 86.34%; 85% CI gate passed (397 tests and
-  129 subtests).
+- `python -m mypy`: passed with MyPy 2.3.0 for 93 source files.
+- Pytest branch coverage: 86.10%; the 85% CI gate passes with 420 tests and
+  132 subtests.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

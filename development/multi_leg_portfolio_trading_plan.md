@@ -1,7 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: Planned — ADR-009/010/011 accepted; ADR-011 offline foundation
-authorized; application blocked by ADR-012 through ADR-014
+Status: In progress — ADR-009/010/011 accepted; ADR-011 offline foundation
+complete; application blocked by ADR-012 through ADR-014
 
 Created: 2026-07-27
 
@@ -15,7 +15,7 @@ ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
 tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
 current-code compatibility review; T027/T028/A013 are complete. ADR-011 was
 accepted after incorporating the second Web GPT review; T029-T031/A014 are
-authorized for bounded offline implementation. ADR-012 through ADR-014 remain
+complete for bounded offline implementation. ADR-012 through ADR-014 remain
 blocked by their declared dependencies, and external exposure-changing group
 submission is not authorized.
 
@@ -983,11 +983,13 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-ADR-011 is accepted. Implement T029, T030 and T031 in dependency order, then
-run A014. T031 must fail closed before an exposure-changing Order Group child
-reaches Execution; external group submission remains blocked until ADR-012.
+T029, T030, T031 and A014 are complete. The next architecture task is to
+draft and review ADR-012 against the immutable per-leg fill/working vectors
+and exact action-permit validation boundary. External group submission
+remains blocked until ADR-012 is accepted and its implementation tasks are
+explicitly authorized.
 
 Do not create Funding Arbitrage application code. Basket decision contracts
-are complete; only the bounded offline OMS Order Group foundation is now
-authorized. Portfolio Risk, Financial Ledger and Carry implementation remain
-blocked by their owning ADRs.
+and the bounded offline OMS Order Group foundation are complete. Portfolio
+Risk, Financial Ledger and Carry implementation remain blocked by their
+owning ADRs.

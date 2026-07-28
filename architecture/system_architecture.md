@@ -51,9 +51,22 @@ Strategy
 ```
 
 Basket output is caused by one matching typed decision snapshot. The current
-single-leg Pipeline rejects Basket before Risk and OMS. Parent/Child order
-groups, whole-Basket Risk and application execution remain gated by later
-ADRs; ADR-010 creates no child order or venue request.
+single-leg Pipeline rejects Basket before Risk and OMS. ADR-011 now provides
+the bounded offline execution-control layer:
+
+```text
+BasketTargetIntent
+  -> OrderGroupAdmission
+  -> Order Group + ExecutionPlanRef
+  -> exact ExecutionAction
+  -> synthetic ExecutionActionPermit
+  -> durable child OrderRequest / OrderStateMachine
+```
+
+OMS owns group control, child facts, journal replay and recovery. It does not
+own Delta, basis, margin, hedge assessment or Carry semantics. The runtime
+hard-blocks grouped external submission until ADR-012 defines and accepts
+real Portfolio Risk approval and action-permit issuance.
 
 ## Design Principles
 

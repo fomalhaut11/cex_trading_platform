@@ -31,9 +31,9 @@
 | T026 | Deterministic bounded snapshot coordinator and replay integration | Complete | T025 |
 | T027 | Basket IDs, Objective Type registry, immutable contracts and policy | Complete | ADR-010 |
 | T028 | Strategy Snapshot/Basket compatibility and explicit single-leg rejection | Complete | T027 |
-| T029 | Order Group, Execution Plan/Action/Permit identifiers and immutable contracts | Authorized | ADR-011 |
-| T030 | Bounded Order Group state, mixed-version OMS journal, replay and recovery model | Authorized | T029, T016 |
-| T031 | Shared durable submit handoff and fail-closed group runtime boundary | Authorized | T030, T015-T016 |
+| T029 | Order Group, Execution Plan/Action/Permit identifiers and immutable contracts | Complete | ADR-011 |
+| T030 | Bounded Order Group state, mixed-version OMS journal, replay and recovery model | Complete | T029, T016 |
+| T031 | Shared durable submit handoff and fail-closed group runtime boundary | Complete | T030, T015-T016 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -49,7 +49,7 @@
 | A011 | Offline operator endpoint, audit and recovery acceptance | Complete | T024 |
 | A012 | Offline decision-snapshot contract, coherence, replay and restart acceptance | Complete | T025-T026 |
 | A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Complete | T027-T028 |
-| A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Authorized | T029-T031 |
+| A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Complete | T029-T031 |
 
 ## Current Acceptance Baseline
 
@@ -73,10 +73,10 @@ or exchange requests.
 ADR-011 Parent Order Group and Multi-leg Execution Model was accepted on
 2026-07-28 after Codex incorporated all eight second-review decisions and the
 Execution Intent/Plan/Action/Child distinction. T029, T030, T031 and A014 are
-authorized.
+complete.
 
-This authorization is offline and bounded. T031 must fail closed before any
+The implemented scope is offline and bounded. T031 fails closed before any
 exposure-changing Order Group child reaches an Execution adapter. Real
-Portfolio action permits and external group submission remain blocked until
-ADR-012 is accepted. Funding Arbitrage, Testnet and production multi-leg
-execution remain unauthorized.
+Portfolio action-permit issuance and external group submission remain blocked
+until ADR-012 is accepted. Funding Arbitrage, Testnet and production
+multi-leg execution remain unauthorized.

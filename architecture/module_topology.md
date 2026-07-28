@@ -55,10 +55,23 @@ BasketTargetIntent
   -> existing Execution adapter
 ```
 
-T029-T031/A014 may implement and test the bounded offline group foundation.
-Until ADR-012 is accepted, runtime must fail closed before an
-exposure-changing group child reaches an Execution adapter. The current
-single-leg Pipeline remains the production regression path.
+T029-T031/A014 implement the bounded offline group foundation:
+
+```text
+core.identifiers
+  -> oms.group_model / oms.group_codec
+  -> oms.group_state
+  -> oms.journal
+  -> runtime.order_group_runtime
+```
+
+`runtime.execution_handoff` is shared by the existing single-leg Pipeline:
+it persists `SUBMITTING` before external I/O and returns every immediate
+result or typed unknown/not-sent failure to OMS. The Order Group runtime can
+durably prepare synthetic child attempts, but its external submission method
+always fails closed. Until ADR-012 is accepted, no exposure-changing group
+child can reach an Execution adapter. The current single-leg Pipeline remains
+the production regression path.
 
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
@@ -89,6 +102,10 @@ listener. Concrete TLS termination remains a deployment boundary.
     application, runtime or venue adapter.
 16. An Execution Plan proposes immutable actions but owns no Risk or operator
     authority; only Runtime may coordinate the accepted boundaries.
+17. OMS group state owns group control, child mappings and execution facts;
+    it cannot compute Delta, basis, margin, `HEDGED` or application meaning.
+18. `ExecutionActionPermit` is an immutable ADR-012-facing evidence contract;
+    OMS validates exact binding but does not issue real permits.
 
 ## Process Boundaries
 

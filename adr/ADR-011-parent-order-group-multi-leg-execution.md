@@ -1232,3 +1232,29 @@ T031 must keep exposure-changing Order Group calls from reaching any
 Execution adapter until ADR-012 is accepted. Offline synthetic permits may
 exercise preparation, state and recovery without granting live execution
 authority.
+
+## 31. Implementation Record
+
+T029, T030, T031 and A014 were completed offline on 2026-07-28 in commit
+`9c1b0afb09744759b98429f7d8e99542bebd0aa1`.
+
+Implemented modules:
+
+```text
+core/identifiers.py
+oms/group_model.py
+oms/group_codec.py
+oms/group_state.py
+oms/journal.py
+runtime/execution_handoff.py
+runtime/order_group_runtime.py
+```
+
+The single-leg Pipeline now persists `SUBMITTING` before external I/O and
+returns immediate outcomes to OMS. The grouped runtime durably prepares and
+replays synthetic children, but its external submission boundary always
+raises before an Execution adapter. No ADR-012 Risk calculation or real
+permit issuance was added.
+
+The self-contained implementation evidence and test matrix are recorded in
+`ai_collaboration/topics/funding_arbitrage/80_codex_adr011_implementation_acceptance.md`.

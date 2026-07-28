@@ -63,7 +63,7 @@ Strategy compatibility suites, and the unchanged single-leg regression.
 
 ## A014 Parent Order Group Acceptance
 
-Status: Authorized by accepted ADR-011; not yet implemented.
+Status: Complete on 2026-07-28 for the T029-T031 offline boundary.
 
 T029-T031 must add deterministic offline tests for:
 
@@ -95,3 +95,18 @@ A014 must also prove a negative boundary: no exposure-changing Order Group
 child reaches an Execution adapter. Synthetic permits may test durable
 preparation, state and recovery only. Real action-permit issuance and group
 submission remain blocked until ADR-012.
+
+Evidence:
+
+- `tests/acceptance/test_adr011_order_group.py`;
+- `tests/test_oms_order_group.py`;
+- `tests/test_execution_handoff.py`;
+- mixed legacy/group and immediate-outcome cases in
+  `tests/test_oms_journal.py`;
+- unchanged single-leg Pipeline and runtime acceptance suites.
+
+The tests exercise the immutable 8-attempt/64-child hard bounds and lower
+deployment limits, one unresolved action, one same-identity technical
+retransmission, `RECOVERY_REQUIRED`, exact fill vectors and
+`TARGET_CONFIRMED` evidence. External grouped execution remains deliberately
+unreachable, so this completion is not ADR-012 Risk acceptance.

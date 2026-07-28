@@ -416,3 +416,39 @@ journal。Codex 逐项响应见 `63_codex_adr011_review_response.md`。
 但 T031 必须在 exposure-changing Order Group child 到达 Execution adapter
 之前 fail closed。真实 Portfolio action permit、外部组合提交、Funding
 Arbitrage、Testnet 和生产执行仍由 ADR-012 及后续门禁阻断。
+
+## 14. ADR-011 Implementation Acceptance
+
+T029、T030、T031 和 A014 已于 2026-07-28 完成。
+
+实现保持以下边界：
+
+```text
+ADR-010 BasketTargetIntent
+  -> ADR-011 OrderGroupAdmission
+  -> Order Group + ExecutionPlanRef
+  -> ExecutionAction
+  -> synthetic ExecutionActionPermit
+  -> durable Child Order Attempt
+  -X-> grouped external Execution (blocked until ADR-012)
+```
+
+OMS 新增通用 N-leg 执行控制、精确 action/permit/revision/expiry 校验、
+每腿 signed fill/working vector、单 action permit 绑定、同身份一次有限
+技术重传、`RECOVERY_REQUIRED`、16/8/64 硬边界、较低部署边界以及
+V1/V2 混合日志重放。
+
+旧单腿路径也已使用共享 durable handoff：`SUBMITTING` 在外部 I/O 前
+持久化，同步 accepted/rejected/definitely-not-sent/unknown 结果返回 OMS。
+异步 bridge timeout 被分类为 unknown，而不是可盲目重试的 failure。
+
+未实现：
+
+- Delta、basis、margin、liquidation 或 hedge 计算；
+- 真实 `ExecutionActionPermit` 发行；
+- Funding/Carry 特化；
+- grouped Execution adapter 路由或外部提交；
+- Testnet/生产多腿执行。
+
+自包含实现验收证据见
+`80_codex_adr011_implementation_acceptance.md`；下一架构边界是 ADR-012。

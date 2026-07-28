@@ -18,3 +18,22 @@ Persistent recovery records use their own format version and encode exact
 fixed-point values as integer `raw` plus decimal `scale`. REST responses and
 user-stream reports must be normalized to `OrderReconciliationSnapshot`
 before they cross into OMS.
+
+The single-leg runtime uses a shared durable handoff:
+
+```text
+OrderCreated
+  -> OrderSubmitting persisted and fsynced
+  -> external Execution submit
+  -> immediate OrderSubmitOutcome persisted
+  -> private-stream / reconciliation lifecycle facts
+```
+
+An accepted immediate result does not invent `OPEN`; the order stays
+`SUBMITTING` until canonical venue evidence arrives. A definitely-not-sent
+failure becomes local `FAILED`. A possibly-sent or untyped failure remains a
+`SUBMITTING` reconciliation candidate.
+
+Multi-leg execution-control contracts are specified separately in
+`interfaces/order_group_schema.md`. Existing `OrderRequest` and Execution
+adapter input are unchanged.

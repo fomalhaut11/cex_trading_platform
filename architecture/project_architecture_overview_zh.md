@@ -320,9 +320,14 @@ OrderSide, OrderType, TimeInForce, OrderStatus
 OrderStateMachine
 JsonLinesOmsJournal
 OrderReconciliationSnapshot / ReconciliationResult
+OrderGroupAdmission, ExecutionPlanRef, ExecutionAction
+ExecutionActionPermit, OrderGroupView, OrderGroupStateMachine
 ```
 
-当前 OMS 管理单个订单生命周期。Parent/Child Order Group 仍是规划能力。
+当前 OMS 同时保留原有单订单生命周期，并已实现 ADR-011 的离线
+Parent Order Group 执行控制：组合身份、child 映射、per-leg 成交向量、
+混合版本日志和恢复。OMS 不计算 Delta、basis、margin、`HEDGED` 或
+Funding 语义；这些仍属于 ADR-012 及应用层。
 
 ### 6.8 `execution`
 
@@ -444,6 +449,7 @@ Runtime 中的单写者 `SnapshotCoordinator` 只保留每个已配置来源的�
 ```text
 TradingPipeline, TradingApplication, TradingDeploymentRuntime
 CanonicalOmsApplicationService, AsyncExecutionPortBridge
+DurableExecutionHandoff, OrderGroupRuntime
 RecorderHandoff
 StartupOrderReconciliationCoordinator
 PrivateStreamApplication
@@ -575,17 +581,17 @@ runtime -> all required domain ports
 
 ## 13. 当前测试和质量证据
 
-截至本基线，项目包含 86 个 Python 源码文件和 61 个 Python 测试文件。
+截至本基线，项目包含 93 个 Python 源码文件和 68 个 Python 测试文件。
 最近记录的完整验证结果：
 
 | 检查 | 结果 |
 |---|---|
 | 源码编译 | 通过 |
-| 完整回归 | 379 passed |
-| Acceptance 场景 | 31 passed |
+| 完整回归 | 420 passed，另有 132 subtests |
+| Acceptance 场景 | 36 passed |
 | Ruff | 通过 |
-| strict MyPy | 86 个源码文件通过 |
-| Branch coverage | 86.34%，高于 85% CI 门禁 |
+| strict MyPy | 93 个源码文件通过 |
+| Branch coverage | 86.10%，高于 85% CI 门禁 |
 | Python | 3.11 和 3.14 通过 |
 | 高置信度秘密扫描 | 通过 |
 
@@ -600,6 +606,8 @@ runtime -> all required domain ports
 - 私有流启动竞态和资源清理；
 - 时钟、健康、operator halt、reduce-only；
 - mTLS 身份输入、HMAC 命令、重放保护和外部审计失败。
+- Order Group 精确 permit、16/8/64 边界、部分成交向量、unknown 恢复、
+  V1/V2 混合日志和 ADR-012 前外部组合提交硬阻断。
 
 这些结果证明离线确定性基础，不等同于目标主机性能、Testnet 或生产验收。
 
@@ -685,15 +693,19 @@ strategy/basket.py
 strategy/basket_codec.py
 ```
 
-后续 ADR 计划新增但尚不存在于源码的包包括：
+ADR-011 已新增：
 
 ```text
-risk/portfolio.py
-oms/order_group.py
-accounting/
-applications/carry/
-runtime/basket_pipeline.py
+oms/group_model.py
+oms/group_codec.py
+oms/group_state.py
+runtime/execution_handoff.py
+runtime/order_group_runtime.py
 ```
+
+后续 ADR 仍计划新增 `risk/portfolio.py`、`accounting/` 和
+`applications/carry/`。当前 grouped external submit 在 Runtime 中硬阻断，
+不会到达 Execution adapter。
 
 ADR 状态：
 
@@ -701,7 +713,7 @@ ADR 状态：
 |---|---|---|
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
-| ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；Web GPT 八项意见已纳入，T029-T031/A014 获得离线授权，外部组合提交仍受 ADR-012 阻断 |
+| ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 已完成离线实现和验收，外部组合提交仍受 ADR-012 阻断 |
 | ADR-012 | Portfolio Risk | 尚未起草/接受 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |
 | ADR-014 | Carry Application Boundary | 尚未起草/接受 |
@@ -736,6 +748,7 @@ Operations 文档后，才会改变工程基线。
 它仍处于 **Phase 4：Production readiness and external acceptance**。
 外部 Testnet、目标主机性能和真实部署控制尚未验收，因此不能称为生产上线完成。
 
-多腿组合交易是下一轮架构升级。它会在保留当前单品种基础和执行适配器的前提下，
-增加类型化决策快照、Basket Intent、组合风控、OMS Order Group、财务账本和
-Carry 应用层；截至本文基线，这些能力仍是计划，不是已实现代码。
+多腿组合交易的事实层、目标层和离线执行控制层已经分别由 ADR-009、
+ADR-010 和 ADR-011 建立。当前仍未实现的是 ADR-012 组合风险授权、
+ADR-013 财务账本和 ADR-014 Carry 应用层。外部组合提交保持硬阻断，
+因此本阶段完成不代表 Testnet 或生产多腿交易已获授权。
