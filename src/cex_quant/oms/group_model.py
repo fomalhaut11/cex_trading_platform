@@ -46,6 +46,7 @@ MAX_GROUP_CHILDREN = 64
 MAX_CHILD_ATTEMPTS_PER_LEG = 8
 MAX_TECHNICAL_RETRANSMISSIONS = 1
 MAX_RETAINED_ORDER_GROUPS = 4_096
+MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT = 4_096
 MAX_GROUP_REASON_LENGTH = 512
 MAX_GROUP_ID_LENGTH = 128
 
@@ -87,6 +88,9 @@ class OrderGroupLimits:
     max_child_attempts_per_leg: int = MAX_CHILD_ATTEMPTS_PER_LEG
     max_children_per_group: int = MAX_GROUP_CHILDREN
     max_retained_groups: int = MAX_RETAINED_ORDER_GROUPS
+    max_active_groups_per_strategy_account: int = (
+        MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT
+    )
 
     def __post_init__(self) -> None:
         _require_bounded_positive_int(
@@ -103,6 +107,11 @@ class OrderGroupLimits:
             self.max_retained_groups,
             name="max_retained_groups",
             maximum=MAX_RETAINED_ORDER_GROUPS,
+        )
+        _require_bounded_positive_int(
+            self.max_active_groups_per_strategy_account,
+            name="max_active_groups_per_strategy_account",
+            maximum=MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT,
         )
 
 
@@ -174,7 +183,7 @@ class ExecutionAction:
 
     def __post_init__(self) -> None:
         _require_id(self.group_id, name="group_id")
-        _require_id(self.action_id, name="action_id")
+        _require_checksum(str(self.action_id), name="action_id")
         _require_id(self.basket_leg_id, name="basket_leg_id")
         _require_id(self.account_id, name="account_id")
         if self.expected_group_revision <= 0:
@@ -211,7 +220,7 @@ class ExecutionActionPermit:
     def __post_init__(self) -> None:
         _require_id(self.permit_id, name="permit_id")
         _require_id(self.group_id, name="group_id")
-        _require_id(self.action_id, name="action_id")
+        _require_checksum(str(self.action_id), name="action_id")
         _require_id(self.risk_snapshot_id, name="risk_snapshot_id")
         _require_checksum(self.action_checksum, name="action_checksum")
         if self.expected_group_revision <= 0:
@@ -453,6 +462,7 @@ def _require_bounded_positive_int(
 
 
 __all__ = [
+    "MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT",
     "MAX_CHILD_ATTEMPTS_PER_LEG",
     "MAX_GROUP_CHILDREN",
     "MAX_RETAINED_ORDER_GROUPS",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from threading import get_ident
 
 from cex_quant.core import (
     ClientOrderId,
@@ -26,12 +27,14 @@ from cex_quant.oms import (
     OmsJournalEntry,
     OrderEvent,
     OrderGroupAdmission,
+    OrderGroupCapacityError,
     OrderGroupCloseOutcome,
     OrderGroupLimits,
     OrderGroupStateError,
     OrderGroupStateMachine,
     OrderGroupStatus,
     OrderGroupView,
+    OrderGroupWriterViolationError,
     OrderRequest,
     OrderStatus,
     VenueEventEntry,
@@ -69,6 +72,7 @@ class OrderGroupRuntime:
         self._now_ns = now_ns
         self._journal = journal
         self._limits = limits or OrderGroupLimits()
+        self._writer_thread_id = get_ident()
         self._persistence_failure: Exception | None = None
         self._groups: dict[OrderGroupId, OrderGroupStateMachine] = {}
         self._intent_to_group: dict[IntentId, OrderGroupId] = {}
@@ -142,6 +146,18 @@ class OrderGroupRuntime:
         )
 
     def activate_group(self, group_id: OrderGroupId) -> OrderGroupView:
+        self._assert_persistence_healthy()
+        if self._active_group_capacity_reached(group_id):
+            machine = self._group(group_id)
+            reason = "active Order Group capacity reached for strategy/account"
+            if machine.status is OrderGroupStatus.CREATED:
+                self._change_control(
+                    group_id,
+                    OrderGroupStatus.SUSPENDED,
+                    at_ns=self._now_ns(),
+                    reason=reason,
+                )
+            raise OrderGroupRuntimeError(reason)
         return self._change_control(
             group_id,
             OrderGroupStatus.ACTIVE,
@@ -245,12 +261,26 @@ class OrderGroupRuntime:
             post_only=action.post_only,
             position_side=action.position_side,
         )
-        machine.validate_action_preparation(
-            action=action,
-            permit=permit,
-            request=request,
-            at_ns=at_ns,
-        )
+        try:
+            machine.validate_action_preparation(
+                action=action,
+                permit=permit,
+                request=request,
+                at_ns=at_ns,
+            )
+        except OrderGroupCapacityError as error:
+            self._change_control(
+                action.group_id,
+                OrderGroupStatus.SUSPENDED,
+                at_ns=at_ns,
+                reason=str(error),
+            )
+            raise
+        child_owner = self._child_to_group.get(request.client_order_id)
+        if child_owner is not None and child_owner != action.group_id:
+            raise OrderGroupRuntimeError(
+                "ClientOrderId is already owned by another Order Group"
+            )
         self._persist(
             GroupActionPreparedEntry(
                 group_id=action.group_id,
@@ -279,6 +309,7 @@ class OrderGroupRuntime:
     ) -> None:
         """Fail closed until ADR-012 supplies the real authorization boundary."""
 
+        self._assert_persistence_healthy()
         del client_order_id
         raise GroupedExecutionBlockedError(
             "grouped external execution is blocked until ADR-012 is accepted"
@@ -482,6 +513,13 @@ class OrderGroupRuntime:
                         portfolio_confirmation_id=(entry.portfolio_confirmation_id),
                     )
                 elif isinstance(entry, GroupActionPreparedEntry):
+                    child_owner = self._child_to_group.get(
+                        entry.request.client_order_id
+                    )
+                    if child_owner is not None and child_owner != entry.group_id:
+                        raise OrderGroupRecoveryError(
+                            "recovered ClientOrderId has multiple group owners"
+                        )
                     machine = self._group(entry.group_id)
                     machine.prepare_action(
                         action=entry.action,
@@ -575,6 +613,34 @@ class OrderGroupRuntime:
         self._intent_to_group[intent_id] = group_id
         self._creation[group_id] = (admission, execution_plan)
 
+    def _active_group_capacity_reached(
+        self,
+        group_id: OrderGroupId,
+    ) -> bool:
+        admission = self._creation[group_id][0]
+        candidate_scopes = {
+            (admission.basket.strategy_id, leg.account_id)
+            for leg in admission.basket.legs
+        }
+        counts = {scope: 0 for scope in candidate_scopes}
+        for existing_group_id, machine in self._groups.items():
+            if (
+                existing_group_id == group_id
+                or machine.status is not OrderGroupStatus.ACTIVE
+            ):
+                continue
+            existing = self._creation[existing_group_id][0]
+            existing_scopes = {
+                (existing.basket.strategy_id, leg.account_id)
+                for leg in existing.basket.legs
+            }
+            for scope in candidate_scopes & existing_scopes:
+                counts[scope] += 1
+        return any(
+            count >= self._limits.max_active_groups_per_strategy_account
+            for count in counts.values()
+        )
+
     def _group(self, group_id: OrderGroupId) -> OrderGroupStateMachine:
         try:
             return self._groups[group_id]
@@ -593,6 +659,10 @@ class OrderGroupRuntime:
             ) from error
 
     def _assert_persistence_healthy(self) -> None:
+        if get_ident() != self._writer_thread_id:
+            raise OrderGroupWriterViolationError(
+                "Order Group runtime may only be mutated by its owner thread"
+            )
         if self._persistence_failure is not None:
             raise OrderGroupPersistenceError(
                 "Order Group persistence is unhealthy; restart required"

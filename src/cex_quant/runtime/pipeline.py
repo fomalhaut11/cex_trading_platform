@@ -20,7 +20,10 @@ from cex_quant.strategy import (
     StrategyInput,
 )
 
-from .execution_handoff import DurableExecutionHandoff
+from .execution_handoff import (
+    DurableExecutionHandoff,
+    ExternalSubmitBlockedError,
+)
 
 
 class PipelineStage(StrEnum):
@@ -192,6 +195,7 @@ class TradingPipeline:
         self._execution_handoff = DurableExecutionHandoff(
             oms=oms,
             execution=execution,
+            guard=self,
         )
         self._recorder = recorder
         self._status = PipelineStatus.RUNNING
@@ -209,6 +213,16 @@ class TradingPipeline:
         if self._status is PipelineStatus.FAILED:
             raise PipelineStateError("failed pipeline cannot be stopped")
         self._status = PipelineStatus.STOPPED
+
+    def assert_submit_allowed(self, request: OrderRequest) -> None:
+        """Sample runtime/operator health after durability and before I/O."""
+
+        del request
+        health = self._health.health()
+        if health.status is not HealthStatus.HEALTHY:
+            raise ExternalSubmitBlockedError(
+                f"immediate submit health is {health.status.value}"
+            )
 
     def process(self, event: MarketEvent) -> PipelineResult:
         if self._status is not PipelineStatus.RUNNING:

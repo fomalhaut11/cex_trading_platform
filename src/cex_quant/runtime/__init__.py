@@ -44,6 +44,8 @@ from .deployment import (
 from .execution_handoff import (
     DurableExecutionHandoff,
     DurableSubmitStatePort,
+    ExternalSubmitBlockedError,
+    ExternalSubmitGuardPort,
     SynchronousExecutionSubmitPort,
 )
 from .operations import (
@@ -189,6 +191,8 @@ __all__ = [
     "ExecutionBridgeStateError",
     "ExecutionBridgeUnknownError",
     "ExecutionPort",
+    "ExternalSubmitBlockedError",
+    "ExternalSubmitGuardPort",
     "FeatureEngineAdapter",
     "FeaturePort",
     "GroupedExecutionBlockedError",

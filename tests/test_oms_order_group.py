@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from dataclasses import FrozenInstanceError, replace
 from pathlib import Path
+from threading import Thread
 
 from group_test_support import (
     ManualClock,
@@ -18,6 +19,7 @@ from group_test_support import (
 from cex_quant.core import (
     ClientOrderId,
     ExecutionPermitId,
+    GroupActionId,
     OrderGroupId,
     PortfolioApprovalId,
     Quantity,
@@ -38,6 +40,7 @@ from cex_quant.oms import (
     OrderGroupStateMachine,
     OrderGroupStatus,
     OrderGroupTransitionError,
+    OrderGroupWriterViolationError,
     OrderStatus,
     decode_execution_action,
     decode_execution_action_permit,
@@ -174,9 +177,30 @@ class OrderGroupContractTests(unittest.TestCase):
             replace(admitted, valid_until_ns=UnixNanos(5_001))
         with self.assertRaisesRegex(ValueError, "positive"):
             replace(execution_plan(), version=0)
+        runtime, clock = active_runtime()
+        action = action_for(
+            runtime.groups()[0],
+            leg_index=0,
+            now_ns=clock.step(),
+        )
+        with self.assertRaisesRegex(ValueError, "SHA-256"):
+            replace(action, action_id=GroupActionId("not-a-sha256-id"))
 
 
 class OrderGroupStateTests(unittest.TestCase):
+    def test_suspended_group_cannot_start_prepared_transmission(self) -> None:
+        runtime, clock = active_runtime()
+        group = runtime.groups()[0]
+        action = action_for(group, leg_index=0, now_ns=clock.step())
+        runtime.prepare_child_submit(
+            action=action,
+            permit=permit_for(action, issued_at_ns=clock()),
+        )
+        runtime.suspend_group(group.order_group_id, reason="operator halted")
+
+        with self.assertRaisesRegex(OrderGroupTransitionError, "ACTIVE"):
+            runtime.mark_transmitting(group.order_group_id, action.action_id)
+
     def test_configured_and_hard_child_bounds_fail_closed(self) -> None:
         limits = OrderGroupLimits(
             max_child_attempts_per_leg=1,
@@ -184,7 +208,12 @@ class OrderGroupStateTests(unittest.TestCase):
             max_retained_groups=1,
         )
         clock = ManualClock()
-        runtime = OrderGroupRuntime(now_ns=clock, limits=limits)
+        journal = _RecordingJournal()
+        runtime = OrderGroupRuntime(
+            now_ns=clock,
+            limits=limits,
+            journal=journal,
+        )
         created = runtime.create_group(admission(), execution_plan())
         clock.step()
         runtime.activate_group(created.order_group_id)
@@ -218,6 +247,19 @@ class OrderGroupStateTests(unittest.TestCase):
                     permit_id="permit-at-configured-limit",
                 ),
             )
+        self.assertEqual(
+            runtime.group(created.order_group_id).status,
+            OrderGroupStatus.SUSPENDED,
+        )
+        recovered = OrderGroupRuntime(
+            now_ns=clock,
+            limits=limits,
+            journal=journal,
+        )
+        self.assertEqual(
+            recovered.group(created.order_group_id).status,
+            OrderGroupStatus.SUSPENDED,
+        )
         with self.assertRaisesRegex(OrderGroupRuntimeError, "capacity"):
             runtime.create_group(
                 admission(
@@ -340,13 +382,14 @@ class OrderGroupStateTests(unittest.TestCase):
                 ),
             )
         with self.assertRaisesRegex(OrderGroupIdentityError, "action identity"):
+            different_action_id = GroupActionId("f" * 64)
             runtime.prepare_child_submit(
                 action=action,
                 permit=replace(
                     permit,
                     action_id=replace(
                         action,
-                        action_id=type(action.action_id)("different"),
+                        action_id=different_action_id,
                     ).action_id,
                 ),
             )
@@ -380,6 +423,11 @@ class OrderGroupStateTests(unittest.TestCase):
                     permit_id="next-action-permit",
                 ),
             )
+        self.assertEqual(
+            runtime.group(group.order_group_id).status,
+            OrderGroupStatus.SUSPENDED,
+        )
+        runtime.activate_group(group.order_group_id)
 
         first = runtime.mark_transmitting(group.order_group_id, action.action_id)
         self.assertEqual(first.actions[0].transport_attempts, 1)
@@ -577,6 +625,145 @@ class _RecordingJournal:
 
 
 class OrderGroupRuntimeTests(unittest.TestCase):
+    def test_failed_group_append_creates_no_group_and_latches_runtime(self) -> None:
+        journal = _RecordingJournal()
+        journal.fail = True
+        runtime = OrderGroupRuntime(now_ns=ManualClock(), journal=journal)
+
+        with self.assertRaises(OrderGroupPersistenceError):
+            runtime.create_group(admission(), execution_plan())
+
+        self.assertEqual(runtime.groups(), ())
+        with self.assertRaisesRegex(OrderGroupPersistenceError, "restart"):
+            runtime.create_group(admission(), execution_plan())
+
+    def test_restart_recovers_group_after_append_before_registration(self) -> None:
+        journal = _RecordingJournal()
+        clock = ManualClock()
+        runtime = OrderGroupRuntime(now_ns=clock, journal=journal)
+
+        def crash_after_append(*args, **kwargs) -> None:
+            del args, kwargs
+            raise RuntimeError("injected process stop after group append")
+
+        runtime._register_group = crash_after_append  # type: ignore[method-assign]
+        with self.assertRaisesRegex(RuntimeError, "after group append"):
+            runtime.create_group(admission(), execution_plan())
+
+        recovered = OrderGroupRuntime(now_ns=clock, journal=journal)
+        self.assertEqual(len(recovered.groups()), 1)
+        self.assertEqual(recovered.groups()[0].status, OrderGroupStatus.CREATED)
+
+    def test_active_group_limit_suspends_the_candidate_group(self) -> None:
+        limits = OrderGroupLimits(
+            max_active_groups_per_strategy_account=1,
+        )
+        clock = ManualClock()
+        runtime = OrderGroupRuntime(now_ns=clock, limits=limits)
+        first = runtime.create_group(admission(), execution_plan())
+        second = runtime.create_group(
+            admission(
+                three_leg_basket(),
+                approval_id="second-portfolio-approval",
+            ),
+            execution_plan(),
+        )
+        clock.step()
+        runtime.activate_group(first.order_group_id)
+
+        with self.assertRaisesRegex(
+            OrderGroupRuntimeError,
+            "strategy/account",
+        ):
+            runtime.activate_group(second.order_group_id)
+
+        self.assertEqual(
+            runtime.group(second.order_group_id).status,
+            OrderGroupStatus.SUSPENDED,
+        )
+        runtime.suspend_group(first.order_group_id, reason="operator rotation")
+        self.assertEqual(
+            runtime.activate_group(second.order_group_id).status,
+            OrderGroupStatus.ACTIVE,
+        )
+
+    def test_child_identity_collision_cannot_overwrite_group_owner(self) -> None:
+        clock = ManualClock()
+        runtime = OrderGroupRuntime(now_ns=clock)
+        first_group = runtime.create_group(admission(), execution_plan())
+        second_group = runtime.create_group(
+            admission(
+                three_leg_basket(),
+                approval_id="second-portfolio-approval",
+            ),
+            execution_plan(),
+        )
+        clock.step()
+        runtime.activate_group(first_group.order_group_id)
+        runtime.activate_group(second_group.order_group_id)
+        shared_prefix = "a" * 32
+        first_action = replace(
+            action_for(
+                runtime.group(first_group.order_group_id),
+                leg_index=0,
+                now_ns=clock.step(),
+            ),
+            action_id=GroupActionId(shared_prefix + ("0" * 32)),
+        )
+        first_request = runtime.prepare_child_submit(
+            action=first_action,
+            permit=permit_for(
+                first_action,
+                issued_at_ns=clock(),
+                permit_id="first-collision-permit",
+            ),
+        )
+        second_action = replace(
+            action_for(
+                runtime.group(second_group.order_group_id),
+                leg_index=0,
+                now_ns=clock.step(),
+            ),
+            action_id=GroupActionId(shared_prefix + ("1" * 32)),
+        )
+
+        with self.assertRaisesRegex(OrderGroupRuntimeError, "ClientOrderId"):
+            runtime.prepare_child_submit(
+                action=second_action,
+                permit=permit_for(
+                    second_action,
+                    issued_at_ns=clock(),
+                    permit_id="second-collision-permit",
+                ),
+            )
+
+        self.assertEqual(
+            runtime.child(first_request.client_order_id).request.client_order_id,
+            first_request.client_order_id,
+        )
+        self.assertEqual(
+            runtime.group(second_group.order_group_id).actions,
+            (),
+        )
+
+    def test_runtime_mutation_from_non_owner_thread_is_rejected(self) -> None:
+        runtime = OrderGroupRuntime(now_ns=ManualClock())
+        errors: list[Exception] = []
+
+        def mutate() -> None:
+            try:
+                runtime.create_group(admission(), execution_plan())
+            except Exception as error:
+                errors.append(error)
+
+        thread = Thread(target=mutate)
+        thread.start()
+        thread.join()
+
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], OrderGroupWriterViolationError)
+        self.assertEqual(runtime.groups(), ())
+
     def test_admission_is_idempotent_but_changed_approval_conflicts(self) -> None:
         clock = ManualClock()
         runtime = OrderGroupRuntime(now_ns=clock)

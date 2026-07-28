@@ -9,6 +9,7 @@ from threading import Event, Lock, Thread
 from cex_quant.execution import (
     ExecutionGateway,
     ExecutionStateUnknownError,
+    ExecutionTransportError,
     SubmitResult,
 )
 from cex_quant.oms import OrderRequest
@@ -18,8 +19,8 @@ class ExecutionBridgeError(RuntimeError):
     pass
 
 
-class ExecutionBridgeStateError(ExecutionBridgeError):
-    pass
+class ExecutionBridgeStateError(ExecutionBridgeError, ExecutionTransportError):
+    """The bridge rejected submission before dispatch to the gateway."""
 
 
 class ExecutionBridgeUnknownError(

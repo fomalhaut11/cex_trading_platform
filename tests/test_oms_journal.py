@@ -27,6 +27,7 @@ from cex_quant.execution import ExecutionOutcome, SubmitResult
 from cex_quant.instruments import InstrumentId, InstrumentKind
 from cex_quant.oms import (
     JsonLinesOmsJournal,
+    OmsJournal,
     OmsJournalEntry,
     OmsJournalIntegrityError,
     OrderEvent,
@@ -41,6 +42,7 @@ from cex_quant.oms import (
 from cex_quant.risk import RiskDecision, RiskDecisionStatus
 from cex_quant.runtime import (
     CanonicalOmsApplicationService,
+    DurableExecutionHandoff,
     OmsPersistenceError,
     OrderGroupRuntime,
     OrderParameters,
@@ -126,8 +128,22 @@ class _FailingJournal:
         raise OSError("disk full")
 
 
+class _NthFailJournal:
+    def __init__(self, *, fail_at: int) -> None:
+        self.entries: list[OmsJournalEntry] = []
+        self.fail_at: int | None = fail_at
+
+    def read(self) -> Iterator[OmsJournalEntry]:
+        return iter(tuple(self.entries))
+
+    def append(self, entry: OmsJournalEntry) -> None:
+        if self.fail_at is not None and len(self.entries) + 1 == self.fail_at:
+            raise OSError("injected journal failure")
+        self.entries.append(entry)
+
+
 def service(
-    journal: JsonLinesOmsJournal | _FailingJournal,
+    journal: OmsJournal,
 ) -> CanonicalOmsApplicationService:
     return CanonicalOmsApplicationService(
         accounts=_Accounts(),
@@ -157,6 +173,46 @@ def venue_event(
 
 
 class OmsJournalTests(unittest.TestCase):
+    def test_crash_after_gateway_response_replays_submitting_for_recovery(
+        self,
+    ) -> None:
+        journal = _NthFailJournal(fail_at=3)
+        oms = service(journal)
+        request = oms.create_order(intent(), decision())
+        execution_calls: list[ClientOrderId] = []
+
+        class Guard:
+            def assert_submit_allowed(self, value) -> None:
+                self.value = value
+
+        class Execution:
+            def submit(self, value):
+                execution_calls.append(value.client_order_id)
+                return SubmitResult(
+                    client_order_id=value.client_order_id,
+                    outcome=ExecutionOutcome.ACCEPTED,
+                    venue_order_id=VenueOrderId("accepted-before-crash"),
+                )
+
+        with self.assertRaises(OmsPersistenceError):
+            DurableExecutionHandoff(
+                oms=oms,
+                execution=Execution(),
+                guard=Guard(),
+            ).submit(request)
+
+        self.assertEqual(execution_calls, [request.client_order_id])
+        journal.fail_at = None
+        recovered = service(journal)
+        self.assertEqual(
+            recovered.reconciliation_candidates(),
+            (recovered.order(request.client_order_id),),
+        )
+        self.assertEqual(
+            recovered.order(request.client_order_id).status,
+            OrderStatus.SUBMITTING,
+        )
+
     def test_mixed_legacy_and_group_records_replay_without_rewrite(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "oms.jsonl"

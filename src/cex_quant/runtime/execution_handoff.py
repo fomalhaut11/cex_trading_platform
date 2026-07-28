@@ -33,6 +33,16 @@ class SynchronousExecutionSubmitPort(Protocol):
     def submit(self, request: OrderRequest) -> SubmitResult: ...
 
 
+class ExternalSubmitGuardPort(Protocol):
+    """Recheck runtime/operator authority immediately before external I/O."""
+
+    def assert_submit_allowed(self, request: OrderRequest) -> None: ...
+
+
+class ExternalSubmitBlockedError(RuntimeError):
+    """A durable submit intent was stopped before reaching Execution."""
+
+
 class DurableExecutionHandoff:
     """Persist SUBMITTING before I/O and persist every immediate outcome."""
 
@@ -41,12 +51,25 @@ class DurableExecutionHandoff:
         *,
         oms: DurableSubmitStatePort,
         execution: SynchronousExecutionSubmitPort,
+        guard: ExternalSubmitGuardPort,
     ) -> None:
         self._oms = oms
         self._execution = execution
+        self._guard = guard
 
     def submit(self, request: OrderRequest) -> SubmitResult:
         self._oms.prepare_submit(request)
+        try:
+            self._guard.assert_submit_allowed(request)
+        except Exception as error:
+            self._record_failure(
+                request.client_order_id,
+                outcome=OrderSubmitOutcome.DEFINITELY_NOT_SENT,
+                error=error,
+            )
+            raise ExternalSubmitBlockedError(
+                "external submit blocked by the immediate safety recheck"
+            ) from error
         try:
             result = self._execution.submit(request)
         except ExecutionTransportError as error:
@@ -98,5 +121,7 @@ class DurableExecutionHandoff:
 __all__ = [
     "DurableExecutionHandoff",
     "DurableSubmitStatePort",
+    "ExternalSubmitBlockedError",
+    "ExternalSubmitGuardPort",
     "SynchronousExecutionSubmitPort",
 ]

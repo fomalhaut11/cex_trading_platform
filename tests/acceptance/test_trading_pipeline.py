@@ -142,15 +142,28 @@ def _intent(instrument: Instrument, quantity: str = "1.25") -> PositionTargetInt
 
 
 class _Health:
-    def __init__(self, trace: list[str], status: HealthStatus) -> None:
+    def __init__(
+        self,
+        trace: list[str],
+        status: HealthStatus,
+        *,
+        submit_status: HealthStatus | None = None,
+    ) -> None:
         self._trace = trace
-        self._status = status
+        self._statuses = [status]
+        if submit_status is not None:
+            self._statuses.append(submit_status)
 
     def health(self) -> HealthReport:
         self._trace.append("health")
+        status = (
+            self._statuses.pop(0)
+            if len(self._statuses) > 1
+            else self._statuses[0]
+        )
         return HealthReport(
             component="acceptance-clock",
-            status=self._status,
+            status=status,
             observed_at_ns=NOW,
         )
 
@@ -362,6 +375,7 @@ class _Execution:
 def _pipeline(
     *,
     health_status: HealthStatus = HealthStatus.HEALTHY,
+    submit_health_status: HealthStatus | None = None,
     risk_limit: str = "2",
     risk_clock_status: HealthStatus = HealthStatus.HEALTHY,
 ) -> tuple[TradingPipeline, list[str], Instrument, _Execution]:
@@ -369,7 +383,11 @@ def _pipeline(
     instrument = _instrument()
     execution = _Execution(trace)
     pipeline = TradingPipeline(
-        health=_Health(trace, health_status),
+        health=_Health(
+            trace,
+            health_status,
+            submit_status=submit_health_status,
+        ),
         validator=_Validator(trace),
         market_state=_State(trace, instrument),
         features=_Features(trace, instrument),
@@ -405,6 +423,7 @@ class TradingPipelineAcceptanceTests(TestCase):
                 "risk",
                 "oms",
                 "oms_prepare",
+                "health",
                 "execution",
                 "oms_result",
             ],
@@ -470,6 +489,22 @@ class TradingPipelineAcceptanceTests(TestCase):
         self.assertEqual(result.outcome, PipelineOutcome.REJECTED)
         self.assertEqual(result.trace[-1].stage, PipelineStage.RISK)
         self.assertNotIn("oms", calls)
+        self.assertNotIn("execution", calls)
+        self.assertEqual(execution.requests, [])
+
+    def test_operator_halt_race_after_durability_never_reaches_execution(
+        self,
+    ) -> None:
+        pipeline, calls, instrument, execution = _pipeline(
+            submit_health_status=HealthStatus.UNHEALTHY,
+        )
+
+        result = pipeline.process(_book(instrument))
+
+        self.assertEqual(result.outcome, PipelineOutcome.FAILED)
+        self.assertEqual(result.trace[-1].stage, PipelineStage.EXECUTION)
+        self.assertIn("oms_prepare", calls)
+        self.assertIn("oms_failure", calls)
         self.assertNotIn("execution", calls)
         self.assertEqual(execution.requests, [])
 

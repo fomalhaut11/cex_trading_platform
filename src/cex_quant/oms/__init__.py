@@ -25,6 +25,7 @@ from .group_codec import (
     encode_order_group_admission,
 )
 from .group_model import (
+    MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT,
     MAX_CHILD_ATTEMPTS_PER_LEG,
     MAX_GROUP_CHILDREN,
     MAX_RETAINED_ORDER_GROUPS,
@@ -108,6 +109,7 @@ from .state import (
 __all__ = [
     "GROUP_CONTRACT_FORMAT",
     "GROUP_CONTRACT_VERSION",
+    "MAX_ACTIVE_ORDER_GROUPS_PER_STRATEGY_ACCOUNT",
     "MAX_CHILD_ATTEMPTS_PER_LEG",
     "MAX_GROUP_CHILDREN",
     "MAX_GROUP_CONTRACT_BYTES",

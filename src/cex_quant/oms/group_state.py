@@ -81,7 +81,12 @@ class _ActionRecord:
 
 
 _CONTROL_TRANSITIONS = {
-    OrderGroupStatus.CREATED: frozenset({OrderGroupStatus.ACTIVE}),
+    OrderGroupStatus.CREATED: frozenset(
+        {
+            OrderGroupStatus.ACTIVE,
+            OrderGroupStatus.SUSPENDED,
+        }
+    ),
     OrderGroupStatus.ACTIVE: frozenset(
         {
             OrderGroupStatus.SUSPENDED,
@@ -328,6 +333,10 @@ class OrderGroupStateMachine:
     ) -> OrderGroupView:
         self._assert_writer()
         self._assert_time(at_ns)
+        if self._status is not OrderGroupStatus.ACTIVE:
+            raise OrderGroupTransitionError(
+                "transmission requires ACTIVE group"
+            )
         record = self._record(action_id)
         if record.state not in {
             ExecutionActionState.PREPARED,

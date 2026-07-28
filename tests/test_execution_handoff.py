@@ -22,7 +22,11 @@ from cex_quant.oms import (
     OrderSubmitOutcome,
     OrderType,
 )
-from cex_quant.runtime import DurableExecutionHandoff
+from cex_quant.runtime import (
+    DurableExecutionHandoff,
+    ExecutionBridgeStateError,
+    ExternalSubmitBlockedError,
+)
 
 
 def request() -> OrderRequest:
@@ -86,6 +90,17 @@ class _Execution:
         return self.result
 
 
+class _Guard:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.error = error
+        self.calls: list[ClientOrderId] = []
+
+    def assert_submit_allowed(self, value: OrderRequest) -> None:
+        self.calls.append(value.client_order_id)
+        if self.error is not None:
+            raise self.error
+
+
 class DurableExecutionHandoffTests(unittest.TestCase):
     def test_preparation_precedes_external_call_and_result_recording(self) -> None:
         value = request()
@@ -97,13 +112,16 @@ class DurableExecutionHandoffTests(unittest.TestCase):
                 venue_order_id=VenueOrderId("venue-1"),
             )
         )
+        guard = _Guard()
 
         result = DurableExecutionHandoff(
             oms=oms,
             execution=execution,
+            guard=guard,
         ).submit(value)
 
         self.assertEqual(result.outcome, ExecutionOutcome.ACCEPTED)
+        self.assertEqual(guard.calls, [value.client_order_id])
         self.assertEqual(execution.calls, [value.client_order_id])
         self.assertEqual(
             oms.calls,
@@ -127,6 +145,10 @@ class DurableExecutionHandoffTests(unittest.TestCase):
                 RuntimeError("untyped gateway failure"),
                 OrderSubmitOutcome.UNKNOWN,
             ),
+            (
+                ExecutionBridgeStateError("bridge is not running"),
+                OrderSubmitOutcome.DEFINITELY_NOT_SENT,
+            ),
         )
         for error, expected in cases:
             with self.subTest(expected=expected):
@@ -136,6 +158,7 @@ class DurableExecutionHandoffTests(unittest.TestCase):
                 handoff = DurableExecutionHandoff(
                     oms=oms,
                     execution=execution,
+                    guard=_Guard(),
                 )
 
                 with self.assertRaises(type(error)):
@@ -157,11 +180,41 @@ class DurableExecutionHandoffTests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(RuntimeError, "does not belong"):
-            DurableExecutionHandoff(oms=oms, execution=execution).submit(value)
+            DurableExecutionHandoff(
+                oms=oms,
+                execution=execution,
+                guard=_Guard(),
+            ).submit(value)
 
         self.assertEqual(
             oms.calls[-1][2],
             OrderSubmitOutcome.UNKNOWN,
+        )
+
+    def test_guard_failure_after_durability_is_definitely_not_sent(self) -> None:
+        value = request()
+        oms = _Oms()
+        execution = _Execution(
+            result=SubmitResult(
+                client_order_id=value.client_order_id,
+                outcome=ExecutionOutcome.ACCEPTED,
+            )
+        )
+        guard = _Guard(error=RuntimeError("operator halted"))
+
+        with self.assertRaises(ExternalSubmitBlockedError):
+            DurableExecutionHandoff(
+                oms=oms,
+                execution=execution,
+                guard=guard,
+            ).submit(value)
+
+        self.assertEqual(guard.calls, [value.client_order_id])
+        self.assertEqual(execution.calls, [])
+        self.assertEqual(oms.calls[0], ("prepare", value.client_order_id))
+        self.assertEqual(
+            oms.calls[1][2],
+            OrderSubmitOutcome.DEFINITELY_NOT_SENT,
         )
 
 

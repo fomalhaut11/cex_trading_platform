@@ -158,13 +158,21 @@ def basket_intent() -> BasketTargetIntent:
 
 
 class Health:
-    def __init__(self, status: HealthStatus = HealthStatus.HEALTHY) -> None:
-        self.status = status
+    def __init__(
+        self,
+        status: HealthStatus = HealthStatus.HEALTHY,
+        *,
+        submit_status: HealthStatus | None = None,
+    ) -> None:
+        self.statuses = [status]
+        if submit_status is not None:
+            self.statuses.append(submit_status)
 
     def health(self) -> HealthReport:
+        status = self.statuses.pop(0) if len(self.statuses) > 1 else self.statuses[0]
         return HealthReport(
             component="runtime",
-            status=self.status,
+            status=status,
             observed_at_ns=NOW,
         )
 
@@ -334,6 +342,7 @@ class Recorder:
 def pipeline(
     *,
     health_status: HealthStatus = HealthStatus.HEALTHY,
+    submit_health_status: HealthStatus | None = None,
     allow: bool = True,
     feature_failure: bool = False,
     recorder: Recorder | None = None,
@@ -344,7 +353,10 @@ def pipeline(
     value = intent(inst) if decision_intent is None else decision_intent
     return (
         TradingPipeline(
-            health=Health(health_status),
+            health=Health(
+                health_status,
+                submit_status=submit_health_status,
+            ),
             validator=MarketDataValidator(),
             market_state=State(calls),
             features=Features(calls, fail=feature_failure),
@@ -439,6 +451,20 @@ class RuntimePipelineTests(TestCase):
         self.assertEqual(result.outcome, PipelineOutcome.REJECTED)
         self.assertEqual(calls, [])
         self.assertEqual(result.trace[-1].stage, PipelineStage.HEALTH)
+
+    def test_halt_after_durable_prepare_blocks_external_submit(self) -> None:
+        runtime, calls, value = pipeline(
+            submit_health_status=HealthStatus.UNHEALTHY,
+        )
+
+        result = runtime.process(value)
+
+        self.assertEqual(result.outcome, PipelineOutcome.FAILED)
+        self.assertEqual(result.failure.stage, PipelineStage.EXECUTION)
+        self.assertEqual(result.failure.exception_type, "ExternalSubmitBlockedError")
+        self.assertIn("oms_prepare", calls)
+        self.assertIn("oms_failure", calls)
+        self.assertNotIn("execution", calls)
 
     def test_stage_exception_is_latched_and_stops_future_processing(self) -> None:
         runtime, calls, value = pipeline(feature_failure=True)
