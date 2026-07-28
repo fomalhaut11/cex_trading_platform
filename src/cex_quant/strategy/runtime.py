@@ -19,7 +19,13 @@ from cex_quant.market_data import (
     PartialBookFrame,
     VenueOptionAnalyticsUpdate,
 )
+from cex_quant.snapshots import DecisionSnapshotPublication
 
+from .basket import (
+    BasketIntentPolicy,
+    BasketTargetIntent,
+    ObjectiveTypeRegistry,
+)
 from .model import (
     DecisionIntent,
     PositionTargetIntent,
@@ -134,6 +140,8 @@ class StrategyRuntime:
         *,
         strategy: Strategy,
         accepted_scopes: frozenset[str] | None = None,
+        basket_policy: BasketIntentPolicy | None = None,
+        objective_registry: ObjectiveTypeRegistry | None = None,
     ) -> None:
         if not strategy.strategy_id:
             raise ValueError("strategy_id cannot be empty")
@@ -147,9 +155,16 @@ class StrategyRuntime:
             raise ValueError(
                 "accepted_scopes must contain non-empty trimmed scopes"
             )
+        if (basket_policy is None) != (objective_registry is None):
+            raise ValueError(
+                "basket_policy and objective_registry must be configured "
+                "together"
+            )
         self._strategy = strategy
         self._strategy_id = strategy.strategy_id
         self._accepted_scopes = accepted_scopes
+        self._basket_policy = basket_policy
+        self._objective_registry = objective_registry
         self._observed_scope: str | None = None
         self._status = StrategyStatus.CREATED
         self._input_sequence = 0
@@ -189,16 +204,24 @@ class StrategyRuntime:
         self._reject_reentrancy("accept input")
         if self._status is not StrategyStatus.RUNNING:
             self._raise_lifecycle("accept input")
-        if not isinstance(input, (*_CANONICAL_EVENT_TYPES, FeatureSnapshot)):
+        if not isinstance(
+            input,
+            (
+                *_CANONICAL_EVENT_TYPES,
+                FeatureSnapshot,
+                DecisionSnapshotPublication,
+            ),
+        ):
             raise InvalidStrategyInputError(
                 "strategy input must be a canonical market event "
-                "or FeatureSnapshot"
+                "or immutable snapshot publication"
             )
-        input_scope = (
-            input.scope
-            if isinstance(input, FeatureSnapshot)
-            else str(input.instrument_id)
-        )
+        if isinstance(input, DecisionSnapshotPublication):
+            input_scope = input.metadata.scope
+        elif isinstance(input, FeatureSnapshot):
+            input_scope = input.scope
+        else:
+            input_scope = str(input.instrument_id)
         self._validate_scope(input_scope)
 
         next_sequence = self._input_sequence + 1
@@ -211,7 +234,7 @@ class StrategyRuntime:
         self._callback_active = True
         try:
             intents = self._strategy.on_input(context)
-            self._validate_intents(intents)
+            self._validate_intents(intents, input)
         except Exception as error:
             self._fail(StrategyPhase.INPUT, error, next_sequence)
         finally:
@@ -257,7 +280,9 @@ class StrategyRuntime:
             )
 
     def _validate_intents(
-        self, intents: tuple[DecisionIntent, ...]
+        self,
+        intents: tuple[DecisionIntent, ...],
+        input: StrategyInput,
     ) -> None:
         if not isinstance(intents, tuple):
             raise InvalidStrategyOutputError(
@@ -265,7 +290,10 @@ class StrategyRuntime:
             )
         ids: set[IntentId] = set()
         for intent in intents:
-            if not isinstance(intent, PositionTargetIntent):
+            if not isinstance(
+                intent,
+                (PositionTargetIntent, BasketTargetIntent),
+            ):
                 raise InvalidStrategyOutputError(
                     "strategy returned an unsupported decision intent"
                 )
@@ -278,6 +306,36 @@ class StrategyRuntime:
                     "intent_id must be unique within one decision"
                 )
             ids.add(intent.intent_id)
+            if isinstance(intent, BasketTargetIntent):
+                if not isinstance(input, DecisionSnapshotPublication):
+                    raise InvalidStrategyOutputError(
+                        "Basket intent requires a decision snapshot input"
+                    )
+                if (
+                    intent.decision_snapshot_id
+                    != input.metadata.snapshot_id
+                ):
+                    raise InvalidStrategyOutputError(
+                        "Basket decision_snapshot_id does not match input"
+                    )
+                if (
+                    intent.decision_time_ns
+                    < input.metadata.assembled_at_ns
+                ):
+                    raise InvalidStrategyOutputError(
+                        "Basket decision time precedes snapshot assembly"
+                    )
+                if (
+                    self._basket_policy is None
+                    or self._objective_registry is None
+                ):
+                    raise InvalidStrategyOutputError(
+                        "Basket output is not enabled for this runtime"
+                    )
+                self._basket_policy.validate(
+                    intent,
+                    registry=self._objective_registry,
+                )
 
     def _fail(
         self,

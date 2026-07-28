@@ -167,10 +167,17 @@ target-host performance and authenticated Testnet gates.
   review. It reuses `IntentId`, versions Objective Type references, keeps
   lifecycle out of the intent and canonically orders legs by account and
   instrument.
+- T027 generic two-to-16-leg Basket contracts, versioned metadata-only
+  Objective Type registry, bounded policy, deterministic identities and
+  checksummed canonical evidence codec.
+- T028 additive decision-snapshot Strategy input, Basket causation validation
+  and explicit single-leg Pipeline rejection before Portfolio/Risk/OMS.
+- A013 offline compatibility and replay acceptance covering unchanged
+  `PositionTargetIntent`, BTC Spot `+10`/Perpetual `-10`, a three-leg option
+  spread with Delta hedge, Snapshot mismatch and zero child execution.
 
 ## In Progress
 
-- T027/T028/A013 generic Basket contracts and Strategy compatibility.
 - ADR-011 Parent-Child Order Model preparation.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
@@ -191,8 +198,8 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Implement T027/T028/A013 without creating OMS children or exchange
-   requests, and draft ADR-011 for separate review.
+1. Draft ADR-011 Parent-Child Order Model for separate architecture review;
+   do not implement it before acceptance.
 2. Configure protected-branch checks after agreeing the direct-push policy.
 3. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
@@ -206,11 +213,12 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 379 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 31 passed.
+- `python -m unittest discover -s tests -v`: 397 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 34 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 86 source files.
-- Pytest branch coverage: 86.34%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 88 source files.
+- Pytest branch coverage: 86.34%; 85% CI gate passed (397 tests and
+  129 subtests).
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

@@ -13,6 +13,7 @@ from cex_quant.observability import HealthReport, HealthStatus
 from cex_quant.oms import OrderRequest
 from cex_quant.risk import RiskContext, RiskDecision
 from cex_quant.strategy import (
+    BasketTargetIntent,
     PositionTargetIntent,
     StrategyDecision,
     StrategyInput,
@@ -250,6 +251,17 @@ class TradingPipeline:
                 snapshot if snapshot is not None else event
             )
             strategy_decision = self._strategy.on_input(strategy_input)
+            if any(
+                isinstance(intent, BasketTargetIntent)
+                for intent in strategy_decision.intents
+            ):
+                return self._reject(
+                    trace,
+                    PipelineStage.STRATEGY,
+                    "single-leg pipeline does not support Basket intents",
+                    value=strategy_decision,
+                    strategy_decision=strategy_decision,
+                )
             self._append(
                 trace,
                 PipelineStage.STRATEGY,
@@ -260,7 +272,12 @@ class TradingPipeline:
             risk_decisions: list[RiskDecision] = []
             requests: list[OrderRequest] = []
             submissions: list[SubmitResult] = []
-            for intent in strategy_decision.intents:
+            for decision_intent in strategy_decision.intents:
+                if isinstance(decision_intent, BasketTargetIntent):
+                    raise AssertionError(
+                        "Basket intent passed the single-leg pipeline gate"
+                    )
+                intent = decision_intent
                 context = self._portfolio.risk_context(intent)
                 approval = self._risk.evaluate(intent, context)
                 self._validate_risk_identity(intent, approval)

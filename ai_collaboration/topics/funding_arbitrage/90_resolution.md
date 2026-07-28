@@ -353,3 +353,37 @@ Leg order:
 项目负责人此前给出的条件是完成这些检查和修改后接受。条件已满足，
 ADR-010 状态更新为 `Accepted`。T027/T028/A013 获得授权，但范围只包括
 Basket 契约和 Strategy 兼容性，不包括 OMS、Risk 或 Execution。
+
+## 12. ADR-010 Implementation Acceptance
+
+T027、T028 和 A013 已于 2026-07-28 完成。
+
+实现包括通用二至十六腿 Basket 契约、版本化 Objective Type Registry、
+确定性身份与校验和序列化、Strategy Snapshot 因果校验，以及现有单腿
+Pipeline 在 Risk/OMS 前对 Basket 的明确拒绝。
+
+指定验收场景全部通过：
+
+```text
+PositionTargetIntent unchanged
+BTC Spot +10 / BTC Perpetual -10 Basket generated
+Option spread + Delta hedge three-leg Basket generated
+Snapshot ID mismatch rejected
+Single-leg Pipeline rejects Basket before Risk/OMS/Execution
+```
+
+完整证据见 `50_codex_adr010_implementation_acceptance.md`。
+
+验证基线：
+
+```text
+397 tests passed
+129 subtests passed
+34 acceptance tests passed
+88 source files pass strict MyPy
+86.34% branch coverage
+Ruff / compile / secret scan passed
+```
+
+本次实现未创建 Parent/Child Order Group、子订单、交易所请求、组合 Risk
+或 Funding Arbitrage 应用。下一架构审查边界是 ADR-011。

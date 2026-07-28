@@ -268,11 +268,17 @@ VolatilitySurfacePoint / VolatilitySurfaceSnapshot
 ```text
 Strategy, StrategyRuntime, StrategyContext, StrategyInput
 StrategyDecision, StrategyStatus, StrategyPhase
-PositionTargetIntent, DecisionIntent
+PositionTargetIntent, BasketTargetIntent, BasketTargetLeg
+ObjectiveTypeRef, ObjectiveTypeRegistry, DecisionIntent
 ```
 
-当前公开意图是单品种 `PositionTargetIntent`。策略不能构造 Binance 请求、
-不能直接调用 Execution，也不能绕过 Risk 和 OMS。
+当前公开意图包括保持不变的单品种 `PositionTargetIntent`，以及 ADR-010
+新增的通用二至十六腿 `BasketTargetIntent`。Basket 是组合目标，不是订单；
+它必须引用匹配的决策快照。现有单腿 Pipeline 会在 Risk/OMS 之前明确拒绝
+Basket，后续组合 Risk 和 Parent/Child OMS 仍受 ADR-011/012 约束。
+
+策略不能构造 Binance 请求、不能直接调用 Execution，也不能绕过 Risk 和
+OMS。
 
 项目目前提供策略运行基础，未把某个具体盈利策略声明为生产完成。
 
@@ -502,7 +508,7 @@ runtime -> all required domain ports
 3. Validator 检查事件
 4. 单写者 Market State 原子更新
 5. 注册式 Feature Engine 更新信息状态
-6. Strategy Runtime 产生 PositionTargetIntent
+6. Strategy Runtime 产生 PositionTargetIntent；组合应用可产生 BasketTargetIntent
 7. Risk 根据上下文批准或拒绝
 8. Runtime 只把已批准且身份一致的意图交给 OMS
 9. OMS 先持久化所需生命周期事实
@@ -672,10 +678,16 @@ Fills + funding + fees ─> Financial Ledger ─> Attribution
 `ThreeLegOms`。Funding Arbitrage 是第一个两腿验证应用；后续还需要一个
 离线三腿场景证明核心没有硬编码成两腿。
 
-后续 ADR 计划新增但尚不存在于源码的包包括：
+ADR-010 已新增：
 
 ```text
 strategy/basket.py
+strategy/basket_codec.py
+```
+
+后续 ADR 计划新增但尚不存在于源码的包包括：
+
+```text
 risk/portfolio.py
 oms/order_group.py
 accounting/
@@ -688,7 +700,7 @@ ADR 状态：
 | ADR | 主题 | 当前状态 |
 |---|---|---|
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
-| ADR-010 | Basket Intent | Accepted；T027/T028/A013 待实现 |
+| ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
 | ADR-011 | Parent-Child Order | 尚未起草/接受 |
 | ADR-012 | Portfolio Risk | 尚未起草/接受 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |

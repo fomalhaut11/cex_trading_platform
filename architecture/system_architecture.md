@@ -42,6 +42,19 @@ Immutable source views
 This path remains synchronous and deterministic. It does not introduce a
 generic hot-path Event Bus or transfer source-state ownership.
 
+ADR-010 adds an immutable decision union:
+
+```text
+Strategy
+  -> PositionTargetIntent
+   | BasketTargetIntent (2..16 canonical portfolio targets)
+```
+
+Basket output is caused by one matching typed decision snapshot. The current
+single-leg Pipeline rejects Basket before Risk and OMS. Parent/Child order
+groups, whole-Basket Risk and application execution remain gated by later
+ADRs; ADR-010 creates no child order or venue request.
+
 ## Design Principles
 
 - Python-first, Rust-ready.

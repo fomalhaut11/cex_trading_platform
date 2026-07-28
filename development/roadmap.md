@@ -83,21 +83,25 @@ Status: Planned and scope-driven.
 
 ## Phase 6 - Portfolio Applications and Multi-Leg Trading
 
-Status: Planned and ADR-gated.
+Status: In progress at the ADR-gated architecture-foundation layer.
 
-- Add typed, deterministic application snapshots without introducing a
-  generic hot-path Event Bus solely for portfolio strategies.
-- Add bounded generic N-leg Basket intents while preserving the existing
-  single-leg `PositionTargetIntent`.
+- Typed, deterministic application-snapshot infrastructure is complete under
+  ADR-009 (T025/T026/A012).
+- Bounded generic N-leg Basket intents and single-leg compatibility are
+  complete under ADR-010 (T027/T028/A013).
 - Extend Risk with whole-Basket preflight and continuous portfolio exposure
-  supervision.
+  supervision. **Planned; requires accepted ADR-012.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
-  existing Execution adapters remain child-order oriented.
+  existing Execution adapters remain child-order oriented. **Planned;
+  requires accepted ADR-011.**
 - Add normalized margin/collateral state and an idempotent Financial Ledger.
+  **Planned; requires accepted ADR-013.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding
-  Arbitrage is the first validating application.
-- Validate the generic core with Funding two-leg scenarios and a synthetic
-  three-leg fixture so the platform does not encode two-leg assumptions.
+  Arbitrage is the first validating application. **Planned; requires accepted
+  ADR-014 and its dependencies.**
+- The ADR-010 decision layer is validated with a Funding-shaped two-leg
+  target and a synthetic option-spread-plus-Delta-hedge three-leg target.
+  This is contract acceptance, not application or execution acceptance.
 
 Detailed topology, interface drafts, compatibility rules and acceptance gates
 are maintained in `multi_leg_portfolio_trading_plan.md`.

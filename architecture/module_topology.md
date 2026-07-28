@@ -25,6 +25,23 @@ the mandatory Strategy -> Risk -> OMS -> Execution boundary.
 `runtime` assembles the flow. `recorder`, `monitoring`, `operations_api` and
 `storage` consume bounded side channels and cannot block the trading path.
 
+ADR-010 adds the decision boundary below:
+
+```text
+DecisionSnapshotPublication
+  -> StrategyRuntime
+  -> PositionTargetIntent | BasketTargetIntent
+```
+
+`strategy.basket` owns immutable, bounded portfolio targets, Objective Type
+metadata and deterministic identity. `strategy.basket_codec` owns canonical
+checksummed evidence serialization. Neither module owns Risk decisions,
+Parent/Child orders, execution sequencing or application lifecycle.
+
+The existing `runtime.TradingPipeline` remains single-leg. It rejects a
+`BasketTargetIntent` at the Strategy boundary before Portfolio, Risk, OMS and
+Execution. A future Basket pipeline is gated by ADR-011 and ADR-012.
+
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
 listener. Concrete TLS termination remains a deployment boundary.
@@ -46,6 +63,9 @@ listener. Concrete TLS termination remains a deployment boundary.
     it cannot depend on source domains, applications or runtime.
 13. Application-specific snapshot assemblers may read public immutable domain
     views but cannot depend on runtime or venue adapters.
+14. `strategy.basket` may depend on `core`, `instruments` and snapshot
+    identity contracts, but cannot depend on Risk, OMS, Execution,
+    applications, runtime or venue adapters.
 
 ## Process Boundaries
 

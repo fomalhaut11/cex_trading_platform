@@ -9,6 +9,7 @@ from cex_quant.core import (
     EventMetadata,
     EventSource,
     IntentId,
+    ObjectiveTypeId,
     Price,
     Quantity,
     SchemaVersion,
@@ -52,9 +53,16 @@ from cex_quant.runtime import (
     StateGate,
     TradingPipeline,
 )
+from cex_quant.snapshots import DecisionSnapshotId
 from cex_quant.strategy import (
+    BasketTargetIntent,
+    BasketTargetLeg,
+    DecisionIntent,
+    ObjectiveTypeRef,
     PositionTargetIntent,
     StrategyDecision,
+    create_basket_target_intent,
+    deterministic_basket_leg_id,
 )
 
 NOW = UnixNanos(2_000)
@@ -110,6 +118,44 @@ def intent(inst: Instrument) -> PositionTargetIntent:
     )
 
 
+def basket_intent() -> BasketTargetIntent:
+    snapshot_id = DecisionSnapshotId("snapshot-pipeline")
+    legs = []
+    for kind, target in (
+        (InstrumentKind.SPOT, "10"),
+        (InstrumentKind.PERPETUAL, "-10"),
+    ):
+        instrument_id = InstrumentId(
+            venue=VenueId("TEST"),
+            kind=kind,
+            symbol="BTCUSD",
+        )
+        legs.append(
+            BasketTargetLeg(
+                leg_id=deterministic_basket_leg_id(
+                    decision_snapshot_id=snapshot_id,
+                    account_id=AccountId("primary"),
+                    instrument_id=instrument_id,
+                ),
+                account_id=AccountId("primary"),
+                instrument_id=instrument_id,
+                target_quantity=Quantity.from_str(target),
+            )
+        )
+    return create_basket_target_intent(
+        strategy_id=STRATEGY_ID,
+        decision_snapshot_id=snapshot_id,
+        objective=ObjectiveTypeRef(
+            objective_type_id=ObjectiveTypeId("carry.funding"),
+            version=1,
+        ),
+        legs=tuple(legs),
+        decision_time_ns=UnixNanos(1_960),
+        valid_until_ns=UnixNanos(2_100),
+        policy_version=1,
+    )
+
+
 class Health:
     def __init__(self, status: HealthStatus = HealthStatus.HEALTHY) -> None:
         self.status = status
@@ -147,7 +193,7 @@ class Strategy:
     def __init__(
         self,
         calls: list[str],
-        decision_intent: PositionTargetIntent,
+        decision_intent: DecisionIntent,
     ) -> None:
         self.calls = calls
         self.intent = decision_intent
@@ -273,10 +319,11 @@ def pipeline(
     allow: bool = True,
     feature_failure: bool = False,
     recorder: Recorder | None = None,
+    decision_intent: DecisionIntent | None = None,
 ) -> tuple[TradingPipeline, list[str], BestBidAsk]:
     calls: list[str] = []
     inst = instrument()
-    value = intent(inst)
+    value = intent(inst) if decision_intent is None else decision_intent
     return (
         TradingPipeline(
             health=Health(health_status),
@@ -342,6 +389,22 @@ class RuntimePipelineTests(TestCase):
         self.assertIn("risk", calls)
         self.assertNotIn("oms", calls)
         self.assertNotIn("execution", calls)
+        self.assertEqual(result.order_requests, ())
+        self.assertEqual(result.submit_results, ())
+        self.assertEqual(runtime.status, PipelineStatus.RUNNING)
+
+    def test_basket_is_explicitly_rejected_before_single_leg_ports(
+        self,
+    ) -> None:
+        runtime, calls, value = pipeline(decision_intent=basket_intent())
+
+        result = runtime.process(value)
+
+        self.assertEqual(result.outcome, PipelineOutcome.REJECTED)
+        self.assertEqual(calls, ["state", "feature", "strategy"])
+        self.assertEqual(result.trace[-1].stage, PipelineStage.STRATEGY)
+        self.assertIn("does not support Basket", result.rejection_reason)
+        self.assertEqual(result.risk_decisions, ())
         self.assertEqual(result.order_requests, ())
         self.assertEqual(result.submit_results, ())
         self.assertEqual(runtime.status, PipelineStatus.RUNNING)

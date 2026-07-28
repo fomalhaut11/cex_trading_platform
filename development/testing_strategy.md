@@ -36,6 +36,8 @@ mandatory. A012 requires no network or exchange credential.
 
 ## A013 Basket Intent Acceptance
 
+Status: Complete on 2026-07-28.
+
 The accepted ADR-010 implementation must add offline tests for:
 
 - common `IntentId`, unique `BasketLegId` and versioned Objective Type
@@ -55,3 +57,6 @@ The accepted ADR-010 implementation must add offline tests for:
 
 A013 must prove that no OMS child order or Execution request can be produced
 by the ADR-010 implementation.
+
+Evidence: `tests/acceptance/test_basket_intents.py`, the Basket unit and
+Strategy compatibility suites, and the unchanged single-leg regression.

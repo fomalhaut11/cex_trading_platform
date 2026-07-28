@@ -19,6 +19,9 @@ from cex_quant.market_data import (
     PartialBookFrame,
     VenueOptionAnalyticsUpdate,
 )
+from cex_quant.snapshots import DecisionSnapshotPublication
+
+from .basket import BasketTargetIntent
 
 CanonicalMarketEvent: TypeAlias = (
     AggregateTrade
@@ -33,7 +36,11 @@ CanonicalMarketEvent: TypeAlias = (
     | PartialBookFrame
     | VenueOptionAnalyticsUpdate
 )
-StrategyInput: TypeAlias = CanonicalMarketEvent | FeatureSnapshot
+StrategyInput: TypeAlias = (
+    CanonicalMarketEvent
+    | FeatureSnapshot
+    | DecisionSnapshotPublication[object]
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -82,7 +89,7 @@ class PositionTargetIntent:
             raise ValueError("valid_until_ns cannot precede decision_time_ns")
 
 
-DecisionIntent: TypeAlias = PositionTargetIntent
+DecisionIntent: TypeAlias = PositionTargetIntent | BasketTargetIntent
 
 
 __all__ = [

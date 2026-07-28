@@ -3,30 +3,46 @@
 ## Scope
 
 The first strategy runtime is a synchronous, single-writer component. It
-delivers canonical market events and immutable `FeatureSnapshot` values to one
-strategy in caller-provided order. It contains no queue, clock, network,
-filesystem or database capability.
+delivers canonical market events, immutable `FeatureSnapshot` values and
+typed `DecisionSnapshotPublication` values to one strategy in caller-provided
+order. It contains no queue, clock, network, filesystem or database
+capability.
 
 Concrete trading strategies are intentionally out of scope.
 
 ## Boundary
 
 ```text
-canonical market event / FeatureSnapshot
+canonical market event / FeatureSnapshot / DecisionSnapshotPublication
                   |
                   v
           StrategyRuntime
                   |
                   v
-       PositionTargetIntent
+ PositionTargetIntent | BasketTargetIntent
                   |
                   v
-          risk -> OMS
+       compatible pipeline boundary
 ```
 
 A `PositionTargetIntent` states a signed desired position. It is not an order:
 it has no venue, order type, time-in-force or venue order identifier. Risk may
 approve, reject or modify the decision before OMS determines how to realize it.
+
+ADR-010 additively introduces `BasketTargetIntent` for one bounded portfolio
+target. Existing Position behavior is unchanged. Basket decisions require a
+`DecisionSnapshotPublication`, preserve its `DecisionSnapshotId`, and are
+rejected if snapshot causation does not match or the decision predates
+snapshot assembly.
+
+Basket support is opt-in at composition: `StrategyRuntime` requires both an
+immutable Objective Type Registry and a Basket admission policy. Supplying
+only one is invalid; supplying neither leaves the existing Position path
+unchanged and rejects Basket output.
+
+The existing `TradingPipeline` remains single-leg and explicitly rejects
+Basket output before Portfolio, Risk or OMS. Parent/Child execution belongs to
+ADR-011 and is not part of this runtime contract.
 
 ## Determinism
 

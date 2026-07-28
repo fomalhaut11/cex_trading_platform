@@ -3,6 +3,31 @@
 Strategies never construct venue orders or bypass risk and OMS ownership.
 """
 
+from .basket import (
+    MAX_BASKET_LEGS,
+    MAX_BASKET_VALIDITY_NS,
+    MIN_BASKET_LEGS,
+    BasketIntentPolicy,
+    BasketIntentPolicyError,
+    BasketTargetIntent,
+    BasketTargetLeg,
+    ObjectiveTypeDefinition,
+    ObjectiveTypeRef,
+    ObjectiveTypeRegistrationError,
+    ObjectiveTypeRegistry,
+    canonical_leg_key,
+    create_basket_target_intent,
+    deterministic_basket_intent_id,
+    deterministic_basket_leg_id,
+)
+from .basket_codec import (
+    BASKET_FORMAT_NAME,
+    BASKET_FORMAT_VERSION,
+    MAX_ENCODED_BASKET_BYTES,
+    basket_target_intent_checksum,
+    decode_basket_target_intent,
+    encode_basket_target_intent,
+)
 from .model import (
     CanonicalMarketEvent,
     DecisionIntent,
@@ -26,10 +51,24 @@ from .runtime import (
 )
 
 __all__ = [
+    "BASKET_FORMAT_NAME",
+    "BASKET_FORMAT_VERSION",
+    "MAX_BASKET_LEGS",
+    "MAX_BASKET_VALIDITY_NS",
+    "MAX_ENCODED_BASKET_BYTES",
+    "MIN_BASKET_LEGS",
+    "BasketIntentPolicy",
+    "BasketIntentPolicyError",
+    "BasketTargetIntent",
+    "BasketTargetLeg",
     "CanonicalMarketEvent",
     "DecisionIntent",
     "InvalidStrategyInputError",
     "InvalidStrategyOutputError",
+    "ObjectiveTypeDefinition",
+    "ObjectiveTypeRef",
+    "ObjectiveTypeRegistrationError",
+    "ObjectiveTypeRegistry",
     "PositionTargetIntent",
     "Strategy",
     "StrategyContext",
@@ -43,4 +82,11 @@ __all__ = [
     "StrategyRuntimeError",
     "StrategyScopeError",
     "StrategyStatus",
+    "basket_target_intent_checksum",
+    "canonical_leg_key",
+    "create_basket_target_intent",
+    "decode_basket_target_intent",
+    "deterministic_basket_intent_id",
+    "deterministic_basket_leg_id",
+    "encode_basket_target_intent",
 ]

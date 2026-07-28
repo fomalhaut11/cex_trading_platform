@@ -29,8 +29,8 @@
 | T024 | Bounded mTLS operator endpoint, audit boundary and runbooks | Complete | T023 |
 | T025 | Generic decision-snapshot contracts, policy and readiness assessment | Complete | ADR-009 |
 | T026 | Deterministic bounded snapshot coordinator and replay integration | Complete | T025 |
-| T027 | Basket IDs, Objective Type registry, immutable contracts and policy | Planned | ADR-010 |
-| T028 | Strategy Snapshot/Basket compatibility and explicit single-leg rejection | Planned | T027 |
+| T027 | Basket IDs, Objective Type registry, immutable contracts and policy | Complete | ADR-010 |
+| T028 | Strategy Snapshot/Basket compatibility and explicit single-leg rejection | Complete | T027 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -45,7 +45,7 @@
 | A010 | Offline authenticated operator deployment acceptance | Complete | T023 |
 | A011 | Offline operator endpoint, audit and recovery acceptance | Complete | T024 |
 | A012 | Offline decision-snapshot contract, coherence, replay and restart acceptance | Complete | T025-T026 |
-| A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Planned | T027-T028 |
+| A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Complete | T027-T028 |
 
 ## Current Acceptance Baseline
 
@@ -61,5 +61,7 @@ are complete. They cover generic Snapshot Infrastructure only and do not
 authorize Funding Arbitrage, Basket execution or Testnet.
 
 ADR-010 was accepted on 2026-07-28 after current-code compatibility review.
-T027, T028 and A013 are authorized. They cannot create OMS Order Groups,
-child orders or exchange requests.
+T027, T028 and A013 are complete. They add only generic Basket decision
+contracts, deterministic evidence serialization, Strategy compatibility and
+explicit single-leg rejection. They create no OMS Order Groups, child orders
+or exchange requests.

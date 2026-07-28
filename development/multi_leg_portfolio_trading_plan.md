@@ -12,7 +12,7 @@ Production authorization: None
 
 ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
 tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
-current-code compatibility review; T027/T028/A013 are authorized. ADR-011
+current-code compatibility review; T027/T028/A013 are complete. ADR-011
 through ADR-014 remain blocked by their declared dependencies.
 
 ## 1. Purpose
@@ -913,9 +913,9 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Implement T027/T028/A013 within ADR-010's contract-only boundary and draft
-ADR-011 Parent-Child Order Model for separate review.
+Draft ADR-011 Parent-Child Order Model for separate review. Do not implement
+Parent/Child OMS behavior before that ADR is accepted.
 
-Do not create Funding Arbitrage application code. Basket, OMS Order Group,
-Portfolio Risk, Financial Ledger and Carry implementation remain blocked by
-their owning ADRs.
+Do not create Funding Arbitrage application code. Basket decision contracts
+are complete; OMS Order Group, Portfolio Risk, Financial Ledger and Carry
+implementation remain blocked by their owning ADRs.

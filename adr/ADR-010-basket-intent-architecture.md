@@ -12,6 +12,16 @@ Review evidence:
 - `ai_collaboration/topics/funding_arbitrage/41_codex_adr010_compatibility_review.md`;
 - `ai_collaboration/topics/funding_arbitrage/90_resolution.md`.
 
+Implementation evidence:
+
+- T027, T028 and A013 completed on 2026-07-28;
+- `interfaces/basket_intent_schema.md`;
+- `tests/acceptance/test_basket_intents.py`;
+- `ai_collaboration/topics/funding_arbitrage/50_codex_adr010_implementation_acceptance.md`.
+
+The implementation passed 397 tests plus 129 subtests with 86.34% branch
+coverage. It creates no OMS Order Group, child order or exchange request.
+
 This acceptance authorizes only the generic Basket Intent contracts and
 Strategy compatibility work assigned to T027/T028/A013. It does not authorize
 Parent/Child OMS, Portfolio Risk, Funding Arbitrage, Testnet or production
