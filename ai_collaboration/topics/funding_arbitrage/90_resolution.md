@@ -11,6 +11,8 @@ related:
   - 10_web_gpt_input.md
   - 20_codex_response.md
   - 30_web_gpt_review.md
+  - 31_web_gpt_adr009_review.md
+  - 40_codex_adr009_review_response.md
   - ../../../development/multi_leg_portfolio_trading_plan.md
   - ../../../adr/ADR-009-portfolio-decision-snapshot.md
 external_share: allowed
@@ -223,3 +225,40 @@ ADR-009 应先解决：
 - Binance Testnet 多腿交易；
 - 生产部署；
 - 真实资金交易。
+
+## 9. ADR-009 Review Update — 2026-07-28
+
+Web GPT 已完成对 ADR-009 的架构审查，并接受以下核心方向：
+
+- Snapshot 是通用决策基础设施，不只是 Carry 的私有数据聚合；
+- 当前同步、确定性运行时可以保留；
+- Event Bus 不能替代 freshness、coherence 和 ownership；
+- immutable、explicit readiness、fail closed；
+- event、arrival 和 monotonic time 分离。
+
+Codex 核对后认为 ADR-009 不需要结构性修改。现有草案已经把 Snapshot 分为：
+
+```text
+cex_quant.snapshots
+  -> 通用 observation、policy、readiness 和 metadata
+
+cex_quant.applications.<application>.<TypedSnapshot>
+  -> 应用专属、强类型的最终决策输入
+```
+
+同时保留本决议已有修正：通用 OMS 使用 `PARTIALLY_EXECUTED`；
+`PARTIALLY_HEDGED`、`HEDGED`、`ACTIVE` 和 `CLOSED` 由 Carry application
+aggregate 根据 OMS 和 Portfolio 权威事实派生。
+
+当前状态是：
+
+```text
+Web GPT review: ACCEPT
+Codex verification: NO STRUCTURAL REVISION REQUIRED
+Project owner decision: PENDING
+ADR-009 status: Proposed
+Implementation: NOT AUTHORIZED
+```
+
+项目负责人明确选择 `ACCEPT`、`REVISE` 或 `REJECT` 后，才能更新 ADR 状态和
+后续任务。完整逐项答复见 `40_codex_adr009_review_response.md`。
