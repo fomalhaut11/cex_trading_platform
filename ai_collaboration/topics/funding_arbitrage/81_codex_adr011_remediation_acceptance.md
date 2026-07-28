@@ -2,8 +2,8 @@
 
 Date: 2026-07-28
 
-Status: Architecture remains accepted; implementation findings remediated
-locally; remote CI pending
+Status: Architecture remains accepted; implementation findings remediated;
+local and remote acceptance passed
 
 ## Committee Decision Applied
 
@@ -101,6 +101,20 @@ secret scan passed
 git diff --check passed
 ```
 
+Remote documentation head
+`df2fd83ab7bae89e35da819e7671f79eeb20dbc0` passed GitHub Actions run
+`30351998834`:
+
+```text
+Quality and coverage       success
+Regression / Python 3.11   success
+Regression / Python 3.14   success
+```
+
+Run URL:
+
+`https://github.com/fomalhaut11/cex_trading_platform/actions/runs/30351998834`
+
 ## Boundary Confirmation
 
 The remediation adds no:
@@ -116,6 +130,5 @@ ADR-012.
 
 ## Next Gate
 
-ADR-012 proposal work may proceed after remote CI confirms this commit.
-Real grouped external execution remains forbidden until ADR-012 is accepted,
-implemented and independently accepted.
+ADR-012 proposal work may proceed. Real grouped external execution remains
+forbidden until ADR-012 is accepted, implemented and independently accepted.

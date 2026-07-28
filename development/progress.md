@@ -248,7 +248,7 @@ target-host performance and authenticated Testnet gates.
   tests and 133 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
-  remediation evidence for `c2c306d` is pending.
+  remediation head `df2fd83` passed all three jobs in run `30351998834`.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

@@ -108,5 +108,7 @@ coverage.
 ADR-011 remediation commit
 `c2c306dbe7675076ae200021d2c98f127736f09e` passes the complete local gate:
 430 tests, 133 subtests, 37 acceptance tests, strict MyPy across 93 source
-files, Ruff, compileall, secret scanning and 86.25% branch coverage. Remote
-GitHub Actions evidence is pending synchronization.
+files, Ruff, compileall, secret scanning and 86.25% branch coverage.
+Documentation head `df2fd83ab7bae89e35da819e7671f79eeb20dbc0`
+passed remote run `30351998834`: quality/coverage and regression on Python
+3.11 and 3.14 all succeeded.
