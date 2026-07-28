@@ -22,6 +22,8 @@ It is not a second writer for any source state. It starts empty after restart;
 old publications remain evidence and never authorize a new decision.
 
 Order Group state is deliberately not portfolio state. OMS exposes immutable
-per-leg signed fill and working-quantity vectors. Portfolio Risk remains the
-only future owner of Delta, basis, margin, liquidation and hedge assessment.
-`RECOVERY_REQUIRED` is an OMS execution-control state; `HEDGED` is not.
+per-leg signed fill and working-quantity vectors. Proposed ADR-012 keeps
+generic Delta, basis, margin, liquidation, exposure and safety assessment in
+Portfolio Risk. Proposed ADR-014 keeps application-specific `HEDGED`
+interpretation in the owning application aggregate. `RECOVERY_REQUIRED` is an
+OMS execution-control state; `HEDGED` is not.

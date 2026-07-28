@@ -1,7 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: In progress — ADR-009/010/011 accepted; ADR-012 Proposed for review;
-application blocked by ADR-012 through ADR-014
+Status: In progress — ADR-009/010/011 accepted; ADR-012/013/014 Proposed for
+the 2026-07-29 batch review; application implementation remains blocked
 
 Created: 2026-07-27
 
@@ -17,8 +17,9 @@ current-code compatibility review; T027/T028/A013 are complete. ADR-011 was
 accepted after incorporating the second Web GPT review; T029-T031/A014 are
 complete for bounded offline implementation, including post-review execution
 safety remediation. ADR-012 now has a current-code audit and Proposed
-architecture; it has not been accepted or implemented. ADR-013 and ADR-014
-remain blocked by their declared dependencies, and external exposure-changing
+architecture; ADR-013 Financial Ledger and ADR-014 Carry Application Boundary
+now also have current-code audits and Proposed architectures. None of these
+three ADRs has been accepted or implemented, and external exposure-changing
 group submission is not authorized.
 
 ## 1. Purpose
@@ -777,8 +778,8 @@ new basket path is developed.
 | ADR-010 Basket Intent Architecture | Generic bounded N-leg schema, identity, limits and single-leg compatibility |
 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic group lifecycle, per-action permission, execution plan, durable handoff, journal, partial/unknown/recovery |
 | ADR-012 Portfolio Risk and Grouped Execution Authorization | Execution-consistent positions, whole-basket preflight, exposure/reservation models, exact action permits and continuous supervision |
-| ADR-013 Financial Ledger Model | Cash-flow authority, idempotency, reconciliation and PnL attribution |
-| ADR-014 Carry Application Boundary | Application package ownership, public API and prohibited dependencies |
+| ADR-013 Financial Ledger and PnL Attribution | Fill/account financial-fact authority, balanced per-asset ledger, reconciliation, allocation and derived PnL |
+| ADR-014 Carry Application Boundary | Application package ownership, orthogonal economic state, ownership evidence, public API and prohibited dependencies |
 
 ADR-010 and ADR-011 must explicitly avoid two-leg-only contracts.
 
@@ -833,11 +834,11 @@ Depends on ADR-012, M1 and M2.
 
 ### Workstream M5 — Financial Ledger
 
-- canonical cash-flow types;
+- canonical fill and account cash-flow facts;
 - Binance funding/commission/account sources;
-- idempotent durable ledger;
+- balanced per-asset immutable ledger;
 - REST/private-stream reconciliation;
-- PnL attribution and invariants.
+- ownership allocation, valuation/PnL attribution and invariants.
 
 Depends on ADR-013 and M1.
 
@@ -845,9 +846,11 @@ Depends on ADR-013 and M1.
 
 - CarryPair metadata;
 - registered basis and expected-carry features;
-- CarryPosition aggregate;
+- CarryPosition aggregate and append-only application journal;
+- orthogonal lifecycle, hedge-assessment and financial-finality state;
+- baseline/application-owned position evidence;
 - pure strategy;
-- risk/recovery policies;
+- pure economic recovery proposals constrained by Risk;
 - application composition.
 
 Depends on ADR-014 and M1–M5.
@@ -986,11 +989,12 @@ The generic multi-leg core is complete only when:
 ## 18. Immediate Next Step
 
 T029, T030, T031 and A014 are complete after the ADR-011 post-implementation
-safety remediation. ADR-012 has been drafted against the immutable per-leg
-fill/working vectors and exact action-permit validation boundary. The next
-gate is Web GPT/project-owner review and acceptance; task IDs are assigned only
-after acceptance. External group submission remains blocked through
-implementation, offline acceptance and separate Testnet authorization.
+safety remediation. ADR-012, ADR-013 and ADR-014 now each have a current-code
+audit, formal Proposed ADR and self-contained Web GPT handoff. The next gate
+is the 2026-07-29 Web GPT/project-owner batch review; each decision must be
+accepted or revised independently before task IDs are assigned. External
+group submission remains blocked through implementation, offline acceptance
+and separate Testnet authorization.
 
 Do not create Funding Arbitrage application code. Basket decision contracts
 and the bounded offline OMS Order Group foundation are complete. Portfolio

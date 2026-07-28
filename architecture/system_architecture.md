@@ -70,6 +70,22 @@ candidate for execution-consistent position truth, whole-Basket approval,
 durable Risk reservations, current per-action authorization and continuous
 supervision. No real permit issuer or grouped external route exists yet.
 
+Proposed ADR-013 adds a separate Accounting flow:
+
+```text
+authenticated fill/account financial facts
+  -> balanced immutable per-asset ledger
+  -> reconciliation and allocation
+  -> derived valuation/PnL views
+```
+
+Proposed ADR-014 places Funding Carry in
+`applications.carry.funding_arbitrage`. The application owns economic
+lifecycle and hedge interpretation, consumes immutable Platform views and
+emits only generic Basket targets. It cannot issue Risk permits, mutate OMS,
+write ledger transactions or call Execution. Both proposals await review and
+authorize no implementation.
+
 ## Design Principles
 
 - Python-first, Rust-ready.

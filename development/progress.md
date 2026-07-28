@@ -207,6 +207,16 @@ target-host performance and authenticated Testnet gates.
   margin/collateral facts, whole-Basket admission reservations, exact current
   action permits, continuous supervision and recovery evidence. No Portfolio
   Risk source or real permit issuer has been implemented.
+- ADR-013 Financial Ledger and PnL Attribution is Proposed and ready for the
+  same review batch. It separates fill/account financial facts, a balanced
+  per-asset immutable ledger, source/balance reconciliation, allocation and
+  derived PnL. No Accounting source package has been implemented.
+- ADR-014 Carry Application Boundary is Proposed and ready for the same review
+  batch. It keeps economic lifecycle, hedge assessment and ownership in
+  `applications.carry` while preserving generic Risk/OMS/Accounting
+  authority. No Carry/Funding application code has been implemented.
+- The self-contained 2026-07-29 review entry point is
+  `ai_collaboration/topics/funding_arbitrage/88_codex_20260729_batch_review_handoff.md`.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -226,11 +236,11 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review `ADR-012-portfolio-risk-and-grouped-execution-authorization.md` and
-   classify findings as ADR-012 errors, later-ADR concerns or long-term
-   optimizations.
-2. Accept or revise ADR-012 before assigning implementation and offline
-   acceptance task IDs.
+1. Review ADR-012, ADR-013 and ADR-014 in dependency order using the
+   2026-07-29 batch handoff; classify findings per ADR as design errors,
+   other-ADR/implementation concerns or long-term optimizations.
+2. Accept or revise each ADR independently before assigning any new
+   implementation or offline acceptance task IDs.
 3. Keep grouped external submission blocked until ADR-012 is accepted,
    implemented, accepted offline and separately authorized for Testnet.
 4. Configure protected-branch checks after agreeing the direct-push policy.
@@ -254,7 +264,9 @@ target-host performance and authenticated Testnet gates.
   tests and 133 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
-  remediation head `df2fd83` passed all three jobs in run `30351998834`.
+  remediation head `df2fd83` passed all three jobs in run `30351998834`;
+  ADR-012 proposal baseline `fa0df9e` passed all three jobs in run
+  `30354281030`.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

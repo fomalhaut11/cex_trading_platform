@@ -90,9 +90,13 @@ Portfolio action-permit issuance and external group submission remain blocked
 until ADR-012 is accepted. Funding Arbitrage, Testnet and production
 multi-leg execution remain unauthorized.
 
-ADR-012 Portfolio Risk and Grouped Execution Authorization is now Proposed
-against baseline `a752d3bff06a1b73b1103f543c64a2b6b64d2016`. No T032-or-later
-implementation task and no A015 acceptance item is assigned before Web GPT
-review and explicit project-owner acceptance. The proposal itself does not
-change the completed status of T029-T031/A014 or remove the grouped external
-execution block.
+ADR-012 Portfolio Risk and Grouped Execution Authorization, ADR-013 Financial
+Ledger and PnL Attribution, and ADR-014 Carry Application Boundary are now
+Proposed for the 2026-07-29 batch review. No T032-or-later implementation task
+and no A015-or-later acceptance item is assigned before Web GPT review and
+explicit project-owner acceptance.
+
+The proposals do not change the completed status of T029-T031/A014, implement
+Portfolio Risk/Accounting/Carry, or remove the grouped external execution
+block. Review entry:
+`ai_collaboration/topics/funding_arbitrage/88_codex_20260729_batch_review_handoff.md`.

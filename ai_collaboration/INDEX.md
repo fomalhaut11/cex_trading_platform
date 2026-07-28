@@ -6,7 +6,7 @@
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
 |---|---|---|---|---|---|---|
-| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011 PROMOTED; ADR-012 READY_FOR_REVIEW | `a752d3bff06a1b73b1103f543c64a2b6b64d2016` | [ADR-012 current-code audit](topics/funding_arbitrage/82_codex_adr012_current_code_audit.md) | [ADR-012 proposal handoff](topics/funding_arbitrage/83_codex_adr012_proposal_handoff.md) |
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011 PROMOTED; ADR-012/013/014 READY_FOR_REVIEW | `fa0df9e2a015db258457d226c7ed9fa5c689b8eb` | [ADR-012 to ADR-014 audits](topics/funding_arbitrage/82_codex_adr012_current_code_audit.md) | [2026-07-29 batch review handoff](topics/funding_arbitrage/88_codex_20260729_batch_review_handoff.md) |
 
 ## Completed and Reference Exchanges
 

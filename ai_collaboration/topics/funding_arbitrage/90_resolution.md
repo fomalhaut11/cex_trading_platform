@@ -13,6 +13,13 @@ related:
   - 30_web_gpt_review.md
   - 31_web_gpt_adr009_review.md
   - 40_codex_adr009_review_response.md
+  - 82_codex_adr012_current_code_audit.md
+  - 83_codex_adr012_proposal_handoff.md
+  - 84_codex_adr013_current_code_audit.md
+  - 85_codex_adr013_proposal_handoff.md
+  - 86_codex_adr014_current_code_audit.md
+  - 87_codex_adr014_proposal_handoff.md
+  - 88_codex_20260729_batch_review_handoff.md
   - ../../../development/multi_leg_portfolio_trading_plan.md
   - ../../../adr/ADR-009-portfolio-decision-snapshot.md
 external_share: allowed
@@ -146,8 +153,8 @@ applications/
 | 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | ACCEPTED_IMPLEMENTED_2026_07_28 |
 | 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、Execution Plan/Action、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | ACCEPTED_2026_07_28_T029_T031_A014_AUTHORIZED |
 | 4 | ADR-012 Portfolio Risk and Grouped Execution Authorization | execution-consistent position、basket projection、delta、basis、margin、liquidation、reservation、逐 action permit、持续监督 | 风险上下文、拒绝原因、durability、recovery 和 fail-closed 场景 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
-| 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
-| 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、依赖、聚合和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | BLOCKED_BY_ADR_009_010_011_012_013 |
+| 5 | ADR-013 Financial Ledger and PnL Attribution | fill/account facts、balanced per-asset ledger、reconciliation、allocation、valuation 和 attribution | source schema、ledger invariant、reconciliation、PnL 恒等式 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
+| 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、正交状态、ownership、依赖和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
 
 ## 5. ADR Review Protocol
 
@@ -492,3 +499,71 @@ ADR-012 当前状态是 `Proposed`，不是 `Accepted`。尚未分配 T032 或 A
 没有实现 Portfolio Risk、真实 permit issuer 或 grouped external route。
 `GroupedExecutionBlockedError` 继续生效，Funding Arbitrage、Testnet 和生产
 多腿执行仍未授权。
+
+## 16. ADR-013 Proposal
+
+Codex 已在代码基线
+`fa0df9e2a015db258457d226c7ed9fa5c689b8eb`
+上完成 ADR-013 当前代码审计，并形成：
+
+- `84_codex_adr013_current_code_audit.md`；
+- `85_codex_adr013_proposal_handoff.md`；
+- `../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md`。
+
+提案将 Accounting 固化为独立领域：
+
+```text
+fill/account financial facts
+  -> balanced per-asset immutable ledger
+  -> source and balance reconciliation
+  -> immutable ownership allocation
+  -> derived valuation and PnL attribution
+```
+
+OMS 累计成交和均价不能替代逐笔财务事实；行情 `FundingRateUpdate` 不能
+替代真实账户 Funding settlement；Portfolio 绝对余额只能用于对账，不能
+解释资金移动原因。共享账户归属无法证明时必须保留 `UNALLOCATED`，不得猜测。
+
+ADR-013 当前状态是 `Proposed`，尚未分配实现或验收任务，没有创建
+`cex_quant.accounting` 源码。
+
+## 17. ADR-014 Proposal
+
+Codex 已在同一基线上完成 ADR-014 当前代码审计，并形成：
+
+- `86_codex_adr014_current_code_audit.md`；
+- `87_codex_adr014_proposal_handoff.md`；
+- `../../../adr/ADR-014-carry-application-boundary.md`。
+
+提案把 Funding Carry 放置在：
+
+```text
+cex_quant.applications.carry.funding_arbitrage
+```
+
+应用层拥有经济生命周期、`PARTIALLY_HEDGED/HEDGED` 解释、应用持仓归属和
+经济恢复提案；它只消费平台不可变视图并输出通用 `BasketTargetIntent`。
+Market Data、Portfolio、Risk、OMS、Accounting 和 Execution 的权威所有权
+保持不变。生命周期、hedge assessment 和财务最终性使用正交状态，不混入
+一个枚举。
+
+ADR-014 当前状态是 `Proposed`，没有创建 Funding/Carry 应用源码，也没有
+解除组合外部提交阻断。
+
+## 18. 2026-07-29 Batch Review
+
+统一审核入口：
+
+`88_codex_20260729_batch_review_handoff.md`
+
+审核顺序：
+
+```text
+ADR-012 Portfolio Risk
+  -> ADR-013 Financial Ledger
+  -> ADR-014 Carry Application Boundary
+```
+
+三份 ADR 均需独立返回 `ACCEPT`、`ACCEPT WITH REQUIRED CORRECTIONS` 或
+`REVISE`。审核意见按“当前 ADR 设计错误 / 其他 ADR 或实现问题 / 长期优化”
+分类。该审核包不授权代码实现、Testnet、生产或真实组合外部提交。

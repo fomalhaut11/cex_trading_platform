@@ -151,3 +151,63 @@ If ADR-012 is accepted, its offline acceptance must cover:
 
 External grouped execution must remain unreachable during this acceptance.
 Passing offline tests does not authorize Testnet.
+
+## ADR-013 Proposed Acceptance Scope
+
+Status: Proposed; no implementation or acceptance task ID is assigned.
+
+If ADR-013 is accepted, its offline acceptance must cover:
+
+- immutable fill/account financial facts with venue business identity;
+- Spot, USD-M and COIN-M commissions and realized settlement fields;
+- actual Funding settlement separated from Funding-rate Market Data;
+- private-stream/history observations converging to one economic fact and one
+  posting;
+- deterministic one-pass private-event projections to OMS, Portfolio and
+  Accounting;
+- per-asset balanced ledger transactions, including multi-asset Spot fills;
+- fees/rebates in base, quote or third asset;
+- exact idempotency, immutable reversal/correction and policy versioning;
+- durable fact/transaction journal crash boundaries and exact replay;
+- source completeness and per-asset balance reconciliation;
+- unexplained differences fail closed rather than auto-adjust;
+- direct group/leg allocation and ambiguous shared-account `UNALLOCATED`;
+- transfers excluded from PnL;
+- realized/valuation components without double-counting;
+- bounded Accounting side-path backpressure that never drops evidence;
+- Accounting failure blocks new exposure but not query/cancel/recovery;
+- unchanged OMS, Portfolio, Market Data and recorder behavior.
+
+Passing offline tests does not authorize authenticated financial ingestion,
+Funding application code, Testnet or production.
+
+## ADR-014 Proposed Acceptance Scope
+
+Status: Proposed; no implementation or acceptance task ID is assigned.
+
+If ADR-014 is accepted and its dependencies are implemented, offline
+acceptance must cover:
+
+- deterministic Carry pair/application-position identities and product
+  relationship validation;
+- distinct typed entry and position Snapshot assembly from exact required
+  Spot/perpetual/Funding/account/margin/Feature/application source views;
+- stale, skewed, wrong-scope and semantically mismatched source rejection;
+- unchanged `StrategyDecision` and `PositionTargetIntent`;
+- exact two-leg open/close Basket targets with no execution fields;
+- application lifecycle, hedge assessment and financial-finality dimensions;
+- `UNHEDGED`, `PARTIALLY_HEDGED`, `HEDGED` and `UNKNOWN` from authoritative
+  effective exposure rather than OMS fills alone;
+- baseline versus application-owned position evidence;
+- Funding reversal producing a new normal close objective;
+- Carry recovery proposal remaining distinct from Risk permit and OMS
+  recovery;
+- application journal crash, replay, corruption and restart reconciliation;
+- expected Funding/APR never appearing as realized PnL;
+- dedicated-account allocation and ambiguous shared-account `UNALLOCATED`;
+- no Carry imports/branches inside OMS, Risk or Accounting;
+- no application call to Execution or permit issuer;
+- synthetic three-leg option-spread-plus-Delta-hedge compatibility through
+  the same generic N-leg core.
+
+Read-only observation and offline simulation precede any Testnet request.

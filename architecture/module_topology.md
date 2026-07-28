@@ -114,6 +114,15 @@ listener. Concrete TLS termination remains a deployment boundary.
     margin facts in Portfolio, exposure/approval/permit authority in Risk,
     group/action/child facts in OMS and ordered coordination in Runtime. This
     proposal is not yet an accepted dependency change.
+20. Proposed ADR-013 adds an independent Accounting domain for immutable
+    financial facts, balanced per-asset postings, reconciliation, allocation
+    and derived PnL. Accounting cannot mutate OMS/Portfolio or import an
+    application implementation.
+21. Proposed ADR-014 places Carry economic state in
+    `applications.carry`; applications consume immutable public views and emit
+    Basket targets, but cannot issue permits, create child orders, write the
+    ledger or call Execution. These proposals are not yet accepted dependency
+    changes.
 
 ## Process Boundaries
 

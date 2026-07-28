@@ -97,15 +97,23 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   review. It covers execution-consistent positions, normalized margin facts,
   whole-Basket reservations, exact per-action permits, continuous supervision
   and recovery evidence. **No implementation task is authorized yet.**
+- ADR-013 Financial Ledger and PnL Attribution is Proposed for the same review
+  batch. It covers canonical fill/account financial facts, a balanced
+  per-asset ledger, source/balance reconciliation, ownership allocation and
+  derived PnL. **No implementation task is authorized yet.**
+- ADR-014 Carry Application Boundary is Proposed for the same review batch. It
+  places economic lifecycle, hedge assessment and ownership evidence in
+  `applications.carry` while preserving generic platform authority.
+  **No application implementation is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
   foundation complete as T029-T031/A014; external group submission blocked by
   ADR-012.**
 - Add normalized margin/collateral state and an idempotent Financial Ledger.
-  **Planned; requires accepted ADR-013.**
+  **Proposed under ADR-012/013; implementation requires acceptance.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding
-  Arbitrage is the first validating application. **Planned; requires accepted
-  ADR-014 and its dependencies.**
+  Arbitrage is the first validating application. **Proposed under ADR-014;
+  implementation requires accepted/implemented dependencies.**
 - The ADR-010 decision layer is validated with a Funding-shaped two-leg
   target and a synthetic option-spread-plus-Delta-hedge three-leg target.
   This is contract acceptance, not application or execution acceptance.
