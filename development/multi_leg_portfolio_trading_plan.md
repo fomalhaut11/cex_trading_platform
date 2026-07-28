@@ -1,6 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: Planned — ADR-009/010 accepted; application blocked by ADR-011 through ADR-014
+Status: Planned — ADR-009/010 accepted; ADR-011 Proposed; application blocked
+by ADR-011 through ADR-014
 
 Created: 2026-07-27
 
@@ -13,7 +14,9 @@ Production authorization: None
 ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
 tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
 current-code compatibility review; T027/T028/A013 are complete. ADR-011
-through ADR-014 remain blocked by their declared dependencies.
+is Proposed and awaits architecture review; its implementation is not
+authorized. ADR-012 through ADR-014 remain blocked by their declared
+dependencies.
 
 ## 1. Purpose
 
@@ -268,6 +271,9 @@ Later ADRs may add:
 
 ```python
 OrderGroupId
+GroupActionId
+PortfolioApprovalId
+ExecutionPermitId
 CashFlowId
 LedgerEntryId
 ApplicationPositionId
@@ -392,40 +398,47 @@ class BasketRiskDecision:
     projected_exposure: PortfolioExposure
 ```
 
-V1 should prefer binary `ALLOW` or `REJECT`. Silent per-leg modification can
-break the economic objective and identity guarantees. If Risk proposes a
-modified basket in the future, it must return a new explicitly identified
-approved plan and the application must accept it before submission.
+V1 should prefer binary `ALLOW` or `REJECT` for Basket admission. Silent
+per-leg modification can break the economic objective and identity
+guarantees. If Risk proposes a modified Basket in the future, it must return
+a new explicitly identified approved plan and the application must accept it
+before group creation.
 
 The mandatory invariant is:
 
 ```text
-No child submit occurs until one allowed decision covers the complete,
-identity-equal Basket intent.
+An identity-equal whole-Basket admission is required to create one group,
+but that admission grants no permission to submit a child.
+
+Every exposure-changing child submit requires a fresh finite permit covering
+the exact child proposal, group revision, Risk snapshot and expiry.
 ```
 
 ### 7.5 OMS boundary
 
-OMS owns an approved execution group that is independent of the concrete Risk
-implementation:
+ADR-011 is Proposed and not yet accepted. It proposes that OMS own a durable
+execution-control group independent of the concrete Risk implementation:
 
 ```python
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ApprovedOrderGroupIntent:
-    approval_id: str
-    source_intent_id: IntentId
-    strategy_id: StrategyId
-    approved_legs: tuple[ApprovedOrderLeg, ...]
+class OrderGroupAdmission:
+    approval_id: PortfolioApprovalId
+    basket: BasketTargetIntent
+    basket_checksum: str
     approved_at_ns: UnixNanos
-    valid_until_ns: UnixNanos | None
+    valid_until_ns: UnixNanos
+    risk_policy_version: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class OrderGroupView:
     order_group_id: OrderGroupId
     source_intent_id: IntentId
+    approval_id: PortfolioApprovalId
+    revision: int
     status: OrderGroupStatus
-    children: tuple[OrderView, ...]
+    legs: tuple[OrderGroupLegView, ...]
+    unresolved_action_ids: tuple[GroupActionId, ...]
     created_at_ns: UnixNanos
     last_transition_ns: UnixNanos
     recovery_reason: str
@@ -435,53 +448,54 @@ Generic OMS status must use execution-neutral language:
 
 ```text
 CREATED
-  -> READY
-  -> EXECUTING
-  -> PARTIALLY_EXECUTED
-  -> COMPLETED
+  -> ACTIVE <-> SUSPENDED
+       |
+       v
+     RECOVERY_REQUIRED
 
-EXECUTING / PARTIALLY_EXECUTED
-  -> RECOVERY_REQUIRED
-  -> HALTED
-
-any non-terminal state
-  -> CANCELING
-  -> CANCELED or RECOVERY_REQUIRED
+ACTIVE / SUSPENDED
+  -> CLOSING
+  -> CLOSED
 ```
 
-`PARTIALLY_HEDGED` is not a generic OMS status. It is a Carry application
-classification derived from child fills and net Delta. A triangular arbitrage
-or option spread may interpret the same generic `PARTIALLY_EXECUTED` facts
-differently.
+`PARTIALLY_FILLED` remains a child-order state. `UNKNOWN` is a child/action
+condition that forces the group into `RECOVERY_REQUIRED`. `HEDGED` and
+`PARTIALLY_HEDGED` are Portfolio Risk or Carry classifications derived from
+authoritative positions, child fills, marks, multipliers and, when relevant,
+Greeks. They are not OMS group control states.
 
 OMS must expose facts, not decide whether the economic arbitrage succeeded.
+One Basket leg maps to zero or more bounded child-order attempts; it is not a
+one-leg-to-one-child contract.
 
 ### 7.6 OMS service port
 
-Candidate operations:
+ADR-011 proposes a caller-driven, single-writer runtime. Execution policy
+proposes actions but grants no authority. Risk grants one finite,
+single-consumption permit for one exact proposal:
 
 ```python
-class OrderGroupPort(Protocol):
+class OrderGroupRuntime(Protocol):
     def create_group(
         self,
-        approved: ApprovedOrderGroupIntent,
+        admission: OrderGroupAdmission,
     ) -> OrderGroupView: ...
 
-    def next_actions(
+    def propose_next_actions(
         self,
         order_group_id: OrderGroupId,
-    ) -> tuple[OrderAction, ...]: ...
+    ) -> tuple[ChildOrderProposal, ...]: ...
 
-    def apply_child_event(
+    def prepare_child_submit(
+        self,
+        proposal: ChildOrderProposal,
+        permit: ExecutionActionPermit,
+    ) -> OrderRequest: ...
+
+    def apply_child_fact(
         self,
         order_group_id: OrderGroupId,
         event: OrderEvent,
-    ) -> OrderGroupView: ...
-
-    def request_cancel(
-        self,
-        order_group_id: OrderGroupId,
-        now_ns: UnixNanos,
     ) -> OrderGroupView: ...
 
     def snapshot(
@@ -490,8 +504,15 @@ class OrderGroupPort(Protocol):
     ) -> OrderGroupView: ...
 ```
 
+`prepare_child_submit` must validate exact identity, checksum, group revision,
+expiry, operator state and configured bounds, then atomically persist the
+group/action/child mapping plus child submit intent before returning an
+`OrderRequest` for any external call.
+
 All returned actions and collections are bounded and deterministically
 ordered. Action generation must be idempotent across retries and restarts.
+An unknown result prohibits blind replacement until venue reconciliation
+resolves the original child identity.
 
 Execution ordering may require parallel-ready sets, linear stages or dynamic
 hedge sizing from actual fills. ADR-011 must define a versioned execution-plan
@@ -704,7 +725,7 @@ new basket path is developed.
 |---|---|
 | ADR-009 Portfolio Snapshot Model | Source ownership, freshness, skew, quality and typed application assembly |
 | ADR-010 Basket Intent Architecture | Generic bounded N-leg schema, identity, limits and single-leg compatibility |
-| ADR-011 Parent-Child Order Model | Generic group lifecycle, execution plan, journal, partial/unknown/recovery |
+| ADR-011 Parent Order Group and Multi-leg Execution Model | Generic group lifecycle, per-action permission, execution plan, durable handoff, journal, partial/unknown/recovery |
 | ADR-012 Portfolio Risk Extension | Whole-basket preflight, exposure models and continuous supervision |
 | ADR-013 Financial Ledger Model | Cash-flow authority, idempotency, reconciliation and PnL attribution |
 | ADR-014 Carry Application Boundary | Application package ownership, public API and prohibited dependencies |
@@ -903,7 +924,8 @@ The generic multi-leg core is complete only when:
 1. ADR-009 through ADR-014 are accepted;
 2. all new public contracts and ownership are documented;
 3. existing single-leg behavior remains compatible;
-4. complete Basket risk approval precedes every child submit;
+4. complete Basket admission precedes group creation, and every
+   exposure-changing child submit has its own exact finite Risk permit;
 5. parent/child state is durable and restart-safe;
 6. generic N-leg bounds are enforced;
 7. Funding two-leg and synthetic three-leg acceptance pass;
@@ -913,7 +935,8 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Draft ADR-011 Parent-Child Order Model for separate review. Do not implement
+Review the Proposed ADR-011 Parent Order Group and Multi-leg Execution Model,
+resolve its open decisions, then accept or revise it. Do not implement
 Parent/Child OMS behavior before that ADR is accepted.
 
 Do not create Funding Arbitrage application code. Basket decision contracts

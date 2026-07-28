@@ -471,6 +471,9 @@ Mandatory invariant:
 ```text
 No child order is created or submitted until one ALLOW decision covers the
 complete, unexpired and identity-equal Basket.
+
+That whole-Basket ALLOW is admission evidence, not permission to submit every
+child. A downstream execution action must satisfy ADR-011 and ADR-012.
 ```
 
 If a future Risk engine proposes a modified Basket, it must create a new
@@ -483,9 +486,11 @@ ADR-012 defines projected portfolio calculations and rejection reasons.
 
 `BasketTargetIntent` never enters an Execution adapter.
 
-After whole-Basket approval, Runtime converts it into the OMS-owned
-`ApprovedOrderGroupIntent` defined by ADR-011. OMS then derives bounded child
-identities and actions.
+After whole-Basket approval, Runtime converts it into the OMS-owned group
+admission defined by ADR-011. Proposed ADR-011 names this evidence
+`OrderGroupAdmission`; it may create one durable group but grants no child
+execution permission. OMS then derives bounded child proposals, while ADR-012
+defines the exact finite permit required for an exposure-changing submit.
 
 Separation:
 

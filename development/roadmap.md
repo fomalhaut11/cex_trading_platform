@@ -89,6 +89,8 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   ADR-009 (T025/T026/A012).
 - Bounded generic N-leg Basket intents and single-leg compatibility are
   complete under ADR-010 (T027/T028/A013).
+- ADR-011 Parent Order Group and Multi-leg Execution Model is Proposed and
+  under architecture review; it authorizes no implementation yet.
 - Extend Risk with whole-Basket preflight and continuous portfolio exposure
   supervision. **Planned; requires accepted ADR-012.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;

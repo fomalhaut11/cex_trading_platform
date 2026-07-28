@@ -65,3 +65,8 @@ T027, T028 and A013 are complete. They add only generic Basket decision
 contracts, deterministic evidence serialization, Strategy compatibility and
 explicit single-leg rejection. They create no OMS Order Groups, child orders
 or exchange requests.
+
+ADR-011 Parent Order Group and Multi-leg Execution Model is Proposed. Its
+current-code audit and architecture review package are complete, but no
+implementation task or acceptance ID is authorized until Web GPT and the
+project owner resolve the open decisions and accept the ADR.

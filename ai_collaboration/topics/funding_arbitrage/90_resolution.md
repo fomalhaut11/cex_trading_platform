@@ -59,7 +59,9 @@ sensitivity: public-project
 采用 venue-neutral、bounded N-leg Basket/Portfolio Target Intent 表达一个组合交易目标。
 Funding 的双腿只是第一个验证用例，不为两腿、三腿或四腿分别建立 OMS。Basket legs 在
 进入首个 venue submit 前必须共同完成完整性、余额、margin、freshness 和 portfolio-risk
-预检。
+预检。该整篮子准入只允许创建一个持久化 Order Group，不等于所有 child 的 execution
+permission；每个改变 exposure 的 child submit 还需要 ADR-011/012 定义的精确、有限、
+一次性动作许可。
 
 具体类型名称、leg 数量上限、是否直接通用化以及 v1 字段由 ADR-010 决定。
 
@@ -70,7 +72,7 @@ Funding 的双腿只是第一个验证用例，不为两腿、三腿或四腿分
 - idempotency；
 - child identity；
 - partial fill；
-- generic `PARTIALLY_EXECUTED`；
+- child `PARTIALLY_FILLED` facts and group progress views；
 - unknown execution state；
 - hedge timeout；
 - compensation/recovery；
@@ -78,10 +80,10 @@ Funding 的双腿只是第一个验证用例，不为两腿、三腿或四腿分
 - venue reconciliation；
 - operator halt。
 
-OMS Order Group 只拥有执行目标的通用生命周期。Carry application 根据 child fills 和
-net Delta 将 `PARTIALLY_EXECUTED` 解释为 `PARTIALLY_HEDGED`。Carry Position 的
-`ACTIVE/CLOSING/CLOSED` 状态由 application aggregate 拥有，实际 venue position 仍由
-Portfolio/Account State 提供权威事实。
+OMS Order Group 只拥有持久化执行控制生命周期和 child facts。Carry application 根据
+child fills、Portfolio 权威仓位和 net Delta 派生 `PARTIALLY_HEDGED`。OMS group 的
+`ACTIVE/CLOSING/CLOSED` 是执行控制状态，不代表经济 Carry Position 的同名状态；实际
+venue position 仍由 Portfolio/Account State 提供权威事实。
 
 ### 2.4 Portfolio risk
 
@@ -126,9 +128,9 @@ applications/
 | Atomic Snapshot | Modify | 定义为带来源时间和 skew 的逻辑一致快照 |
 | Generic bounded N-leg Basket Intent | Adopt with ADR | 首腿提交前进行整篮子预检 |
 | Generic Parent/Child OMS | Adopt | 不按腿数拆模块；必须支持 partial/unknown/restart |
-| `PARTIALLY_EXECUTED` | Adopt | OMS 通用执行状态 |
+| Partial execution facts | Modify | `PARTIALLY_FILLED` 属于 child；group 提供聚合 progress view，不设 `PARTIALLY_EXECUTED` 控制状态 |
 | `PARTIALLY_HEDGED` | Modify | Carry application 根据 OMS facts 和净 Delta 派生 |
-| `ACTIVE/CLOSED` Parent Order | Modify | 归属 Carry Position，不由 OMS 长期持有 |
+| `ACTIVE/CLOSED` Parent Order | Refine in ADR-011 | OMS 可用作 group 控制状态，但不表示 Carry 经济状态 |
 | Portfolio Risk | Adopt | pre-trade basket risk + continuous supervision |
 | Funding/fee/PnL ledger | Adopt | funding 与 commission 分类型核算 |
 | `cex_quant.applications.carry` | Adopt in principle | 精确依赖规则由 ADR-014 固化 |
@@ -141,8 +143,8 @@ applications/
 | Order | Planned ADR | Scope | Required exit evidence | Status |
 |---:|---|---|---|---|
 | 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | ACCEPTED_2026_07_28 |
-| 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | READY_TO_DRAFT |
-| 3 | ADR-011 Parent-Child Order Model | Generic Order Group lifecycle、bounded children、partial、unknown、补偿和恢复 | 状态机、journal/replay 设计、两腿与三腿故障矩阵 | BLOCKED_BY_ADR_010 |
+| 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | ACCEPTED_IMPLEMENTED_2026_07_28 |
+| 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | PROPOSED_REVIEW_REQUIRED |
 | 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |
 | 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
 | 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、依赖、聚合和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | BLOCKED_BY_ADR_009_010_011_012_013 |
@@ -246,9 +248,10 @@ cex_quant.applications.<application>.<TypedSnapshot>
   -> 应用专属、强类型的最终决策输入
 ```
 
-同时保留本决议已有修正：通用 OMS 使用 `PARTIALLY_EXECUTED`；
-`PARTIALLY_HEDGED`、`HEDGED`、`ACTIVE` 和 `CLOSED` 由 Carry application
-aggregate 根据 OMS 和 Portfolio 权威事实派生。
+同时保留本决议的所有权边界并由 Proposed ADR-011 进一步收紧：
+`PARTIALLY_FILLED` 是 child fact；OMS group 使用独立控制状态；
+`PARTIALLY_HEDGED` 和 `HEDGED` 由 Carry application 根据 OMS 和 Portfolio
+权威事实派生。OMS group 的 `ACTIVE/CLOSED` 不等于 Carry position 的经济状态。
 
 当前状态是：
 
@@ -387,3 +390,20 @@ Ruff / compile / secret scan passed
 
 本次实现未创建 Parent/Child Order Group、子订单、交易所请求、组合 Risk
 或 Funding Arbitrage 应用。下一架构审查边界是 ADR-011。
+
+## 13. ADR-011 Proposal Review
+
+Web GPT 的 ADR-011 审查输入已固化为
+`60_web_gpt_adr011_review.md`。Codex 已检查当前 OMS model、`OrderRequest`、
+Execution adapter、journal、reconciliation 和实际 runtime composition，
+结果见 `61_codex_adr011_current_code_audit.md`。
+
+`ADR-011-parent-order-group-multi-leg-execution.md` 当前状态为 `Proposed`。
+它明确区分 Basket admission、child proposal 与单次 execution permission，
+并规定 Parent Order Group 只拥有持久化执行控制和 child facts；实际
+Portfolio exposure、Delta、basis、margin 和 `HEDGED` 判断仍由 ADR-012
+及后续 Carry application 拥有。
+
+本轮只形成架构提案，不授权 Parent/Child OMS、组合 Risk、Funding
+Arbitrage、Testnet 或生产执行代码。供 Web GPT 继续审查的自包含摘要见
+`62_codex_adr011_proposal_handoff.md`。

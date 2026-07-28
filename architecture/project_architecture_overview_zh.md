@@ -701,7 +701,7 @@ ADR 状态：
 |---|---|---|
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
-| ADR-011 | Parent-Child Order | 尚未起草/接受 |
+| ADR-011 | Parent Order Group and Multi-leg Execution | Proposed；待 Web GPT 与项目负责人审查，未授权实现 |
 | ADR-012 | Portfolio Risk | 尚未起草/接受 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |
 | ADR-014 | Carry Application Boundary | 尚未起草/接受 |

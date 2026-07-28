@@ -178,7 +178,10 @@ target-host performance and authenticated Testnet gates.
 
 ## In Progress
 
-- ADR-011 Parent-Child Order Model preparation.
+- ADR-011 Parent Order Group and Multi-leg Execution Model is `Proposed`.
+  Current-code audit, ownership boundaries, identity chain, state model,
+  durable handoff, restart recovery and review questions are documented.
+  No Parent/Child implementation is authorized before acceptance.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -198,8 +201,8 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Draft ADR-011 Parent-Child Order Model for separate architecture review;
-   do not implement it before acceptance.
+1. Review ADR-011 with Web GPT and the project owner, resolve its eight open
+   decisions and accept or revise it; do not implement it before acceptance.
 2. Configure protected-branch checks after agreeing the direct-push policy.
 3. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
