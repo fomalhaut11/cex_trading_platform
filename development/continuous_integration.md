@@ -96,3 +96,11 @@ T024 implementation commit
 Python 3.11 and 3.14, 29 acceptance scenarios, strict MyPy across 81 source
 files, Ruff, secret scanning and the 85% branch-coverage threshold; local
 coverage measured 86.19%.
+
+ADR-011 implementation commit
+`9c1b0afb09744759b98429f7d8e99542bebd0aa1` and documentation head
+`9ccf0c5438ebf37eb47fef5132e3bea8698e7a5e` passed remote run
+`30345476372` on 2026-07-28. The run passed quality/coverage plus regression
+on Python 3.11 and 3.14. Local evidence is 420 tests, 132 subtests, 36
+acceptance scenarios, strict MyPy across 93 source files and 86.10% branch
+coverage.

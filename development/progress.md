@@ -239,6 +239,8 @@ target-host performance and authenticated Testnet gates.
 - `python -m mypy`: passed with MyPy 2.3.0 for 93 source files.
 - Pytest branch coverage: 86.10%; the 85% CI gate passes with 420 tests and
   132 subtests.
+- GitHub Actions run `30345476372` passed quality/coverage and regression on
+  Python 3.11 and 3.14 for ADR-011 head `9ccf0c5`.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

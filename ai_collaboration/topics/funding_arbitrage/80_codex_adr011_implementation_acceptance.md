@@ -214,6 +214,19 @@ compileall passed
 git diff --check passed
 ```
 
+Remote GitHub Actions run `30345476372` completed successfully for head
+`9ccf0c5438ebf37eb47fef5132e3bea8698e7a5e`:
+
+```text
+Quality and coverage       success
+Regression / Python 3.11   success
+Regression / Python 3.14   success
+```
+
+Run URL:
+
+`https://github.com/fomalhaut11/cex_trading_platform/actions/runs/30345476372`
+
 Important scenarios:
 
 | Scenario | Result |
