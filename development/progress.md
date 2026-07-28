@@ -191,6 +191,13 @@ target-host performance and authenticated Testnet gates.
   option-spread/Delta-hedge groups, exact permits, same-ID technical retry,
   unknown recovery, hard/configured bounds, closure evidence, durability,
   mixed replay and unchanged single-leg behavior.
+- ADR-011 post-review remediation adds a mandatory immediate safety recheck
+  after durable preparation and before external I/O, correct before-dispatch
+  failure classification, strategy/account active-group bounds, durable
+  capacity suspension, global child-ID collision protection and runtime-level
+  single-writer enforcement. Fault injection covers the newly identified
+  halt, append, recovery and ownership boundaries without adding ADR-012 Risk
+  logic or enabling grouped external execution.
 
 ## In Progress
 
@@ -233,14 +240,15 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -q`: 420 passed.
-- `python -m unittest discover -s tests/acceptance -q`: 36 passed.
+- `python -m unittest discover -s tests -q`: 430 passed.
+- `python -m unittest discover -s tests/acceptance -q`: 37 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
 - `python -m mypy`: passed with MyPy 2.3.0 for 93 source files.
-- Pytest branch coverage: 86.10%; the 85% CI gate passes with 420 tests and
-  132 subtests.
+- Pytest branch coverage: 86.25%; the 85% CI gate passes locally with 430
+  tests and 133 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
-  Python 3.11 and 3.14 for ADR-011 head `9ccf0c5`.
+  Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
+  remediation evidence for `c2c306d` is pending.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

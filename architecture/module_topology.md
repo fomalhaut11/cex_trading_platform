@@ -66,12 +66,14 @@ core.identifiers
 ```
 
 `runtime.execution_handoff` is shared by the existing single-leg Pipeline:
-it persists `SUBMITTING` before external I/O and returns every immediate
-result or typed unknown/not-sent failure to OMS. The Order Group runtime can
-durably prepare synthetic child attempts, but its external submission method
-always fails closed. Until ADR-012 is accepted, no exposure-changing group
-child can reach an Execution adapter. The current single-leg Pipeline remains
-the production regression path.
+it persists `SUBMITTING`, requires an immediate runtime/operator guard before
+external I/O and returns every immediate result or typed unknown/not-sent
+failure to OMS. The Order Group runtime enforces single-writer mutation,
+bounded strategy/account activation, durable capacity suspension and global
+child identity ownership. It can durably prepare synthetic child attempts,
+but its external submission method always fails closed. Until ADR-012 is
+accepted, no exposure-changing group child can reach an Execution adapter.
+The current single-leg Pipeline remains the production regression path.
 
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public

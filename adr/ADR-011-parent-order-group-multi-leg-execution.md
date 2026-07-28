@@ -1238,6 +1238,15 @@ authority.
 T029, T030, T031 and A014 were completed offline on 2026-07-28 in commit
 `9c1b0afb09744759b98429f7d8e99542bebd0aa1`.
 
+A post-implementation architecture review kept this ADR accepted and found
+implementation gaps rather than design defects. Commit
+`c2c306dbe7675076ae200021d2c98f127736f09e` closed them by adding the mandatory
+post-durability/pre-I/O safety recheck, definitely-not-sent bridge
+classification, configured active-group bounds, durable capacity suspension,
+global child-identity collision checks, runtime-level single-writer
+enforcement and the missing failure/race tests. No ADR-012 Risk logic or
+grouped external execution was introduced.
+
 Implemented modules:
 
 ```text

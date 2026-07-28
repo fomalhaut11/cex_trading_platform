@@ -63,7 +63,8 @@ Strategy compatibility suites, and the unchanged single-leg regression.
 
 ## A014 Parent Order Group Acceptance
 
-Status: Complete on 2026-07-28 for the T029-T031 offline boundary.
+Status: Complete on 2026-07-28 for the T029-T031 offline boundary, including
+post-implementation safety remediation.
 
 T029-T031 must add deterministic offline tests for:
 
@@ -90,6 +91,15 @@ T029-T031 must add deterministic offline tests for:
   and single-leg Pipeline behavior;
 - the concrete single-leg runtime persisting `SUBMITTING` before gateway and
   returning immediate outcomes to OMS.
+- an immediate health/operator recheck after durable preparation and before
+  gateway invocation;
+- capacity-triggered durable `SUSPENDED`, configured active groups per
+  strategy/account and no transmission while suspended;
+- global child-identity collision rejection during live preparation and
+  recovery;
+- runtime-level non-owner mutation rejection;
+- restart after group append but before registration, and after gateway
+  response but before outcome append.
 
 A014 must also prove a negative boundary: no exposure-changing Order Group
 child reaches an Execution adapter. Synthetic permits may test durable

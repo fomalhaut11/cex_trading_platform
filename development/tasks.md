@@ -51,6 +51,15 @@
 | A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Complete | T027-T028 |
 | A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Complete | T029-T031 |
 
+A post-implementation review kept ADR-011 accepted and temporarily reopened
+its implementation evidence. Commit
+`c2c306dbe7675076ae200021d2c98f127736f09e` closed the identified T031/A014
+gaps: immediate pre-I/O authority recheck, capacity suspension and
+strategy/account active-group limits, child identity collision protection,
+runtime single-writer enforcement and the missing fault/race cases. A014 is
+therefore `Complete` after remediation; grouped external submission remains
+blocked by ADR-012.
+
 ## Current Acceptance Baseline
 
 - Public contracts are immutable and exported explicitly.

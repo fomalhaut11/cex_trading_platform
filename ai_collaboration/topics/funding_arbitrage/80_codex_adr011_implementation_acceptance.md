@@ -4,6 +4,14 @@ Date: 2026-07-28
 
 Status: T029/T030/T031/A014 complete; ready for Web GPT architecture review
 
+Post-review note:
+
+The architecture remained accepted, but the implementation review identified
+several safety and acceptance gaps. They were remediated in commit
+`c2c306dbe7675076ae200021d2c98f127736f09e`. The current evidence and closure
+record are in `81_codex_adr011_remediation_acceptance.md`; the counts and CI
+run below remain the historical evidence for the original handoff.
+
 ## Review Scope
 
 This handoff is self-contained because Web GPT cannot inspect the local

@@ -90,9 +90,9 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 - Bounded generic N-leg Basket intents and single-leg compatibility are
   complete under ADR-010 (T027/T028/A013).
 - ADR-011 Parent Order Group and Multi-leg Execution Model is accepted after
-  the second Web GPT review. T029-T031/A014 bounded offline foundation work is
-  complete; external exposure-changing group submission remains blocked by
-  ADR-012.
+  the second Web GPT review. T029-T031/A014 bounded offline foundation work
+  and the post-implementation safety remediation are complete; external
+  exposure-changing group submission remains blocked by ADR-012.
 - Extend Risk with whole-Basket preflight and continuous portfolio exposure
   supervision. **Planned; requires accepted ADR-012.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;

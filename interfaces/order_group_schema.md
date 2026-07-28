@@ -66,6 +66,8 @@ Rules:
 - action checksum, group ID, revision, leg, plan and expiry must match before
   child creation;
 - one action owns one deterministic venue-safe child `ClientOrderId`;
+- `GroupActionId` is a lowercase SHA-256 digest, and one global child
+  identity cannot be assigned to two Order Groups;
 - changed price, quantity, maker/taker choice or other content requires a new
   action and child identity;
 - a definitely-not-sent technical retransmission reuses the same action,
@@ -101,8 +103,15 @@ Hard limits:
 - 1 technical retransmission per action;
 - 1 unresolved exposure-changing action per group;
 - 4096 retained groups in the default bounded runtime.
+- a configured active-group limit per strategy/account, bounded by a hard
+  maximum of 4096.
 
 Deployment limits may be lower but never higher.
+
+Reaching an existing group's child/action capacity durably transitions that
+group to `SUSPENDED`. A suspended group cannot begin transmission. The
+caller-driven runtime and every contained group state machine reject mutation
+outside their owner thread.
 
 The OMS JSONL journal accepts immutable legacy V1 single-order records and V2
 submit-outcome/group records in one contiguous checksummed sequence.

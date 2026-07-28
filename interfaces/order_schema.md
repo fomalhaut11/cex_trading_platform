@@ -24,6 +24,7 @@ The single-leg runtime uses a shared durable handoff:
 ```text
 OrderCreated
   -> OrderSubmitting persisted and fsynced
+  -> immediate runtime/operator health recheck
   -> external Execution submit
   -> immediate OrderSubmitOutcome persisted
   -> private-stream / reconciliation lifecycle facts
@@ -33,6 +34,12 @@ An accepted immediate result does not invent `OPEN`; the order stays
 `SUBMITTING` until canonical venue evidence arrives. A definitely-not-sent
 failure becomes local `FAILED`. A possibly-sent or untyped failure remains a
 `SUBMITTING` reconciliation candidate.
+
+The shared handoff requires an `ExternalSubmitGuardPort`; callers cannot
+construct it without a post-durability/pre-I/O safety boundary. Guard
+rejection and bridge failures known to occur before dispatch are recorded as
+definitely not sent. A timeout or untyped failure after possible dispatch
+remains unknown.
 
 Multi-leg execution-control contracts are specified separately in
 `interfaces/order_group_schema.md`. Existing `OrderRequest` and Execution
