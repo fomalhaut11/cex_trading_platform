@@ -1,7 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: In progress — ADR-009/010/011 accepted; ADR-011 offline foundation
-complete; application blocked by ADR-012 through ADR-014
+Status: In progress — ADR-009/010/011 accepted; ADR-012 Proposed for review;
+application blocked by ADR-012 through ADR-014
 
 Created: 2026-07-27
 
@@ -16,9 +16,10 @@ tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
 current-code compatibility review; T027/T028/A013 are complete. ADR-011 was
 accepted after incorporating the second Web GPT review; T029-T031/A014 are
 complete for bounded offline implementation, including post-review execution
-safety remediation. ADR-012 through ADR-014 remain blocked by their declared
-dependencies, and external exposure-changing group submission is not
-authorized.
+safety remediation. ADR-012 now has a current-code audit and Proposed
+architecture; it has not been accepted or implemented. ADR-013 and ADR-014
+remain blocked by their declared dependencies, and external exposure-changing
+group submission is not authorized.
 
 ## 1. Purpose
 
@@ -775,7 +776,7 @@ new basket path is developed.
 | ADR-009 Portfolio Snapshot Model | Source ownership, freshness, skew, quality and typed application assembly |
 | ADR-010 Basket Intent Architecture | Generic bounded N-leg schema, identity, limits and single-leg compatibility |
 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic group lifecycle, per-action permission, execution plan, durable handoff, journal, partial/unknown/recovery |
-| ADR-012 Portfolio Risk Extension | Whole-basket preflight, exposure models and continuous supervision |
+| ADR-012 Portfolio Risk and Grouped Execution Authorization | Execution-consistent positions, whole-basket preflight, exposure/reservation models, exact action permits and continuous supervision |
 | ADR-013 Financial Ledger Model | Cash-flow authority, idempotency, reconciliation and PnL attribution |
 | ADR-014 Carry Application Boundary | Application package ownership, public API and prohibited dependencies |
 
@@ -985,10 +986,11 @@ The generic multi-leg core is complete only when:
 ## 18. Immediate Next Step
 
 T029, T030, T031 and A014 are complete after the ADR-011 post-implementation
-safety remediation. The next architecture task is to draft and review ADR-012
-against the immutable per-leg fill/working vectors and exact action-permit
-validation boundary. External group submission remains blocked until ADR-012
-is accepted and its implementation tasks are explicitly authorized.
+safety remediation. ADR-012 has been drafted against the immutable per-leg
+fill/working vectors and exact action-permit validation boundary. The next
+gate is Web GPT/project-owner review and acceptance; task IDs are assigned only
+after acceptance. External group submission remains blocked through
+implementation, offline acceptance and separate Testnet authorization.
 
 Do not create Funding Arbitrage application code. Basket decision contracts
 and the bounded offline OMS Order Group foundation are complete. Portfolio

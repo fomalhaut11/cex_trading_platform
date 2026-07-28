@@ -93,8 +93,10 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   the second Web GPT review. T029-T031/A014 bounded offline foundation work
   and the post-implementation safety remediation are complete; external
   exposure-changing group submission remains blocked by ADR-012.
-- Extend Risk with whole-Basket preflight and continuous portfolio exposure
-  supervision. **Planned; requires accepted ADR-012.**
+- ADR-012 Portfolio Risk and Grouped Execution Authorization is Proposed for
+  review. It covers execution-consistent positions, normalized margin facts,
+  whole-Basket reservations, exact per-action permits, continuous supervision
+  and recovery evidence. **No implementation task is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
   foundation complete as T029-T031/A014; external group submission blocked by

@@ -71,9 +71,11 @@ external I/O and returns every immediate result or typed unknown/not-sent
 failure to OMS. The Order Group runtime enforces single-writer mutation,
 bounded strategy/account activation, durable capacity suspension and global
 child identity ownership. It can durably prepare synthetic child attempts,
-but its external submission method always fails closed. Until ADR-012 is
-accepted, no exposure-changing group child can reach an Execution adapter.
-The current single-leg Pipeline remains the production regression path.
+but its external submission method always fails closed. ADR-012 is Proposed
+for architecture review; no exposure-changing group child can reach an
+Execution adapter until that ADR is accepted, implemented and accepted
+offline. The current single-leg Pipeline remains the production regression
+path.
 
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
@@ -108,6 +110,10 @@ listener. Concrete TLS termination remains a deployment boundary.
     it cannot compute Delta, basis, margin, `HEDGED` or application meaning.
 18. `ExecutionActionPermit` is an immutable ADR-012-facing evidence contract;
     OMS validates exact binding but does not issue real permits.
+19. Proposed ADR-012 keeps execution-consistent positions and normalized
+    margin facts in Portfolio, exposure/approval/permit authority in Risk,
+    group/action/child facts in OMS and ordered coordination in Runtime. This
+    proposal is not yet an accepted dependency change.
 
 ## Process Boundaries
 

@@ -201,9 +201,12 @@ target-host performance and authenticated Testnet gates.
 
 ## In Progress
 
-- ADR-012 Portfolio Risk Extension architecture review. No portfolio Delta,
-  basis, margin, liquidation calculation or real action-permit issuance has
-  been implemented.
+- ADR-012 Portfolio Risk and Grouped Execution Authorization is Proposed and
+  ready for Web GPT/project-owner review. The proposal defines a reconciled
+  account baseline plus post-watermark OMS fill overlay, normalized
+  margin/collateral facts, whole-Basket admission reservations, exact current
+  action permits, continuous supervision and recovery evidence. No Portfolio
+  Risk source or real permit issuer has been implemented.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -223,18 +226,21 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Draft and review ADR-012 Portfolio Risk Extension against the implemented
-   immutable group views and permit-validation boundary.
-2. Keep grouped external submission blocked until ADR-012 is accepted and
-   its implementation/acceptance tasks are explicitly authorized.
-3. Configure protected-branch checks after agreeing the direct-push policy.
-4. Configure concrete TLS/mTLS termination, protected identity forwarding,
+1. Review `ADR-012-portfolio-risk-and-grouped-execution-authorization.md` and
+   classify findings as ADR-012 errors, later-ADR concerns or long-term
+   optimizations.
+2. Accept or revise ADR-012 before assigning implementation and offline
+   acceptance task IDs.
+3. Keep grouped external submission blocked until ADR-012 is accepted,
+   implemented, accepted offline and separately authorized for Testnet.
+4. Configure protected-branch checks after agreeing the direct-push policy.
+5. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-5. Configure a persistent approved host time source and collect clock
+6. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-6. Run A002C authenticated Binance Testnet acceptance.
-7. Run A002B target-host soak and latency-distribution acceptance.
-8. Exercise and approve the initial runbooks on the target host; add Binance
+7. Run A002C authenticated Binance Testnet acceptance.
+8. Run A002B target-host soak and latency-distribution acceptance.
+9. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification

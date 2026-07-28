@@ -112,3 +112,8 @@ files, Ruff, compileall, secret scanning and 86.25% branch coverage.
 Documentation head `df2fd83ab7bae89e35da819e7671f79eeb20dbc0`
 passed remote run `30351998834`: quality/coverage and regression on Python
 3.11 and 3.14 all succeeded.
+
+Final ADR-011 remediation documentation head
+`a752d3bff06a1b73b1103f543c64a2b6b64d2016` passed remote run
+`30352133743`: quality/coverage and regression on Python 3.11 and 3.14 all
+succeeded.

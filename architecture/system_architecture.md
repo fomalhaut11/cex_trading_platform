@@ -65,8 +65,10 @@ BasketTargetIntent
 
 OMS owns group control, child facts, journal replay and recovery. It does not
 own Delta, basis, margin, hedge assessment or Carry semantics. The runtime
-hard-blocks grouped external submission until ADR-012 defines and accepts
-real Portfolio Risk approval and action-permit issuance.
+hard-blocks grouped external submission. Proposed ADR-012 defines the review
+candidate for execution-consistent position truth, whole-Basket approval,
+durable Risk reservations, current per-action authorization and continuous
+supervision. No real permit issuer or grouped external route exists yet.
 
 ## Design Principles
 

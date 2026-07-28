@@ -11,8 +11,9 @@ contracts, single-writer state and a deterministic hot path.
 - Binance is the first venue adapter; venue-specific data cannot enter domains.
 - IV, Greeks and volatility surfaces are versioned online features.
 - ADR-011's bounded offline N-leg Order Group foundation is implemented;
-  grouped external execution remains blocked until ADR-012 Portfolio Risk
-  authorization is accepted.
+  ADR-012 Portfolio Risk and grouped-execution authorization is Proposed for
+  review. Grouped external execution remains blocked through acceptance,
+  implementation and offline validation.
 
 ## Development
 

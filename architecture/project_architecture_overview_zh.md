@@ -714,7 +714,7 @@ ADR 状态：
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
 | ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成，外部组合提交仍受 ADR-012 阻断 |
-| ADR-012 | Portfolio Risk | 尚未起草/接受 |
+| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |
 | ADR-014 | Carry Application Boundary | 尚未起草/接受 |
 
@@ -749,6 +749,7 @@ Operations 文档后，才会改变工程基线。
 外部 Testnet、目标主机性能和真实部署控制尚未验收，因此不能称为生产上线完成。
 
 多腿组合交易的事实层、目标层和离线执行控制层已经分别由 ADR-009、
-ADR-010 和 ADR-011 建立。当前仍未实现的是 ADR-012 组合风险授权、
+ADR-010 和 ADR-011 建立。ADR-012 组合风险与逐 action 授权已形成
+Proposed 文档，但尚未接受和实现；其后仍有
 ADR-013 财务账本和 ADR-014 Carry 应用层。外部组合提交保持硬阻断，
 因此本阶段完成不代表 Testnet 或生产多腿交易已获授权。

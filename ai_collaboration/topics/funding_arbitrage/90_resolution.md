@@ -145,7 +145,7 @@ applications/
 | 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | ACCEPTED_2026_07_28 |
 | 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | ACCEPTED_IMPLEMENTED_2026_07_28 |
 | 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、Execution Plan/Action、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | ACCEPTED_2026_07_28_T029_T031_A014_AUTHORIZED |
-| 4 | ADR-012 Portfolio Risk Extension | basket projection、delta、basis、margin、liquidation、持续监督 | 风险上下文、拒绝原因、fail-closed 场景 | BLOCKED_BY_ADR_009_010 |
+| 4 | ADR-012 Portfolio Risk and Grouped Execution Authorization | execution-consistent position、basket projection、delta、basis、margin、liquidation、reservation、逐 action permit、持续监督 | 风险上下文、拒绝原因、durability、recovery 和 fail-closed 场景 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
 | 5 | ADR-013 Financial Ledger Model | funding、commission、cash flow、valuation 和 attribution | double-entry/ledger 选择、reconciliation、PnL 恒等式 | BLOCKED_BY_ADR_009 |
 | 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、依赖、聚合和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | BLOCKED_BY_ADR_009_010_011_012_013 |
 
@@ -452,3 +452,43 @@ V1/V2 混合日志重放。
 
 自包含实现验收证据见
 `80_codex_adr011_implementation_acceptance.md`；下一架构边界是 ADR-012。
+
+## 15. ADR-012 Proposal
+
+Codex 已在代码基线
+`a752d3bff06a1b73b1103f543c64a2b6b64d2016`
+上完成 ADR-012 当前代码审计，并形成：
+
+- `82_codex_adr012_current_code_audit.md`；
+- `83_codex_adr012_proposal_handoff.md`；
+- `../../../adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md`。
+
+提案冻结以下边界：
+
+```text
+Portfolio
+  -> reconciled account baseline
+  -> post-watermark OMS fill overlay
+  -> normalized margin/collateral facts
+
+Portfolio Risk
+  -> pure exposure projection
+  -> durable Basket reservation/approval
+  -> exact current action permit
+  -> continuous directive and recovery evidence
+
+OMS
+  -> group/action/child truth and evidence validation
+
+Runtime
+  -> serialized coordination and immediate pre-I/O guard
+```
+
+关键修正是禁止无水位地把 `AccountSnapshot` 与 OMS 全量累计成交相加，
+避免已反映成交被重复计算。若 execution coverage 不可证明，普通组合 action
+必须 fail closed。
+
+ADR-012 当前状态是 `Proposed`，不是 `Accepted`。尚未分配 T032 或 A015，
+没有实现 Portfolio Risk、真实 permit issuer 或 grouped external route。
+`GroupedExecutionBlockedError` 继续生效，Funding Arbitrage、Testnet 和生产
+多腿执行仍未授权。

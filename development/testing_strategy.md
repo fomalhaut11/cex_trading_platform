@@ -120,3 +120,34 @@ deployment limits, one unresolved action, one same-identity technical
 retransmission, `RECOVERY_REQUIRED`, exact fill vectors and
 `TARGET_CONFIRMED` evidence. External grouped execution remains deliberately
 unreachable, so this completion is not ADR-012 Risk acceptance.
+
+## ADR-012 Proposed Acceptance Scope
+
+Status: Proposed; no implementation or acceptance task ID is assigned.
+
+If ADR-012 is accepted, its offline acceptance must cover:
+
+- reconciled account baseline plus post-watermark OMS fill overlay, including
+  exact no-double-count behavior;
+- missing journal coverage, account/OMS divergence and restart replay
+  fail-closed cases;
+- whole-Basket current/projected/conservative-working exposure;
+- durable admission reservations preventing concurrent approval overcommit;
+- generic Delta, notional, basis/spread and configured option Greek factors;
+- normalized cross/isolated margin, liquidation and explicit asset-conversion
+  inputs;
+- exact per-action permit issuance, material-update invalidation and the
+  immediate pre-I/O Risk generation check;
+- `REDUCE_ONLY` as proved portfolio reduction rather than only an exchange
+  flag;
+- continuous directives that never create orders or call Execution;
+- typed recovery authorization, original-permit causation for an allowed
+  same-ID retransmission and Portfolio target confirmation;
+- unchanged single-leg Risk/OMS behavior;
+- two-leg Spot/Perpetual, three-leg option-spread/Delta-hedge and
+  working-order/market-making-shaped synthetic fixtures;
+- Risk journal durability, corruption, append failure, policy change,
+  boundedness and race injection.
+
+External grouped execution must remain unreachable during this acceptance.
+Passing offline tests does not authorize Testnet.
