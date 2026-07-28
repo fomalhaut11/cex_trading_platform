@@ -11,8 +11,9 @@ First validating application: Funding Arbitrage
 Production authorization: None
 
 ADR progress: ADR-009 accepted on 2026-07-28; generic Snapshot Infrastructure
-tasks T025/T026 and acceptance A012 are authorized. ADR-010 may now be drafted;
-ADR-011 through ADR-014 remain blocked by their declared dependencies.
+tasks T025/T026 and acceptance A012 are complete. ADR-010 is Proposed and
+ready for architecture review; ADR-011 through ADR-014 remain blocked by
+their declared dependencies.
 
 ## 1. Purpose
 
@@ -903,8 +904,8 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-Implement T025/T026 and A012 within the accepted ADR-009 boundary, while
-drafting ADR-010 Basket Intent Architecture for separate review.
+Submit ADR-010 Basket Intent Architecture for separate Web GPT and project-
+owner review.
 
 Do not create Funding Arbitrage application code. Basket, OMS Order Group,
 Portfolio Risk, Financial Ledger and Carry implementation remain blocked by

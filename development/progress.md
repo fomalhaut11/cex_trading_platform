@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-07-26
+Last updated: 2026-07-28
 
 ## Current Phase
 
@@ -155,9 +155,20 @@ target-host performance and authenticated Testnet gates.
   authentication, replay idempotency, bounded rejection paths and restored
   authority.
 - Initial deployment, rollback/recovery and incident-response runbooks.
+- ADR-009 Portfolio Decision Snapshot accepted after Web GPT review and
+  project-owner approval.
+- T025 generic immutable source-observation, freshness, coherence, readiness,
+  metadata and publication contracts.
+- T026 single-writer bounded Snapshot Coordinator with deterministic identity,
+  source-sequence handling, failure latching and non-blocking evidence port.
+- A012 offline decision-snapshot acceptance covering three-source coherence,
+  fail-closed readiness, deterministic replay and restart from empty state.
+- ADR-010 Basket Intent Architecture drafted for external review; no Basket or
+  Funding application implementation is authorized by that draft.
 
 ## In Progress
 
+- ADR-010 Basket Intent external architecture review.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -177,24 +188,26 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Configure protected-branch checks after agreeing the direct-push policy.
-2. Configure concrete TLS/mTLS termination, protected identity forwarding,
+1. Review and decide ADR-010; do not implement Basket contracts before
+   acceptance.
+2. Configure protected-branch checks after agreeing the direct-push policy.
+3. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-3. Configure a persistent approved host time source and collect clock
+4. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-4. Run A002C authenticated Binance Testnet acceptance.
-5. Run A002B target-host soak and latency-distribution acceptance.
-6. Exercise and approve the initial runbooks on the target host; add Binance
+5. Run A002C authenticated Binance Testnet acceptance.
+6. Run A002B target-host soak and latency-distribution acceptance.
+7. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -v`: 357 passed.
-- `python -m unittest discover -s tests/acceptance -v`: 29 passed.
+- `python -m unittest discover -s tests -v`: 379 passed.
+- `python -m unittest discover -s tests/acceptance -v`: 31 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 81 source files.
-- Pytest branch coverage: 86.19%; 85% CI gate passed.
+- `python -m mypy`: passed with MyPy 2.3.0 for 86 source files.
+- Pytest branch coverage: 86.34%; 85% CI gate passed.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

@@ -26,3 +26,18 @@ after the host timing infrastructure is measured.
 
 Monotonic clock regressions are programming or platform failures and cannot be
 treated as normal market-data degradation.
+
+## Decision Snapshot Time
+
+Decision snapshots use three explicit time questions:
+
+```text
+event_age = now_unix_ns - source.as_of_ns
+arrival_age = now_monotonic_ns - source.accepted_at_monotonic_ns
+coherence_skew = max(group.as_of_ns) - min(group.as_of_ns)
+```
+
+UTC is used for source event freshness and cross-source coherence. Monotonic
+time is used only for local silence and elapsed arrival age. Every source
+keeps its own time; `assembled_at_ns` does not replace those timestamps or
+claim physical simultaneity.

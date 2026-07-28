@@ -116,6 +116,7 @@ src/cex_quant/
 ├── portfolio/        # 余额、持仓和账户快照
 ├── recorder/         # 规范事件的追加记录和确定性重放
 ├── observability/    # 时钟与组合健康状态
+├── snapshots/        # 通用跨来源决策快照契约与一致性评估
 └── runtime/          # 组合根、运行管线、监管和部署适配
 ```
 
@@ -398,7 +399,30 @@ VenueClockSample, HealthCheck, HealthReport, HealthStatus
 aggregate_health
 ```
 
-### 6.12 `runtime`
+### 6.12 `snapshots`
+
+职责：
+
+- 将独立状态所有者发布的不可变 view 包装为 `SourceObservation`；
+- 按来源分别检查 event age、arrival age、future skew 和 schema；
+- 按 coherence group 检查跨来源时间偏差；
+- 只在所有强制门禁通过时产生 `READY`；
+- 保留源状态所有权，不制造 Universal Snapshot。
+
+主要公开接口：
+
+```text
+SourceObservation
+SourceFreshnessRule, CoherenceGroup, SnapshotPolicy
+SnapshotAssessment, SnapshotIssue, SnapshotReadiness
+DecisionSnapshotMetadata, DecisionSnapshotPublication
+assess_snapshot
+```
+
+Runtime 中的单写者 `SnapshotCoordinator` 只保留每个已配置来源的最新值和
+有界 ID 冲突缓存。重启后从空状态和 `NOT_READY` 开始；旧快照只能作为证据。
+
+### 6.13 `runtime`
 
 职责：
 
@@ -545,17 +569,17 @@ runtime -> all required domain ports
 
 ## 13. 当前测试和质量证据
 
-截至本基线，项目包含 81 个 Python 源码文件和 58 个 Python 测试文件。
+截至本基线，项目包含 86 个 Python 源码文件和 61 个 Python 测试文件。
 最近记录的完整验证结果：
 
 | 检查 | 结果 |
 |---|---|
 | 源码编译 | 通过 |
-| 完整回归 | 357 passed |
-| Acceptance 场景 | 29 passed |
+| 完整回归 | 379 passed |
+| Acceptance 场景 | 31 passed |
 | Ruff | 通过 |
-| strict MyPy | 81 个源码文件通过 |
-| Branch coverage | 86.19%，高于 85% CI 门禁 |
+| strict MyPy | 86 个源码文件通过 |
+| Branch coverage | 86.34%，高于 85% CI 门禁 |
 | Python | 3.11 和 3.14 通过 |
 | 高置信度秘密扫描 | 通过 |
 
@@ -648,10 +672,9 @@ Fills + funding + fees ─> Financial Ledger ─> Attribution
 `ThreeLegOms`。Funding Arbitrage 是第一个两腿验证应用；后续还需要一个
 离线三腿场景证明核心没有硬编码成两腿。
 
-计划新增但尚不存在于源码的包包括：
+后续 ADR 计划新增但尚不存在于源码的包包括：
 
 ```text
-snapshots/
 strategy/basket.py
 risk/portfolio.py
 oms/order_group.py
@@ -664,8 +687,8 @@ ADR 状态：
 
 | ADR | 主题 | 当前状态 |
 |---|---|---|
-| ADR-009 | Portfolio Decision Snapshot | Accepted；通用基础设施待实现 |
-| ADR-010 | Basket Intent | 可开始起草，尚未接受 |
+| ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
+| ADR-010 | Basket Intent | Proposed，待架构审查 |
 | ADR-011 | Parent-Child Order | 尚未起草/接受 |
 | ADR-012 | Portfolio Risk | 尚未起草/接受 |
 | ADR-013 | Financial Ledger | 尚未起草/接受 |

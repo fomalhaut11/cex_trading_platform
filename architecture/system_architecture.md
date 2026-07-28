@@ -27,6 +27,21 @@ Exchange
 Risk is mandatory and cannot be bypassed. Strategy produces venue-neutral
 intents; only the execution adapter may produce venue requests.
 
+Applications that correlate multiple independently owned states use the
+accepted Decision Snapshot Infrastructure:
+
+```text
+Immutable source views
+  -> per-source freshness and schema policy
+  -> coherence-group skew assessment
+  -> runtime single-writer coordinator
+  -> application-specific typed snapshot
+  -> Strategy
+```
+
+This path remains synchronous and deterministic. It does not introduce a
+generic hot-path Event Bus or transfer source-state ownership.
+
 ## Design Principles
 
 - Python-first, Rust-ready.

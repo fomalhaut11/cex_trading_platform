@@ -7,6 +7,21 @@ Exchange -> market_data -> market_state -> features -> strategy
                                                      -> risk -> oms -> execution -> Exchange
 ```
 
+For applications that require correlated state, the accepted additive path is:
+
+```text
+authoritative immutable source views
+  -> snapshots policy/assessment
+  -> runtime SnapshotCoordinator
+  -> application-specific typed decision snapshot
+  -> strategy
+```
+
+`snapshots` owns generic observation, readiness and coherence contracts.
+`runtime` owns serialized coordination. An application owns its typed
+assembler and payload. Snapshot coordination does not replace source state or
+the mandatory Strategy -> Risk -> OMS -> Execution boundary.
+
 `runtime` assembles the flow. `recorder`, `monitoring`, `operations_api` and
 `storage` consume bounded side channels and cannot block the trading path.
 
@@ -27,6 +42,10 @@ listener. Concrete TLS termination remains a deployment boundary.
 9. `portfolio` exclusively owns account and position state.
 10. Domain modules cannot depend on `runtime`.
 11. Venue-specific objects cannot escape their adapter package.
+12. `snapshots` depends only on foundational types and minimal health status;
+    it cannot depend on source domains, applications or runtime.
+13. Application-specific snapshot assemblers may read public immutable domain
+    views but cannot depend on runtime or venue adapters.
 
 ## Process Boundaries
 

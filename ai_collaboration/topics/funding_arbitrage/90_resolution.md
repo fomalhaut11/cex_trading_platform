@@ -264,3 +264,38 @@ Funding application implementation: NOT AUTHORIZED
 项目负责人于 2026-07-28 明确接受 ADR-009。通用 Snapshot Infrastructure
 进入 T025、T026 和 A012；ADR-010 可以开始起草。完整逐项答复见
 `40_codex_adr009_review_response.md`。
+
+## 10. ADR-009 Implementation and ADR-010 Draft
+
+ADR-009 接受后，通用能力按以下任务实现：
+
+```text
+T025 Generic Snapshot contracts, policy and assessment
+T026 Runtime SnapshotCoordinator and evidence port
+A012 Offline coherence, replay and restart acceptance
+```
+
+实现保持通用性，使用三来源 synthetic application 验证，不包含 Funding
+Arbitrage 应用代码。ADR-010 Basket Intent Architecture 已起草，状态为
+`Proposed — ready for architecture review`。
+
+离线验证结果：
+
+```text
+Full regression: 379 passed
+Acceptance: 31 passed
+Strict MyPy: 86 source files
+Branch coverage: 86.34% (gate: 85%)
+Ruff / compile / secret scan: passed
+```
+
+ADR-010 审查重点：
+
+- Basket leg 是否显式包含 canonical `AccountId`；
+- V1 hard cap 是否为 16；
+- `valid_until_ns` 是否强制；
+- duplicate account/instrument scope 规则；
+- whole-Basket binary Risk approval；
+- 与 `PositionTargetIntent` 的兼容性。
+
+在 ADR-010 被 Web GPT 审查并由项目负责人接受前，不实现 Basket 源码。
