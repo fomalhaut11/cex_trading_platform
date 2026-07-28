@@ -29,6 +29,7 @@ from cex_quant.runtime import (
     AsyncExecutionPortBridge,
     CanonicalOmsApplicationService,
     ExecutionBridgeStateError,
+    ExecutionBridgeUnknownError,
     FeatureEngineAdapter,
     MarketStateGateAdapter,
     OmsInvariantError,
@@ -57,11 +58,7 @@ def intent() -> PositionTargetIntent:
 def decision(*, allowed: bool = True) -> RiskDecision:
     value = intent()
     return RiskDecision(
-        status=(
-            RiskDecisionStatus.ALLOW
-            if allowed
-            else RiskDecisionStatus.REJECT
-        ),
+        status=(RiskDecisionStatus.ALLOW if allowed else RiskDecisionStatus.REJECT),
         intent=value,
         reasons=() if allowed else (RiskRejectReason.CLOCK_UNHEALTHY,),
         projected_strategy_position=value.target_quantity,
@@ -144,6 +141,12 @@ class _Gateway:
 
     async def cancel(self, command: object) -> CancelResult:
         raise NotImplementedError
+
+
+class _SlowGateway(_Gateway):
+    async def submit(self, command: object) -> SubmitResult:
+        await asyncio.sleep(1)
+        return await super().submit(command)
 
 
 class RuntimeAdapterTests(TestCase):
@@ -256,6 +259,28 @@ class RuntimeAdapterTests(TestCase):
 
         try:
             asyncio.run(misuse())
+        finally:
+            bridge.close()
+
+    def test_bridge_timeout_is_classified_as_unknown_after_dispatch(self) -> None:
+        service = CanonicalOmsApplicationService(
+            accounts=_Accounts(),
+            identities=_Identities(),
+            orders=_Orders(),
+            now_ns=lambda: UnixNanos(150),
+        )
+        request = service.create_order(intent(), decision())
+        bridge = AsyncExecutionPortBridge(
+            _SlowGateway(),
+            timeout_seconds=0.01,
+        )
+        bridge.start()
+        try:
+            with self.assertRaisesRegex(
+                ExecutionBridgeUnknownError,
+                "after dispatch",
+            ):
+                bridge.submit(request)
         finally:
             bridge.close()
 

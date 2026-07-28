@@ -4,6 +4,7 @@ from .execution import (
     AsyncExecutionPortBridge,
     ExecutionBridgeError,
     ExecutionBridgeStateError,
+    ExecutionBridgeUnknownError,
 )
 from .features import FeatureEngineAdapter
 from .market_state import MarketStateGateAdapter, MarketStateUpdater
@@ -24,6 +25,7 @@ __all__ = [
     "CanonicalOmsApplicationService",
     "ExecutionBridgeError",
     "ExecutionBridgeStateError",
+    "ExecutionBridgeUnknownError",
     "FeatureEngineAdapter",
     "MarketStateGateAdapter",
     "MarketStateUpdater",

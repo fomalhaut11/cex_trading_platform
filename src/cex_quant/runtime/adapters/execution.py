@@ -6,7 +6,11 @@ import asyncio
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from threading import Event, Lock, Thread
 
-from cex_quant.execution import ExecutionGateway, SubmitResult
+from cex_quant.execution import (
+    ExecutionGateway,
+    ExecutionStateUnknownError,
+    SubmitResult,
+)
 from cex_quant.oms import OrderRequest
 
 
@@ -16,6 +20,13 @@ class ExecutionBridgeError(RuntimeError):
 
 class ExecutionBridgeStateError(ExecutionBridgeError):
     pass
+
+
+class ExecutionBridgeUnknownError(
+    ExecutionBridgeError,
+    ExecutionStateUnknownError,
+):
+    """The bridge timed out after dispatch; venue state may exist."""
 
 
 class AsyncExecutionPortBridge:
@@ -84,7 +95,9 @@ class AsyncExecutionPortBridge:
             return future.result(timeout=self._timeout_seconds)
         except FutureTimeoutError as error:
             future.cancel()
-            raise ExecutionBridgeError("execution submit timed out") from error
+            raise ExecutionBridgeUnknownError(
+                "execution submit timed out after dispatch"
+            ) from error
 
     def close(self) -> None:
         with self._lock:
@@ -129,4 +142,5 @@ __all__ = [
     "AsyncExecutionPortBridge",
     "ExecutionBridgeError",
     "ExecutionBridgeStateError",
+    "ExecutionBridgeUnknownError",
 ]

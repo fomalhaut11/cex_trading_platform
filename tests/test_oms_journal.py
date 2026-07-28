@@ -1,7 +1,16 @@
+import json
 import tempfile
 import unittest
 from collections.abc import Iterator
 from pathlib import Path
+
+from group_test_support import (
+    ManualClock,
+    action_for,
+    admission,
+    execution_plan,
+    permit_for,
+)
 
 from cex_quant.core import (
     AccountId,
@@ -14,6 +23,7 @@ from cex_quant.core import (
     VenueId,
     VenueOrderId,
 )
+from cex_quant.execution import ExecutionOutcome, SubmitResult
 from cex_quant.instruments import InstrumentId, InstrumentKind
 from cex_quant.oms import (
     JsonLinesOmsJournal,
@@ -23,6 +33,7 @@ from cex_quant.oms import (
     OrderReconciliationSnapshot,
     OrderSide,
     OrderStatus,
+    OrderSubmitOutcome,
     OrderType,
     ReconciliationDisposition,
     ReconciliationSource,
@@ -31,6 +42,7 @@ from cex_quant.risk import RiskDecision, RiskDecisionStatus
 from cex_quant.runtime import (
     CanonicalOmsApplicationService,
     OmsPersistenceError,
+    OrderGroupRuntime,
     OrderParameters,
 )
 from cex_quant.strategy import PositionTargetIntent
@@ -139,14 +151,117 @@ def venue_event(
         venue_order_id=VenueOrderId("venue-1"),
         status=status,
         cumulative_filled_quantity=Quantity.from_str(cumulative),
-        average_fill_price=(
-            None if cumulative == "0" else Price.from_str("100")
-        ),
+        average_fill_price=(None if cumulative == "0" else Price.from_str("100")),
         event_time_ns=UnixNanos(at_ns),
     )
 
 
 class OmsJournalTests(unittest.TestCase):
+    def test_mixed_legacy_and_group_records_replay_without_rewrite(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oms.jsonl"
+            clock = ManualClock()
+            with JsonLinesOmsJournal(path) as journal:
+                single = service(journal)
+                single_request = single.create_order(intent(), decision())
+                single.prepare_submit(single_request)
+                single.record_submit_failure(
+                    single_request.client_order_id,
+                    outcome=OrderSubmitOutcome.DEFINITELY_NOT_SENT,
+                    reason="connect refused",
+                )
+
+                groups = OrderGroupRuntime(now_ns=clock, journal=journal)
+                group = groups.create_group(admission(), execution_plan())
+                clock.step()
+                groups.activate_group(group.order_group_id)
+                action = action_for(
+                    groups.group(group.order_group_id),
+                    leg_index=0,
+                    now_ns=clock.step(),
+                )
+                child = groups.prepare_child_submit(
+                    action=action,
+                    permit=permit_for(action, issued_at_ns=clock()),
+                )
+
+            versions = [
+                json.loads(line)["version"]
+                for line in path.read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual(versions, [1, 1, 2, 2, 2, 2])
+            with JsonLinesOmsJournal(path) as replay_journal:
+                replayed_single = service(replay_journal)
+                replayed_groups = OrderGroupRuntime(
+                    now_ns=clock,
+                    journal=replay_journal,
+                )
+                self.assertEqual(
+                    replayed_single.order(single_request.client_order_id).status,
+                    OrderStatus.FAILED,
+                )
+                self.assertEqual(
+                    replayed_groups.child(child.client_order_id).status,
+                    OrderStatus.SUBMITTING,
+                )
+                self.assertEqual(
+                    replayed_groups.group(group.order_group_id).status.value,
+                    "active",
+                )
+
+    def test_durable_submit_outcome_replays_after_submitting_fact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oms.jsonl"
+            with JsonLinesOmsJournal(path) as journal:
+                oms = service(journal)
+                request = oms.create_order(intent(), decision())
+                oms.prepare_submit(request)
+                expected = oms.record_submit_result(
+                    SubmitResult(
+                        client_order_id=request.client_order_id,
+                        outcome=ExecutionOutcome.ACCEPTED,
+                        venue_order_id=VenueOrderId("venue-immediate-1"),
+                    )
+                )
+
+            records = [
+                json.loads(line)
+                for line in path.read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual(
+                [item["version"] for item in records],
+                [1, 1, 2],
+            )
+            self.assertEqual(expected.status, OrderStatus.SUBMITTING)
+            with JsonLinesOmsJournal(path) as recovered_journal:
+                recovered = service(recovered_journal)
+                replayed = recovered.order(request.client_order_id)
+                self.assertEqual(replayed, expected)
+                self.assertEqual(
+                    recovered.reconciliation_candidates(),
+                    (expected,),
+                )
+
+    def test_unknown_submit_outcome_remains_reconciliation_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oms.jsonl"
+            with JsonLinesOmsJournal(path) as journal:
+                oms = service(journal)
+                request = oms.create_order(intent(), decision())
+                oms.prepare_submit(request)
+                expected = oms.record_submit_failure(
+                    request.client_order_id,
+                    outcome=OrderSubmitOutcome.UNKNOWN,
+                    reason="timeout after send",
+                )
+
+            with JsonLinesOmsJournal(path) as recovered_journal:
+                recovered = service(recovered_journal)
+                self.assertEqual(
+                    recovered.reconciliation_candidates(),
+                    (expected,),
+                )
+
     def test_restart_replays_complete_order_lifecycle(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "oms.jsonl"
@@ -203,9 +318,7 @@ class OmsJournalTests(unittest.TestCase):
                     request.client_order_id,
                     at_ns=UnixNanos(160),
                 )
-                update = venue_event(
-                    "open-1", OrderStatus.OPEN, "0", at_ns=170
-                )
+                update = venue_event("open-1", OrderStatus.OPEN, "0", at_ns=170)
                 oms.apply_venue_update(update)
                 oms.apply_venue_update(update)
                 self.assertEqual(len(tuple(journal.read())), 3)

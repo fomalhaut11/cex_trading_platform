@@ -8,9 +8,14 @@ BasketLegId = NewType("BasketLegId", str)
 ClientOrderId = NewType("ClientOrderId", str)
 CorrelationId = NewType("CorrelationId", str)
 EventId = NewType("EventId", str)
+ExecutionPermitId = NewType("ExecutionPermitId", str)
+ExecutionPlanId = NewType("ExecutionPlanId", str)
 FeatureId = NewType("FeatureId", str)
+GroupActionId = NewType("GroupActionId", str)
 IntentId = NewType("IntentId", str)
 ObjectiveTypeId = NewType("ObjectiveTypeId", str)
+OrderGroupId = NewType("OrderGroupId", str)
+PortfolioApprovalId = NewType("PortfolioApprovalId", str)
 PositionId = NewType("PositionId", str)
 StrategyId = NewType("StrategyId", str)
 TradeId = NewType("TradeId", str)
@@ -24,9 +29,14 @@ __all__ = [
     "ClientOrderId",
     "CorrelationId",
     "EventId",
+    "ExecutionPermitId",
+    "ExecutionPlanId",
     "FeatureId",
+    "GroupActionId",
     "IntentId",
     "ObjectiveTypeId",
+    "OrderGroupId",
+    "PortfolioApprovalId",
     "PositionId",
     "StrategyId",
     "TradeId",

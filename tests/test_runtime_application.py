@@ -113,7 +113,9 @@ class RuntimeApplicationTests(TestCase):
                 "portfolio",
                 "risk",
                 "oms",
+                "oms_prepare",
                 "execution",
+                "oms_result",
             ],
         )
 

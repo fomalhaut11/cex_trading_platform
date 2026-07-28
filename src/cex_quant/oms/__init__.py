@@ -1,16 +1,66 @@
-"""Canonical order contracts and deterministic single-writer lifecycle state.
+"""Canonical single-order and multi-leg execution-control interfaces.
 
 Risk-approved instructions enter through :class:`ApprovedOrderIntent`.
 Venue adapters normalize acknowledgements and fills into :class:`OrderEvent`.
 OMS is the sole writer of canonical order state and exposes immutable views.
 Durable journals replay accepted mutations; reconciliation snapshots unify
 REST queries and user-stream observations without importing venue payloads.
+ADR-011 Order Groups control execution facts without calculating portfolio
+risk, hedge state, strategy meaning, or economic completion.
 """
 
 from cex_quant.core import ClientOrderId
 
+from .group_codec import (
+    GROUP_CONTRACT_FORMAT,
+    GROUP_CONTRACT_VERSION,
+    MAX_GROUP_CONTRACT_BYTES,
+    decode_execution_action,
+    decode_execution_action_permit,
+    decode_execution_plan_ref,
+    decode_order_group_admission,
+    encode_execution_action,
+    encode_execution_action_permit,
+    encode_execution_plan_ref,
+    encode_order_group_admission,
+)
+from .group_model import (
+    MAX_CHILD_ATTEMPTS_PER_LEG,
+    MAX_GROUP_CHILDREN,
+    MAX_RETAINED_ORDER_GROUPS,
+    MAX_TECHNICAL_RETRANSMISSIONS,
+    ExecutionAction,
+    ExecutionActionPermit,
+    ExecutionActionState,
+    ExecutionActionView,
+    ExecutionPlanRef,
+    OrderGroupAdmission,
+    OrderGroupCloseOutcome,
+    OrderGroupLegView,
+    OrderGroupLimits,
+    OrderGroupStatus,
+    OrderGroupView,
+    child_order_id_for_action,
+    deterministic_group_action_id,
+    deterministic_order_group_id,
+    execution_action_checksum,
+    execution_plan_parameters_checksum,
+)
+from .group_state import (
+    OrderGroupAuthorizationError,
+    OrderGroupCapacityError,
+    OrderGroupIdentityError,
+    OrderGroupStateError,
+    OrderGroupStateMachine,
+    OrderGroupTransitionError,
+    OrderGroupWriterViolationError,
+)
 from .journal import (
     CancelRequestedEntry,
+    GroupActionPreparedEntry,
+    GroupActionStateChangedEntry,
+    GroupControlChangedEntry,
+    GroupCreatedEntry,
     JsonLinesOmsJournal,
     OmsJournal,
     OmsJournalEntry,
@@ -19,6 +69,7 @@ from .journal import (
     OmsJournalIntegrityError,
     OmsJournalIoError,
     OrderCreatedEntry,
+    OrderSubmitOutcomeEntry,
     OrderSubmittingEntry,
     VenueEventEntry,
 )
@@ -29,6 +80,8 @@ from .model import (
     OrderRequest,
     OrderSide,
     OrderStatus,
+    OrderSubmitEvent,
+    OrderSubmitOutcome,
     OrderType,
     OrderView,
     PositionSide,
@@ -53,11 +106,27 @@ from .state import (
 )
 
 __all__ = [
+    "GROUP_CONTRACT_FORMAT",
+    "GROUP_CONTRACT_VERSION",
+    "MAX_CHILD_ATTEMPTS_PER_LEG",
+    "MAX_GROUP_CHILDREN",
+    "MAX_GROUP_CONTRACT_BYTES",
+    "MAX_RETAINED_ORDER_GROUPS",
+    "MAX_TECHNICAL_RETRANSMISSIONS",
     "TERMINAL_ORDER_STATUSES",
     "ApprovedOrderIntent",
     "CancelRequestedEntry",
     "ClientOrderId",
     "DuplicateUpdateConflictError",
+    "ExecutionAction",
+    "ExecutionActionPermit",
+    "ExecutionActionState",
+    "ExecutionActionView",
+    "ExecutionPlanRef",
+    "GroupActionPreparedEntry",
+    "GroupActionStateChangedEntry",
+    "GroupControlChangedEntry",
+    "GroupCreatedEntry",
     "InvalidFillProgressError",
     "InvalidOrderTransitionError",
     "JsonLinesOmsJournal",
@@ -69,6 +138,19 @@ __all__ = [
     "OmsJournalIoError",
     "OrderCreatedEntry",
     "OrderEvent",
+    "OrderGroupAdmission",
+    "OrderGroupAuthorizationError",
+    "OrderGroupCapacityError",
+    "OrderGroupCloseOutcome",
+    "OrderGroupIdentityError",
+    "OrderGroupLegView",
+    "OrderGroupLimits",
+    "OrderGroupStateError",
+    "OrderGroupStateMachine",
+    "OrderGroupStatus",
+    "OrderGroupTransitionError",
+    "OrderGroupView",
+    "OrderGroupWriterViolationError",
     "OrderIdentityError",
     "OrderReconciliationSnapshot",
     "OrderRequest",
@@ -76,6 +158,9 @@ __all__ = [
     "OrderStateError",
     "OrderStateMachine",
     "OrderStatus",
+    "OrderSubmitEvent",
+    "OrderSubmitOutcome",
+    "OrderSubmitOutcomeEntry",
     "OrderSubmittingEntry",
     "OrderType",
     "OrderUpdateResult",
@@ -88,4 +173,17 @@ __all__ = [
     "TimeInForce",
     "UpdateDisposition",
     "VenueEventEntry",
+    "child_order_id_for_action",
+    "decode_execution_action",
+    "decode_execution_action_permit",
+    "decode_execution_plan_ref",
+    "decode_order_group_admission",
+    "deterministic_group_action_id",
+    "deterministic_order_group_id",
+    "encode_execution_action",
+    "encode_execution_action_permit",
+    "encode_execution_plan_ref",
+    "encode_order_group_admission",
+    "execution_action_checksum",
+    "execution_plan_parameters_checksum",
 ]

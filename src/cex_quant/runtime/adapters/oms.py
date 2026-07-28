@@ -11,6 +11,7 @@ from cex_quant.core import (
     Quantity,
     UnixNanos,
 )
+from cex_quant.execution import ExecutionOutcome, SubmitResult
 from cex_quant.oms import (
     ApprovedOrderIntent,
     CancelRequestedEntry,
@@ -23,6 +24,9 @@ from cex_quant.oms import (
     OrderStateError,
     OrderStateMachine,
     OrderStatus,
+    OrderSubmitEvent,
+    OrderSubmitOutcome,
+    OrderSubmitOutcomeEntry,
     OrderSubmittingEntry,
     OrderType,
     OrderUpdateResult,
@@ -161,14 +165,70 @@ class CanonicalOmsApplicationService:
         at_ns: UnixNanos,
     ) -> OrderView:
         self._assert_persistence_healthy()
-        view = self._machine(client_order_id).mark_submitting(at_ns=at_ns)
+        machine = self._machine(client_order_id)
+        current = machine.view()
+        if current.status is not OrderStatus.CREATED:
+            raise OmsInvariantError("only a CREATED order can be prepared")
+        if at_ns < current.request.created_at_ns:
+            raise ValueError("submit preparation cannot precede order creation")
         self._persist(
             OrderSubmittingEntry(
                 client_order_id=client_order_id,
                 at_ns=at_ns,
             )
         )
-        return view
+        return machine.mark_submitting(at_ns=at_ns)
+
+    def prepare_submit(self, request: OrderRequest) -> OrderView:
+        """Durably enter SUBMITTING before the request can cross Execution."""
+
+        current = self.order(request.client_order_id)
+        if current.request != request:
+            raise OmsInvariantError("submit request is not the OMS-owned value")
+        return self.mark_submitting(
+            request.client_order_id,
+            at_ns=self._now_ns(),
+        )
+
+    def record_submit_result(self, result: SubmitResult) -> OrderView:
+        outcome = (
+            OrderSubmitOutcome.ACCEPTED
+            if result.outcome is ExecutionOutcome.ACCEPTED
+            else OrderSubmitOutcome.REJECTED
+        )
+        reason = ""
+        if outcome is OrderSubmitOutcome.REJECTED:
+            reason = f"{result.rejection_code}: {result.rejection_message}"
+        return self._apply_submit_event(
+            OrderSubmitEvent(
+                client_order_id=result.client_order_id,
+                outcome=outcome,
+                event_time_ns=self._now_ns(),
+                venue_order_id=result.venue_order_id,
+                reason=reason,
+            )
+        )
+
+    def record_submit_failure(
+        self,
+        client_order_id: ClientOrderId,
+        *,
+        outcome: OrderSubmitOutcome,
+        reason: str,
+    ) -> OrderView:
+        if outcome not in {
+            OrderSubmitOutcome.DEFINITELY_NOT_SENT,
+            OrderSubmitOutcome.UNKNOWN,
+        }:
+            raise ValueError("submit failure outcome is not a transport failure")
+        return self._apply_submit_event(
+            OrderSubmitEvent(
+                client_order_id=client_order_id,
+                outcome=outcome,
+                event_time_ns=self._now_ns(),
+                reason=reason,
+            )
+        )
 
     def request_cancel(
         self,
@@ -235,9 +295,7 @@ class CanonicalOmsApplicationService:
             return ReconciliationResult(
                 disposition=ReconciliationDisposition.CONFLICT,
                 order=current,
-                reason=(
-                    "venue observation conflicts with terminal canonical state"
-                ),
+                reason=("venue observation conflicts with terminal canonical state"),
             )
         if current.status is OrderStatus.CREATED:
             self.mark_submitting(
@@ -290,6 +348,19 @@ class CanonicalOmsApplicationService:
             self._persist(VenueEventEntry(event=event))
         return update
 
+    def _apply_submit_event(self, event: OrderSubmitEvent) -> OrderView:
+        self._assert_persistence_healthy()
+        machine = self._machine(event.client_order_id)
+        current = machine.view()
+        if current.status is not OrderStatus.SUBMITTING:
+            raise OmsInvariantError(
+                "immediate submit outcome requires SUBMITTING order"
+            )
+        if event.event_time_ns < current.request.created_at_ns:
+            raise ValueError("submit outcome cannot precede order creation")
+        self._persist(OrderSubmitOutcomeEntry(event=event))
+        return machine.apply_submit_event(event)
+
     def _machine(self, client_order_id: ClientOrderId) -> OrderStateMachine:
         try:
             return self._machines[client_order_id]
@@ -307,9 +378,7 @@ class CanonicalOmsApplicationService:
                         raise OmsRecoveryError(
                             f"duplicate recovered order: {client_order_id}"
                         )
-                    self._machines[client_order_id] = OrderStateMachine(
-                        entry.request
-                    )
+                    self._machines[client_order_id] = OrderStateMachine(entry.request)
                 elif isinstance(entry, OrderSubmittingEntry):
                     self._machine(entry.client_order_id).mark_submitting(
                         at_ns=entry.at_ns
@@ -319,15 +388,17 @@ class CanonicalOmsApplicationService:
                         at_ns=entry.at_ns
                     )
                 elif isinstance(entry, VenueEventEntry):
-                    self._machine(
-                        entry.event.client_order_id
-                    ).apply_venue_update(entry.event)
+                    self._machine(entry.event.client_order_id).apply_venue_update(
+                        entry.event
+                    )
+                elif isinstance(entry, OrderSubmitOutcomeEntry):
+                    self._machine(entry.event.client_order_id).apply_submit_event(
+                        entry.event
+                    )
         except OmsRecoveryError:
             raise
         except (KeyError, OrderStateError, ValueError) as error:
-            raise OmsRecoveryError(
-                f"invalid OMS recovery history: {error}"
-            ) from error
+            raise OmsRecoveryError(f"invalid OMS recovery history: {error}") from error
 
     def _persist(
         self,
@@ -336,6 +407,7 @@ class CanonicalOmsApplicationService:
             | OrderSubmittingEntry
             | CancelRequestedEntry
             | VenueEventEntry
+            | OrderSubmitOutcomeEntry
         ),
     ) -> None:
         if self._journal is None:
@@ -369,8 +441,7 @@ def _is_consistent(
     )
     return (
         snapshot.status is current.status
-        and snapshot.cumulative_filled_quantity
-        == current.cumulative_filled_quantity
+        and snapshot.cumulative_filled_quantity == current.cumulative_filled_quantity
         and venue_id_matches
         and average_matches
     )
@@ -391,9 +462,7 @@ def _reconciliation_fill_conflict(
         return "venue cumulative fill exceeds requested quantity"
     if snapshot.status is OrderStatus.FILLED and filled != requested:
         return "FILLED venue status does not contain the full quantity"
-    if snapshot.status is OrderStatus.PARTIALLY_FILLED and not (
-        0 < filled < requested
-    ):
+    if snapshot.status is OrderStatus.PARTIALLY_FILLED and not (0 < filled < requested):
         return "PARTIALLY_FILLED venue status has invalid cumulative fill"
     return ""
 

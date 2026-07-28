@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
 import json
 import os
@@ -14,7 +16,9 @@ from typing import BinaryIO, Protocol, TypeAlias, cast
 from cex_quant.core import (
     AccountId,
     ClientOrderId,
+    GroupActionId,
     IntentId,
+    OrderGroupId,
     Price,
     Quantity,
     UnixNanos,
@@ -23,19 +27,41 @@ from cex_quant.core import (
 )
 from cex_quant.instruments import InstrumentId, InstrumentKind
 
+from .group_codec import (
+    decode_execution_action,
+    decode_execution_action_permit,
+    decode_execution_plan_ref,
+    decode_order_group_admission,
+    encode_execution_action,
+    encode_execution_action_permit,
+    encode_execution_plan_ref,
+    encode_order_group_admission,
+)
+from .group_model import (
+    ExecutionAction,
+    ExecutionActionPermit,
+    ExecutionActionState,
+    ExecutionPlanRef,
+    OrderGroupAdmission,
+    OrderGroupCloseOutcome,
+    OrderGroupStatus,
+)
 from .model import (
     OrderEvent,
     OrderRequest,
     OrderSide,
     OrderStatus,
+    OrderSubmitEvent,
+    OrderSubmitOutcome,
     OrderType,
     PositionSide,
     TimeInForce,
 )
 
 FORMAT_NAME = "cex_quant.oms_journal"
-FORMAT_VERSION = 1
-DEFAULT_MAX_RECORD_BYTES = 65_536
+LEGACY_FORMAT_VERSION = 1
+FORMAT_VERSION = 2
+DEFAULT_MAX_RECORD_BYTES = 262_144
 
 JsonValue: TypeAlias = (
     bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"] | None
@@ -60,6 +86,11 @@ class OmsJournalEntryType(StrEnum):
     ORDER_SUBMITTING = "order_submitting"
     CANCEL_REQUESTED = "cancel_requested"
     VENUE_EVENT = "venue_event"
+    ORDER_SUBMIT_OUTCOME = "order_submit_outcome"
+    GROUP_CREATED = "group_created"
+    GROUP_CONTROL_CHANGED = "group_control_changed"
+    GROUP_ACTION_PREPARED = "group_action_prepared"
+    GROUP_ACTION_STATE_CHANGED = "group_action_state_changed"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -100,11 +131,80 @@ class VenueEventEntry:
         return OmsJournalEntryType.VENUE_EVENT
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class OrderSubmitOutcomeEntry:
+    event: OrderSubmitEvent
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.ORDER_SUBMIT_OUTCOME
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GroupCreatedEntry:
+    group_id: OrderGroupId
+    admission: OrderGroupAdmission
+    execution_plan: ExecutionPlanRef
+    created_at_ns: UnixNanos
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.GROUP_CREATED
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GroupControlChangedEntry:
+    group_id: OrderGroupId
+    status: OrderGroupStatus
+    at_ns: UnixNanos
+    reason: str = ""
+    recovery_authorization_id: str = ""
+    close_outcome: OrderGroupCloseOutcome | None = None
+    portfolio_confirmation_id: str = ""
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.GROUP_CONTROL_CHANGED
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GroupActionPreparedEntry:
+    group_id: OrderGroupId
+    action: ExecutionAction
+    permit: ExecutionActionPermit
+    request: OrderRequest
+    at_ns: UnixNanos
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.GROUP_ACTION_PREPARED
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GroupActionStateChangedEntry:
+    group_id: OrderGroupId
+    action_id: GroupActionId
+    state: ExecutionActionState
+    at_ns: UnixNanos
+    venue_order_id: VenueOrderId | None = None
+    child_terminal_status: OrderStatus | None = None
+    reason: str = ""
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.GROUP_ACTION_STATE_CHANGED
+
+
 OmsJournalEntry: TypeAlias = (
     OrderCreatedEntry
     | OrderSubmittingEntry
     | CancelRequestedEntry
     | VenueEventEntry
+    | OrderSubmitOutcomeEntry
+    | GroupCreatedEntry
+    | GroupControlChangedEntry
+    | GroupActionPreparedEntry
+    | GroupActionStateChangedEntry
 )
 
 
@@ -223,7 +323,7 @@ def encode_journal_record(
         raise ValueError("sequence must be positive")
     body: JsonObject = {
         "format": FORMAT_NAME,
-        "version": FORMAT_VERSION,
+        "version": _entry_format_version(entry),
         "sequence": sequence,
         "entry": _encode_entry(entry),
     }
@@ -247,12 +347,21 @@ def decode_journal_record(record: bytes) -> tuple[int, OmsJournalEntry]:
         raise OmsJournalIntegrityError("record checksum mismatch")
     if _string(raw, "format") != FORMAT_NAME:
         raise OmsJournalIntegrityError("unsupported journal format")
-    if _integer(raw, "version") != FORMAT_VERSION:
+    version = _integer(raw, "version")
+    if version not in {LEGACY_FORMAT_VERSION, FORMAT_VERSION}:
         raise OmsJournalIntegrityError("unsupported journal version")
     sequence = _integer(raw, "sequence")
     if sequence <= 0:
         raise OmsJournalIntegrityError("sequence must be positive")
-    return sequence, _decode_entry(_object(raw["entry"], "entry"))
+    entry = _decode_entry(_object(raw["entry"], "entry"))
+    if (
+        version == LEGACY_FORMAT_VERSION
+        and _entry_format_version(entry) != LEGACY_FORMAT_VERSION
+    ):
+        raise OmsJournalIntegrityError(
+            "new OMS entry type cannot use legacy journal version"
+        )
+    return sequence, entry
 
 
 def _encode_entry(entry: OmsJournalEntry) -> JsonObject:
@@ -265,6 +374,53 @@ def _encode_entry(entry: OmsJournalEntry) -> JsonObject:
         }
     elif isinstance(entry, VenueEventEntry):
         payload = _encode_event(entry.event)
+    elif isinstance(entry, OrderSubmitOutcomeEntry):
+        payload = _encode_submit_event(entry.event)
+    elif isinstance(entry, GroupCreatedEntry):
+        payload = {
+            "group_id": str(entry.group_id),
+            "admission": _encode_blob(encode_order_group_admission(entry.admission)),
+            "execution_plan": _encode_blob(
+                encode_execution_plan_ref(entry.execution_plan)
+            ),
+            "created_at_ns": int(entry.created_at_ns),
+        }
+    elif isinstance(entry, GroupControlChangedEntry):
+        payload = {
+            "group_id": str(entry.group_id),
+            "status": entry.status.value,
+            "at_ns": int(entry.at_ns),
+            "reason": entry.reason,
+            "recovery_authorization_id": entry.recovery_authorization_id,
+            "close_outcome": (
+                None if entry.close_outcome is None else entry.close_outcome.value
+            ),
+            "portfolio_confirmation_id": entry.portfolio_confirmation_id,
+        }
+    elif isinstance(entry, GroupActionPreparedEntry):
+        payload = {
+            "group_id": str(entry.group_id),
+            "action": _encode_blob(encode_execution_action(entry.action)),
+            "permit": _encode_blob(encode_execution_action_permit(entry.permit)),
+            "request": _encode_request(entry.request),
+            "at_ns": int(entry.at_ns),
+        }
+    elif isinstance(entry, GroupActionStateChangedEntry):
+        payload = {
+            "group_id": str(entry.group_id),
+            "action_id": str(entry.action_id),
+            "state": entry.state.value,
+            "at_ns": int(entry.at_ns),
+            "venue_order_id": (
+                None if entry.venue_order_id is None else str(entry.venue_order_id)
+            ),
+            "child_terminal_status": (
+                None
+                if entry.child_terminal_status is None
+                else entry.child_terminal_status.value
+            ),
+            "reason": entry.reason,
+        }
     else:
         raise TypeError(f"unsupported journal entry: {type(entry).__name__}")
     return {"type": entry.entry_type.value, "payload": payload}
@@ -285,7 +441,66 @@ def _decode_entry(raw: JsonObject) -> OmsJournalEntry:
             client_order_id=ClientOrderId(_string(payload, "client_order_id")),
             at_ns=UnixNanos(_integer(payload, "at_ns")),
         )
-    return VenueEventEntry(event=_decode_event(payload))
+    if entry_type is OmsJournalEntryType.VENUE_EVENT:
+        return VenueEventEntry(event=_decode_event(payload))
+    if entry_type is OmsJournalEntryType.ORDER_SUBMIT_OUTCOME:
+        return OrderSubmitOutcomeEntry(event=_decode_submit_event(payload))
+    if entry_type is OmsJournalEntryType.GROUP_CREATED:
+        return GroupCreatedEntry(
+            group_id=OrderGroupId(_string(payload, "group_id")),
+            admission=decode_order_group_admission(_decode_blob(payload, "admission")),
+            execution_plan=decode_execution_plan_ref(
+                _decode_blob(payload, "execution_plan")
+            ),
+            created_at_ns=UnixNanos(_integer(payload, "created_at_ns")),
+        )
+    if entry_type is OmsJournalEntryType.GROUP_CONTROL_CHANGED:
+        close_outcome = _optional_string(payload, "close_outcome")
+        return GroupControlChangedEntry(
+            group_id=OrderGroupId(_string(payload, "group_id")),
+            status=OrderGroupStatus(_string(payload, "status")),
+            at_ns=UnixNanos(_integer(payload, "at_ns")),
+            reason=_string(payload, "reason"),
+            recovery_authorization_id=_string(
+                payload,
+                "recovery_authorization_id",
+            ),
+            close_outcome=(
+                None if close_outcome is None else OrderGroupCloseOutcome(close_outcome)
+            ),
+            portfolio_confirmation_id=_string(
+                payload,
+                "portfolio_confirmation_id",
+            ),
+        )
+    if entry_type is OmsJournalEntryType.GROUP_ACTION_PREPARED:
+        return GroupActionPreparedEntry(
+            group_id=OrderGroupId(_string(payload, "group_id")),
+            action=decode_execution_action(_decode_blob(payload, "action")),
+            permit=decode_execution_action_permit(_decode_blob(payload, "permit")),
+            request=_decode_request(_object(payload["request"], "request")),
+            at_ns=UnixNanos(_integer(payload, "at_ns")),
+        )
+    venue_order_id = _optional_string(payload, "venue_order_id")
+    child_terminal_status = _optional_string(
+        payload,
+        "child_terminal_status",
+    )
+    return GroupActionStateChangedEntry(
+        group_id=OrderGroupId(_string(payload, "group_id")),
+        action_id=GroupActionId(_string(payload, "action_id")),
+        state=ExecutionActionState(_string(payload, "state")),
+        at_ns=UnixNanos(_integer(payload, "at_ns")),
+        venue_order_id=(
+            None if venue_order_id is None else VenueOrderId(venue_order_id)
+        ),
+        child_terminal_status=(
+            None
+            if child_terminal_status is None
+            else OrderStatus(child_terminal_status)
+        ),
+        reason=_string(payload, "reason"),
+    )
 
 
 def _encode_request(request: OrderRequest) -> JsonObject:
@@ -333,9 +548,7 @@ def _encode_event(event: OrderEvent) -> JsonObject:
         "venue_update_id": event.venue_update_id,
         "client_order_id": str(event.client_order_id),
         "status": event.status.value,
-        "cumulative_filled_quantity": _encode_fixed(
-            event.cumulative_filled_quantity
-        ),
+        "cumulative_filled_quantity": _encode_fixed(event.cumulative_filled_quantity),
         "event_time_ns": int(event.event_time_ns),
         "venue_order_id": (
             None if event.venue_order_id is None else str(event.venue_order_id)
@@ -351,9 +564,7 @@ def _decode_event(raw: JsonObject) -> OrderEvent:
         venue_update_id=_string(raw, "venue_update_id"),
         client_order_id=ClientOrderId(_string(raw, "client_order_id")),
         status=OrderStatus(_string(raw, "status")),
-        cumulative_filled_quantity=_quantity(
-            raw["cumulative_filled_quantity"]
-        ),
+        cumulative_filled_quantity=_quantity(raw["cumulative_filled_quantity"]),
         event_time_ns=UnixNanos(_integer(raw, "event_time_ns")),
         venue_order_id=(
             None if venue_order_id is None else VenueOrderId(venue_order_id)
@@ -361,6 +572,56 @@ def _decode_event(raw: JsonObject) -> OrderEvent:
         average_fill_price=_optional_price(raw.get("average_fill_price")),
         reason=_string(raw, "reason"),
     )
+
+
+def _encode_submit_event(event: OrderSubmitEvent) -> JsonObject:
+    return {
+        "client_order_id": str(event.client_order_id),
+        "outcome": event.outcome.value,
+        "event_time_ns": int(event.event_time_ns),
+        "venue_order_id": (
+            None if event.venue_order_id is None else str(event.venue_order_id)
+        ),
+        "reason": event.reason,
+    }
+
+
+def _decode_submit_event(raw: JsonObject) -> OrderSubmitEvent:
+    venue_order_id = _optional_string(raw, "venue_order_id")
+    return OrderSubmitEvent(
+        client_order_id=ClientOrderId(_string(raw, "client_order_id")),
+        outcome=OrderSubmitOutcome(_string(raw, "outcome")),
+        event_time_ns=UnixNanos(_integer(raw, "event_time_ns")),
+        venue_order_id=(
+            None if venue_order_id is None else VenueOrderId(venue_order_id)
+        ),
+        reason=_string(raw, "reason"),
+    )
+
+
+def _entry_format_version(entry: OmsJournalEntry) -> int:
+    if isinstance(
+        entry,
+        (
+            OrderCreatedEntry,
+            OrderSubmittingEntry,
+            CancelRequestedEntry,
+            VenueEventEntry,
+        ),
+    ):
+        return LEGACY_FORMAT_VERSION
+    return FORMAT_VERSION
+
+
+def _encode_blob(value: bytes) -> str:
+    return base64.b64encode(value).decode("ascii")
+
+
+def _decode_blob(raw: JsonObject, key: str) -> bytes:
+    try:
+        return base64.b64decode(_string(raw, key), validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise OmsJournalIntegrityError(f"{key} is not valid base64") from error
 
 
 def _encode_instrument(instrument: InstrumentId) -> JsonObject:
@@ -446,7 +707,12 @@ __all__ = [
     "DEFAULT_MAX_RECORD_BYTES",
     "FORMAT_NAME",
     "FORMAT_VERSION",
+    "LEGACY_FORMAT_VERSION",
     "CancelRequestedEntry",
+    "GroupActionPreparedEntry",
+    "GroupActionStateChangedEntry",
+    "GroupControlChangedEntry",
+    "GroupCreatedEntry",
     "JsonLinesOmsJournal",
     "OmsJournal",
     "OmsJournalEntry",
@@ -455,6 +721,7 @@ __all__ = [
     "OmsJournalIntegrityError",
     "OmsJournalIoError",
     "OrderCreatedEntry",
+    "OrderSubmitOutcomeEntry",
     "OrderSubmittingEntry",
     "VenueEventEntry",
     "decode_journal_record",

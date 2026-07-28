@@ -19,6 +19,8 @@ from .model import (
     OrderEvent,
     OrderRequest,
     OrderStatus,
+    OrderSubmitEvent,
+    OrderSubmitOutcome,
     OrderView,
 )
 
@@ -60,9 +62,7 @@ class OrderUpdateResult:
 
 
 _VENUE_TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
-    OrderStatus.CREATED: frozenset(
-        {OrderStatus.REJECTED, OrderStatus.FAILED}
-    ),
+    OrderStatus.CREATED: frozenset({OrderStatus.REJECTED, OrderStatus.FAILED}),
     OrderStatus.SUBMITTING: frozenset(
         {
             OrderStatus.OPEN,
@@ -128,6 +128,7 @@ class OrderStateMachine:
         self._reason: str = ""
         self._last_event_time_ns = request.created_at_ns
         self._seen_updates: dict[str, OrderEvent] = {}
+        self._submit_event: OrderSubmitEvent | None = None
 
     @property
     def client_order_id(self) -> ClientOrderId:
@@ -171,9 +172,37 @@ class OrderStateMachine:
             )
         self._assert_time_not_before_creation(at_ns)
         self._status = OrderStatus.CANCEL_PENDING
+        self._last_event_time_ns = UnixNanos(max(self._last_event_time_ns, at_ns))
+        return self.view()
+
+    def apply_submit_event(self, event: OrderSubmitEvent) -> OrderView:
+        """Apply one immediate submit fact without inventing venue lifecycle."""
+
+        self._assert_writer()
+        if event.client_order_id != self._request.client_order_id:
+            raise OrderIdentityError("submit event client_order_id mismatch")
+        if self._status is not OrderStatus.SUBMITTING:
+            raise InvalidOrderTransitionError(
+                f"cannot apply submit outcome from {self._status.value}"
+            )
+        if self._submit_event is not None:
+            if self._submit_event == event:
+                return self.view()
+            raise DuplicateUpdateConflictError(
+                "immediate submit outcome already recorded"
+            )
+        self._assert_time_not_before_creation(event.event_time_ns)
+        if event.outcome is OrderSubmitOutcome.REJECTED:
+            self._status = OrderStatus.REJECTED
+        elif event.outcome is OrderSubmitOutcome.DEFINITELY_NOT_SENT:
+            self._status = OrderStatus.FAILED
+        if event.venue_order_id is not None:
+            self._venue_order_id = event.venue_order_id
+        self._reason = event.reason
         self._last_event_time_ns = UnixNanos(
-            max(self._last_event_time_ns, at_ns)
+            max(self._last_event_time_ns, event.event_time_ns)
         )
+        self._submit_event = event
         return self.view()
 
     def apply_venue_update(self, event: OrderEvent) -> OrderUpdateResult:
@@ -196,8 +225,7 @@ class OrderStateMachine:
         allowed = _VENUE_TRANSITIONS[self._status]
         if event.status not in allowed:
             raise InvalidOrderTransitionError(
-                f"illegal transition {self._status.value} -> "
-                f"{event.status.value}"
+                f"illegal transition {self._status.value} -> {event.status.value}"
             )
         self._validate_fill(event)
 

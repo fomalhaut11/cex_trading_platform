@@ -57,6 +57,15 @@ class OrderStatus(StrEnum):
     FAILED = "failed"
 
 
+class OrderSubmitOutcome(StrEnum):
+    """Immediate transport result, distinct from venue order lifecycle."""
+
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    DEFINITELY_NOT_SENT = "definitely_not_sent"
+    UNKNOWN = "unknown"
+
+
 TERMINAL_ORDER_STATUSES = frozenset(
     {
         OrderStatus.FILLED,
@@ -215,11 +224,36 @@ class OrderEvent:
             raise ValueError("client_order_id cannot be empty")
         if self.cumulative_filled_quantity.raw < 0:
             raise ValueError("cumulative_filled_quantity cannot be negative")
-        if (
-            self.average_fill_price is not None
-            and self.average_fill_price.raw <= 0
-        ):
+        if self.average_fill_price is not None and self.average_fill_price.raw <= 0:
             raise ValueError("average_fill_price must be positive")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class OrderSubmitEvent:
+    """Immediate submit evidence persisted before private-stream lifecycle."""
+
+    client_order_id: ClientOrderId
+    outcome: OrderSubmitOutcome
+    event_time_ns: UnixNanos
+    venue_order_id: VenueOrderId | None = None
+    reason: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.client_order_id:
+            raise ValueError("client_order_id cannot be empty")
+        if self.event_time_ns < 0:
+            raise ValueError("event_time_ns cannot be negative")
+        if self.reason and self.reason.strip() != self.reason:
+            raise ValueError("submit reason must be trimmed")
+        if len(self.reason) > 512:
+            raise ValueError("submit reason exceeds maximum length")
+        if (
+            self.outcome is not OrderSubmitOutcome.ACCEPTED
+            and self.venue_order_id is not None
+        ):
+            raise ValueError("only accepted submit can contain venue_order_id")
+        if self.outcome is not OrderSubmitOutcome.ACCEPTED and not self.reason:
+            raise ValueError("non-accepted submit outcome requires a reason")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -284,6 +318,8 @@ __all__ = [
     "OrderRequest",
     "OrderSide",
     "OrderStatus",
+    "OrderSubmitEvent",
+    "OrderSubmitOutcome",
     "OrderType",
     "OrderView",
     "PositionSide",

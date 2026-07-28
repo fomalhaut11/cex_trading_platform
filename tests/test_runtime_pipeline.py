@@ -36,6 +36,7 @@ from cex_quant.observability import HealthReport, HealthStatus
 from cex_quant.oms import (
     OrderRequest,
     OrderSide,
+    OrderSubmitOutcome,
     OrderType,
 )
 from cex_quant.risk import (
@@ -283,6 +284,23 @@ class Oms:
             created_at_ns=NOW,
         )
 
+    def prepare_submit(self, request: OrderRequest) -> OrderRequest:
+        self.calls.append("oms_prepare")
+        return request
+
+    def record_submit_result(self, result: SubmitResult) -> None:
+        self.calls.append("oms_result")
+
+    def record_submit_failure(
+        self,
+        client_order_id: ClientOrderId,
+        *,
+        outcome: OrderSubmitOutcome,
+        reason: str,
+    ) -> None:
+        del client_order_id, outcome, reason
+        self.calls.append("oms_failure")
+
 
 class Execution:
     def __init__(self, calls: list[str]) -> None:
@@ -358,7 +376,9 @@ class RuntimePipelineTests(TestCase):
                 "portfolio",
                 "risk",
                 "oms",
+                "oms_prepare",
                 "execution",
+                "oms_result",
             ],
         )
         self.assertEqual(

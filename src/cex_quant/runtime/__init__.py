@@ -9,6 +9,7 @@ from .adapters import (
     CanonicalOmsApplicationService,
     ExecutionBridgeError,
     ExecutionBridgeStateError,
+    ExecutionBridgeUnknownError,
     FeatureEngineAdapter,
     MarketStateGateAdapter,
     MarketStateUpdater,
@@ -39,6 +40,11 @@ from .deployment import (
     OperatorControlRuntime,
     OperatorEndpointDeploymentConfig,
     TradingDeploymentRuntime,
+)
+from .execution_handoff import (
+    DurableExecutionHandoff,
+    DurableSubmitStatePort,
+    SynchronousExecutionSubmitPort,
 )
 from .operations import (
     OperatorAction,
@@ -89,6 +95,13 @@ from .operator_endpoint import (
     OperatorRequestRejectedError,
     OperatorTransportRejectedError,
     decode_operator_request,
+)
+from .order_group_runtime import (
+    GroupedExecutionBlockedError,
+    OrderGroupPersistenceError,
+    OrderGroupRecoveryError,
+    OrderGroupRuntime,
+    OrderGroupRuntimeError,
 )
 from .pipeline import (
     ExecutionPort,
@@ -169,12 +182,16 @@ __all__ = [
     "BinanceServerTimeAdapter",
     "BinanceServerTimeError",
     "CanonicalOmsApplicationService",
+    "DurableExecutionHandoff",
+    "DurableSubmitStatePort",
     "EnvironmentOperatorKeyProvider",
     "ExecutionBridgeError",
     "ExecutionBridgeStateError",
+    "ExecutionBridgeUnknownError",
     "ExecutionPort",
     "FeatureEngineAdapter",
     "FeaturePort",
+    "GroupedExecutionBlockedError",
     "HealthPort",
     "HmacOperatorCommandAuthenticator",
     "JsonLinesOperatorCommandJournal",
@@ -224,6 +241,10 @@ __all__ = [
     "OperatorRequestRejectedError",
     "OperatorRiskGate",
     "OperatorTransportRejectedError",
+    "OrderGroupPersistenceError",
+    "OrderGroupRecoveryError",
+    "OrderGroupRuntime",
+    "OrderGroupRuntimeError",
     "OrderParameters",
     "OrderPolicy",
     "OverflowPolicy",
@@ -272,6 +293,7 @@ __all__ = [
     "StartupReconciliationState",
     "StateGate",
     "StrategyPort",
+    "SynchronousExecutionSubmitPort",
     "TradingApplication",
     "TradingDeploymentRuntime",
     "TradingPipeline",

@@ -58,6 +58,8 @@ from cex_quant.oms import (
     OrderSide,
     OrderStateMachine,
     OrderStatus,
+    OrderSubmitEvent,
+    OrderSubmitOutcome,
     OrderType,
     PositionSide,
     TimeInForce,
@@ -299,8 +301,46 @@ class _Oms:
             time_in_force=TimeInForce.GTC,
         )
         self.state = OrderStateMachine(request)
+        return request
+
+    def prepare_submit(self, request: OrderRequest) -> OrderRequest:
+        self._trace.append("oms_prepare")
+        if self.state is None or self.state.view().request != request:
+            raise AssertionError("unknown order reached durable submit")
         self.state.mark_submitting(at_ns=NOW)
         return request
+
+    def record_submit_result(self, result: SubmitResult) -> None:
+        self._trace.append("oms_result")
+        if self.state is None:
+            raise AssertionError("submit result arrived without an order")
+        self.state.apply_submit_event(
+            OrderSubmitEvent(
+                client_order_id=result.client_order_id,
+                outcome=OrderSubmitOutcome.ACCEPTED,
+                event_time_ns=NOW,
+                venue_order_id=result.venue_order_id,
+            )
+        )
+
+    def record_submit_failure(
+        self,
+        client_order_id: ClientOrderId,
+        *,
+        outcome: OrderSubmitOutcome,
+        reason: str,
+    ) -> None:
+        if self.state is None:
+            raise AssertionError("submit failure arrived without an order")
+        self._trace.append("oms_failure")
+        self.state.apply_submit_event(
+            OrderSubmitEvent(
+                client_order_id=client_order_id,
+                outcome=outcome,
+                event_time_ns=NOW,
+                reason=reason,
+            )
+        )
 
 
 class _Execution:
@@ -364,7 +404,9 @@ class TradingPipelineAcceptanceTests(TestCase):
                 "portfolio",
                 "risk",
                 "oms",
+                "oms_prepare",
                 "execution",
+                "oms_result",
             ],
         )
         self.assertEqual(

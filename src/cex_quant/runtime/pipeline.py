@@ -6,11 +6,12 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Protocol
 
+from cex_quant.core import ClientOrderId
 from cex_quant.execution import SubmitResult
 from cex_quant.features import FeatureSnapshot
 from cex_quant.market_data import MarketEvent, ValidationResult
 from cex_quant.observability import HealthReport, HealthStatus
-from cex_quant.oms import OrderRequest
+from cex_quant.oms import OrderRequest, OrderSubmitOutcome
 from cex_quant.risk import RiskContext, RiskDecision
 from cex_quant.strategy import (
     BasketTargetIntent,
@@ -18,6 +19,8 @@ from cex_quant.strategy import (
     StrategyDecision,
     StrategyInput,
 )
+
+from .execution_handoff import DurableExecutionHandoff
 
 
 class PipelineStage(StrEnum):
@@ -126,6 +129,18 @@ class OmsPort(Protocol):
         approval: RiskDecision,
     ) -> OrderRequest: ...
 
+    def prepare_submit(self, request: OrderRequest) -> object: ...
+
+    def record_submit_result(self, result: SubmitResult) -> object: ...
+
+    def record_submit_failure(
+        self,
+        client_order_id: ClientOrderId,
+        *,
+        outcome: OrderSubmitOutcome,
+        reason: str,
+    ) -> object: ...
+
 
 class ExecutionPort(Protocol):
     """Synchronous boundary used by replay and deterministic composition.
@@ -174,7 +189,10 @@ class TradingPipeline:
         self._portfolio = portfolio
         self._risk = risk
         self._oms = oms
-        self._execution = execution
+        self._execution_handoff = DurableExecutionHandoff(
+            oms=oms,
+            execution=execution,
+        )
         self._recorder = recorder
         self._status = PipelineStatus.RUNNING
         self._failure: PipelineFailure | None = None
@@ -247,9 +265,7 @@ class TradingPipeline:
                 StageOutcome.COMPLETED,
                 snapshot,
             )
-            strategy_input: StrategyInput = (
-                snapshot if snapshot is not None else event
-            )
+            strategy_input: StrategyInput = snapshot if snapshot is not None else event
             strategy_decision = self._strategy.on_input(strategy_input)
             if any(
                 isinstance(intent, BasketTargetIntent)
@@ -307,7 +323,7 @@ class TradingPipeline:
                     StageOutcome.COMPLETED,
                     request,
                 )
-                submission = self._execution.submit(request)
+                submission = self._execution_handoff.submit(request)
                 submissions.append(submission)
                 self._append(
                     trace,
@@ -412,9 +428,7 @@ class TradingPipeline:
             PipelineStage.EXECUTION,
         )
         completed = [
-            item.stage
-            for item in trace
-            if item.outcome is StageOutcome.COMPLETED
+            item.stage for item in trace if item.outcome is StageOutcome.COMPLETED
         ]
         if not completed:
             return PipelineStage.HEALTH
