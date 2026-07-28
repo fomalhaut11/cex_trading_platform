@@ -17,6 +17,14 @@ This acceptance authorizes implementation of the generic Snapshot
 Infrastructure described by this ADR. It does not authorize Funding Arbitrage
 application code, Basket execution, Testnet or production trading.
 
+Implementation record:
+
+- T025, T026 and A012 completed in
+  `66e0d6cb9cfbafa0246dcee20e3ec414cbff97b7`;
+- public schema: `interfaces/decision_snapshot_schema.md`;
+- verification: 379 regression tests, 31 acceptance tests, strict MyPy for
+  86 source files and 86.34% branch coverage.
+
 ## Context
 
 The current runtime processes one canonical market event at a time. Existing

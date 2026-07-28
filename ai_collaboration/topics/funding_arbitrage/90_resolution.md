@@ -289,6 +289,12 @@ Branch coverage: 86.34% (gate: 85%)
 Ruff / compile / secret scan: passed
 ```
 
+ADR-009 implementation promotion commit:
+
+```text
+66e0d6cb9cfbafa0246dcee20e3ec414cbff97b7
+```
+
 ADR-010 审查重点：
 
 - Basket leg 是否显式包含 canonical `AccountId`；

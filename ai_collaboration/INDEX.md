@@ -6,7 +6,7 @@
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
 |---|---|---|---|---|---|---|
-| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009 IMPLEMENTED; ADR-010 READY_FOR_REVIEW | `04f3713c7cdd8aaa1bccb24edcecb621ae41de56` | [Accepted ADR-009](../adr/ADR-009-portfolio-decision-snapshot.md) | [ADR-010 draft](../adr/ADR-010-basket-intent-architecture.md) |
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009 PROMOTED; ADR-010 READY_FOR_REVIEW | `66e0d6cb9cfbafa0246dcee20e3ec414cbff97b7` | [ADR-009 implementation](../interfaces/decision_snapshot_schema.md) | [ADR-010 draft](../adr/ADR-010-basket-intent-architecture.md) |
 
 ## Completed and Reference Exchanges
 
