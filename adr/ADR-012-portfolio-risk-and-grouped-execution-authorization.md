@@ -12,11 +12,16 @@ were already closed by the accepted ADR-011 remediation evidence.
 Acceptance authorizes T032-T035 and A015 offline work only. It does not
 authorize Funding Arbitrage, Testnet or production execution.
 
-Web GPT's implementation review retained this ADR as Accepted and assigned
-`CONDITIONAL ACCEPTANCE` to the implementation. A-01 through A-07 are
-remediated or confirmed at implementation commit
-`b082af0618e180f98441af5dc6d49c906994a012` and await focused re-review.
-The remediation adds no external-execution authority.
+Web GPT's implementation review retained this ADR as Accepted and initially
+assigned `CONDITIONAL ACCEPTANCE` to the implementation. A-01 through A-07
+were remediated or confirmed at implementation commit
+`b082af0618e180f98441af5dc6d49c906994a012`.
+
+The focused review on 2026-07-29 accepted and closed all seven findings and
+upgraded the ADR-012 implementation to `Accepted`. No ADR reopening was
+required. Risk-decision explainability, Risk-model versioning and
+audit-oriented Risk evidence remain non-blocking future improvements.
+The remediation and final acceptance add no external-execution authority.
 
 Grouped external execution remains hard-blocked by
 `GroupedExecutionBlockedError`. Removing that block requires completed

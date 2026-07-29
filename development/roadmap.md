@@ -99,9 +99,9 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   supervision, recovery evidence and the shared immediate guard. **Offline
   acceptance is complete; the grouped external route remains blocked until a
   separate Testnet authorization.**
-  Web GPT's conditional implementation findings are remediated locally with
+  Web GPT accepted and closed the conditional implementation findings after
   typed freshness, invalidation, resource, tolerance and failure contracts;
-  focused re-review is pending.
+  the implementation is now Accepted.
 - ADR-013 Financial Ledger and PnL Attribution is Proposed for the same review
   batch. It covers canonical fill/account financial facts, a balanced
   per-asset ledger, source/balance reconciliation, ownership allocation and
@@ -109,7 +109,8 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 - ADR-014 Carry Application Boundary is Proposed for the same review batch. It
   places economic lifecycle, hedge assessment and ownership evidence in
   `applications.carry` while preserving generic platform authority.
-  **No application implementation is authorized yet.**
+  A separate Carry architecture-review topic is active. **No application
+  implementation is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
   foundation complete as T029-T031/A014 and Risk authority complete as

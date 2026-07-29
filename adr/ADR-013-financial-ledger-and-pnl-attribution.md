@@ -12,9 +12,10 @@ Reviewed baseline:
 
 `fa0df9e2a015db258457d226c7ed9fa5c689b8eb`
 
-This proposal may be reviewed while ADR-012 is Proposed because its source-
-fact and ledger ownership decisions are independently inspectable. ADR-014
-implementation remains dependent on accepted ADR-009 through ADR-013.
+ADR-012 is now Accepted and implemented through its bounded offline gate.
+ADR-013 remains independently reviewable because its source-fact and ledger
+ownership decisions are inspectable without enabling grouped execution.
+ADR-014 implementation remains dependent on accepted ADR-009 through ADR-013.
 
 ## Context
 

@@ -1,11 +1,12 @@
 ---
 id: AI-20260729-004
 title: Codex ADR-012 Conditional Acceptance Remediation
-status: READY_FOR_REVIEW
+status: ACCEPTED
 date: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 references:
   - 92_web_gpt_adr012_implementation_review.md
+  - 94_web_gpt_adr012_final_acceptance.md
   - ../../../adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md
 ---
 
@@ -147,7 +148,22 @@ unready evidence is `INSUFFICIENT_DATA`; unresolved recovery state is
 - documentation head `345791e9af181a255676f0b0b9751bcabb4b3acf`
   passed every remote job in GitHub Actions run `30439995029`.
 
-## Committee Request
+## Final Review Result
+
+Web GPT accepted and closed A-01 through A-07 on 2026-07-29.
+
+The implementation status is upgraded from `CONDITIONAL ACCEPTANCE` to
+`ACCEPTED`. ADR-012 remains Accepted and does not need to be reopened.
+
+Grouped external execution remains blocked. Risk-decision explainability,
+Risk-model versioning and audit-oriented Risk evidence are recorded as
+non-blocking future work.
+
+The final review record is:
+
+`94_web_gpt_adr012_final_acceptance.md`
+
+## Original Committee Request
 
 Please review only whether A-01 through A-07 are closed.
 

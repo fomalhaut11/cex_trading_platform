@@ -12,11 +12,12 @@ Reviewed baseline:
 
 `fa0df9e2a015db258457d226c7ed9fa5c689b8eb`
 
-ADR-014 may be reviewed while ADR-012 and ADR-013 are Proposed, but it cannot
-be accepted as an implementation authorization until their final accepted
-contracts are compatible with this boundary. Carry application code starts
-only after ADR-009 through ADR-014 are Accepted and the required platform
-capabilities are implemented and accepted.
+ADR-012 is Accepted and implemented through its bounded offline gate.
+ADR-014 may be reviewed while ADR-013 remains Proposed, but it cannot be
+accepted as an implementation authorization until the final accepted
+Accounting contracts are compatible with this boundary. Carry application
+code starts only after ADR-009 through ADR-014 are Accepted and the required
+platform capabilities are implemented and accepted.
 
 ## Context
 
@@ -126,14 +127,13 @@ There is no `cex_quant.applications` package and no:
 ### Platform dependencies are not complete
 
 The current external single-leg pipeline explicitly rejects Basket intents.
-ADR-011 grouped external submission remains blocked. ADR-012 and ADR-013 are
-Proposed, not implemented.
+ADR-011 grouped external submission remains blocked. ADR-012 is Accepted and
+implemented through its bounded offline gate. ADR-013 is Proposed and not
+implemented.
 
-The current system also lacks accepted implementations for:
+The current system still lacks accepted implementations for:
 
-- normalized margin/liquidation source views;
 - a state owner that publishes the latest Funding market view;
-- Portfolio Risk admission/action permits;
 - financial settlement/fee ledger and allocation.
 
 ADR-014 design cannot turn those missing platform capabilities into

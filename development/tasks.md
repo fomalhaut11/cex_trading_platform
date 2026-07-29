@@ -102,15 +102,17 @@ whole-Basket reservations, exact action permits, generation invalidation,
 directives, recovery/confirmation evidence and the immediate pre-I/O Risk
 guard. `OrderGroupRuntime.submit_prepared_child()` remains hard-blocked.
 
-Web GPT retained ADR-012 design acceptance and conditionally accepted the
-implementation. A-01 through A-07 are remediated/confirmed at
+Web GPT retained ADR-012 design acceptance and initially conditionally
+accepted the implementation. A-01 through A-07 were remediated/confirmed at
 `b082af0618e180f98441af5dc6d49c906994a012`: explicit snapshot freshness,
 typed invalidation triggers, resource-key reservation capacity, versioned
 target tolerance, unchanged Feature-owned Greeks and consume-before-I/O, and
-typed failure statuses. Focused re-review entry:
-`ai_collaboration/topics/funding_arbitrage/93_codex_adr012_remediation_response.md`.
+typed failure statuses. The focused review accepted and closed every finding;
+final result:
+`ai_collaboration/topics/funding_arbitrage/94_web_gpt_adr012_final_acceptance.md`.
 
 ADR-013 Financial Ledger and PnL Attribution and ADR-014 Carry Application
 Boundary remain Proposed. Funding Arbitrage, Accounting implementation,
-Testnet and production multi-leg execution remain unauthorized. Review entry:
-`ai_collaboration/topics/funding_arbitrage/93_codex_adr012_remediation_response.md`.
+Testnet and production multi-leg execution remain unauthorized. Carry design
+review entry:
+`ai_collaboration/topics/carry_application/20_codex_architecture_response.md`.

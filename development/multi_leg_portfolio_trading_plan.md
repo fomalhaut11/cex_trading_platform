@@ -1,9 +1,9 @@
 # Multi-Leg Portfolio Trading Development Plan
 
 Status: In progress — ADR-009 through ADR-012 accepted and implemented
-offline; ADR-012 conditional implementation findings are remediated and await
-focused re-review; ADR-013/014 Proposed; application implementation remains
-blocked
+offline; ADR-012 implementation findings are accepted and closed; ADR-013/014
+Proposed; Carry architecture review has started and application
+implementation remains blocked
 
 Created: 2026-07-27
 
@@ -21,8 +21,10 @@ complete for bounded offline implementation, including post-review execution
 safety remediation. ADR-012 was accepted on 2026-07-29; T032-T035/A015 are
 complete at `69297d52e764822a1bdd60a23a9b7fca8446a520`. ADR-013 Financial
 Ledger and ADR-014 Carry Application Boundary retain current-code audits and
-Proposed architectures. Neither is accepted or implemented, and external
-exposure-changing group submission is not authorized.
+Proposed architectures. The ADR-012 remediation at
+`b082af0618e180f98441af5dc6d49c906994a012` is finally accepted. Neither
+ADR-013 nor ADR-014 is accepted or implemented, and external exposure-changing
+group submission is not authorized.
 
 ## 1. Purpose
 
@@ -993,9 +995,10 @@ The generic multi-leg core is complete only when:
 ## 18. Immediate Next Step
 
 T029-T035 and A014/A015 are complete after ADR-011 remediation and ADR-012
-offline implementation. The next architecture gate is ADR-012 implementation
-review followed by the independent ADR-013 decision. External group
-submission remains blocked pending separate Testnet authorization.
+offline implementation. ADR-012 implementation review is complete. The next
+platform gate is the independent ADR-013 Accounting decision; ADR-014 Carry
+design review proceeds in the separate `carry_application` topic. External
+group submission remains blocked pending separate Testnet authorization.
 
 Do not create Funding Arbitrage application code. Basket, bounded OMS Order
 Group and Portfolio Risk foundations are complete offline. Financial Ledger

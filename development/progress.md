@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-07-28
+Last updated: 2026-07-29
 
 ## Current Phase
 
@@ -216,11 +216,11 @@ target-host performance and authenticated Testnet gates.
   spread plus Delta hedge, position coverage, reservation races, journal
   failures, action residuals and restart. Grouped external submission remains
   hard-blocked pending separate Testnet authorization.
-- Web GPT conditionally accepted the ADR-012 implementation. Commit
-  `b082af0618e180f98441af5dc6d49c906994a012` closes A-01/A-02/A-03/A-04/A-07
-  with explicit freshness, typed invalidation, resource claims, target
-  tolerance and failure statuses; A-05 Feature-owned Greeks and A-06
-  consume-before-I/O were confirmed unchanged.
+- Web GPT accepted and closed ADR-012 findings A-01 through A-07. Commit
+  `b082af0618e180f98441af5dc6d49c906994a012` provides explicit freshness,
+  typed invalidation, resource claims, target tolerance and failure statuses;
+  Feature-owned Greeks and durable permit-consume-before-I/O remain unchanged.
+  ADR-012 implementation is now Accepted without reopening the ADR.
 
 ## In Progress
 
@@ -231,9 +231,9 @@ target-host performance and authenticated Testnet gates.
 - ADR-014 Carry Application Boundary is Proposed and ready for the same review
   batch. It keeps economic lifecycle, hedge assessment and ownership in
   `applications.carry` while preserving generic Risk/OMS/Accounting
-  authority. No Carry/Funding application code has been implemented.
-- The current ADR-012 remediation review entry point is
-  `ai_collaboration/topics/funding_arbitrage/93_codex_adr012_remediation_response.md`.
+  authority. Its separate design-review topic is active at
+  `ai_collaboration/topics/carry_application/20_codex_architecture_response.md`.
+  No Carry/Funding application code has been implemented.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -253,11 +253,11 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review whether ADR-012 conditional findings A-01 through A-07 are closed;
-   classify any new issue as an ADR-012 remediation error, ADR-013/014 concern
-   or long-term optimization.
-2. Review and accept or revise ADR-013 before assigning Accounting
+1. Review and accept or revise ADR-013 before assigning Accounting
    implementation tasks.
+2. Review ADR-014 Carry Application Boundary through the separate
+   `carry_application` lifecycle; do not treat design review as implementation
+   authorization.
 3. Keep grouped external submission blocked until a later explicit Testnet
    authorization; offline ADR-012 completion alone is insufficient.
 4. Configure protected-branch checks after agreeing the direct-push policy.

@@ -624,3 +624,31 @@ Codex 对 A-01 至 A-07 的处理：
 
 本次整改不实现 ADR-013/014，不打开 grouped external execution，也不授权
 Testnet 或生产交易。
+
+## 21. ADR-012 Final Implementation Acceptance
+
+2026-07-29，Web GPT 完成聚焦复审并确认：
+
+- A-01 至 A-07 全部接受并关闭；
+- ADR-012 实现从 `CONDITIONAL ACCEPTANCE` 升级为 `ACCEPTED`；
+- 无需重开 ADR；
+- grouped external execution 继续阻断；
+- Risk decision explainability、Risk model versioning 和 audit-oriented
+  Risk evidence 作为非阻断长期事项。
+
+最终评审记录：
+
+`94_web_gpt_adr012_final_acceptance.md`
+
+下一阶段进入 Carry Application 架构议题，不直接实现 Funding Arbitrage。
+评审意见中所称“ADR-013 Carry”按仓库既有编号规范化为：
+
+```text
+ADR-013  Financial Ledger and PnL Attribution
+ADR-014  Carry Application Boundary
+```
+
+该规范化不改变 Web GPT 的架构意图，也不重新编号已经被代码、ADR 和协作
+记录引用的文件。Carry 议题入口为：
+
+`../carry_application/10_web_gpt_input.md`

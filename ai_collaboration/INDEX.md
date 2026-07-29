@@ -6,7 +6,8 @@
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
 |---|---|---|---|---|---|---|
-| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011/012 PROMOTED; ADR-012 conditional remediation READY_FOR_REVIEW; ADR-013/014 READY_FOR_REVIEW | `b082af0618e180f98441af5dc6d49c906994a012` | [Web GPT conditional review](topics/funding_arbitrage/92_web_gpt_adr012_implementation_review.md) | [ADR-012 remediation response](topics/funding_arbitrage/93_codex_adr012_remediation_response.md) |
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011/012 PROMOTED; ADR-012 implementation ACCEPTED; ADR-013/014 READY_FOR_REVIEW | `b082af0618e180f98441af5dc6d49c906994a012` | [Web GPT final ADR-012 acceptance](topics/funding_arbitrage/94_web_gpt_adr012_final_acceptance.md) | [Funding topic resolution](topics/funding_arbitrage/90_resolution.md) |
+| AI-20260729-006 | Carry Application Architecture | Web GPT / Codex | ADR-014 DESIGN_READY_FOR_REVIEW; IMPLEMENTATION_BLOCKED | `b082af0618e180f98441af5dc6d49c906994a012` | [Carry architecture input](topics/carry_application/10_web_gpt_input.md) | [Codex architecture response](topics/carry_application/20_codex_architecture_response.md) |
 
 ## Completed and Reference Exchanges
 
