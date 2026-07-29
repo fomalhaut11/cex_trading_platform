@@ -117,3 +117,10 @@ Final ADR-011 remediation documentation head
 `a752d3bff06a1b73b1103f543c64a2b6b64d2016` passed remote run
 `30352133743`: quality/coverage and regression on Python 3.11 and 3.14 all
 succeeded.
+
+ADR-012 Portfolio Risk implementation commit
+`69297d52e764822a1bdd60a23a9b7fca8446a520` and documentation head
+`1a86b84cee50cbe9c57dcb719bdb66aec31ee008` passed remote run
+`30431970845`: quality/coverage and regression on Python 3.11 and 3.14 all
+succeeded. Local evidence is 462 tests, 141 subtests, 39 isolated acceptance
+tests, strict MyPy across 100 source files and 85.12% branch coverage.

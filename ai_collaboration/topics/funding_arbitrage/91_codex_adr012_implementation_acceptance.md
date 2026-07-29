@@ -124,6 +124,8 @@ Local verification:
 - Ruff passed for `src`, `tests` and `tools`;
 - compileall and the high-confidence secret scan passed;
 - branch coverage is 85.12%, above the 85% gate.
+- documentation head `1a86b84cee50cbe9c57dcb719bdb66aec31ee008`
+  passed all remote CI jobs in GitHub Actions run `30431970845`.
 
 ## Review Request
 
