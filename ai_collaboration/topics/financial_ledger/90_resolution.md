@@ -4,7 +4,7 @@ title: Financial Ledger and PnL Attribution Resolution
 origin: joint
 status: IMPLEMENTED_OFFLINE_AWAITING_FINAL_ACCEPTANCE
 created: 2026-07-29
-code_baseline: b082af0618e180f98441af5dc6d49c906994a012
+code_baseline: 1969fdd9c184c679da3c63a2d40ca3b642d70021
 supersedes: none
 related:
   - 10_web_gpt_input.md

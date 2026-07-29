@@ -4,7 +4,7 @@ title: Codex ADR-013 Offline Implementation Handoff
 origin: codex
 status: READY_FOR_FINAL_REVIEW
 created: 2026-07-29
-code_baseline: pending-commit
+code_baseline: 1969fdd9c184c679da3c63a2d40ca3b642d70021
 supersedes: none
 related:
   - 30_web_gpt_review.md

@@ -132,6 +132,8 @@ Authenticated financial ingestion, grouped external execution, Testnet,
 production and Carry/Funding execution remain unauthorized.
 
 T036-T039 and A016 are complete under that project-owner offline authority.
+Implementation commit:
+`1969fdd9c184c679da3c63a2d40ca3b642d70021`.
 The implementation adds immutable authenticated financial facts, a balanced
 per-asset append-only ledger, deterministic mapping and exact reversals,
 checksummed restart replay, separate source/balance reconciliation proofs,
