@@ -128,6 +128,7 @@ from .pipeline import (
     TradingPipeline,
     ValidationPort,
 )
+from .portfolio_risk_guard import PortfolioRiskExecutionGuard
 from .private_stream_application import (
     PrivateStreamApplication,
     PrivateStreamApplicationSnapshot,
@@ -261,6 +262,7 @@ __all__ = [
     "PipelineStateError",
     "PipelineStatus",
     "PortfolioReadPort",
+    "PortfolioRiskExecutionGuard",
     "PrivateStreamApplication",
     "PrivateStreamApplicationSnapshot",
     "PrivateStreamApplicationState",

@@ -56,7 +56,7 @@ class OrderGroupRecoveryError(OrderGroupRuntimeError):
 
 
 class GroupedExecutionBlockedError(OrderGroupRuntimeError):
-    """ADR-012 has not authorized grouped external execution."""
+    """Grouped external execution awaits a separate Testnet promotion."""
 
 
 class OrderGroupRuntime:
@@ -312,7 +312,8 @@ class OrderGroupRuntime:
         self._assert_persistence_healthy()
         del client_order_id
         raise GroupedExecutionBlockedError(
-            "grouped external execution is blocked until ADR-012 is accepted"
+            "grouped external execution remains blocked during ADR-012 "
+            "offline acceptance; explicit Testnet authorization is required"
         )
 
     def mark_transmitting(
