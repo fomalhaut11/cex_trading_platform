@@ -2,8 +2,9 @@
 
 Status: In progress — ADR-009 through ADR-012 accepted and implemented
 offline; ADR-012 implementation findings are accepted and closed; ADR-013/014
-Proposed; ADR-013 design review is active, ADR-014 formal review waits for
-Accounting scope alignment and application implementation remains blocked
+Proposed; ADR-013 is approved in principle with two clarifications ready for
+final review, ADR-014 formal review waits for Accounting scope alignment and
+application implementation remains blocked
 
 Created: 2026-07-27
 
@@ -1000,6 +1001,10 @@ platform gate is the independent ADR-013 Accounting decision; ADR-014 Carry
 formal review follows ownership/allocation/read-port scope alignment in the
 separate `financial_ledger` topic. External group submission remains blocked
 pending separate Testnet authorization.
+
+Web GPT has approved ADR-013 in principle. Economic/observation/posting time
+semantics and the multi-currency valuation-policy boundary are documented and
+await final review before any Accounting implementation task is assigned.
 
 Do not create Funding Arbitrage application code. Basket, bounded OMS Order
 Group and Portfolio Risk foundations are complete offline. Financial Ledger

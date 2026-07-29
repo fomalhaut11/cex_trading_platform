@@ -21,6 +21,12 @@ The final ADR-012 committee decision formally selected ADR-013 scope
 alignment as the next architecture gate. This proposal still authorizes no
 source implementation.
 
+Web GPT approved this design in principle on 2026-07-29. No architectural
+redesign was required. Economic/observation/posting time semantics and the
+multi-currency valuation-policy boundary were requested as non-blocking
+clarifications and are now included below. Final acceptance is still required
+before source implementation.
+
 ## Context
 
 An order fill is not a strategy profit record.
@@ -277,7 +283,9 @@ Identity rules:
 - same identity with changed content is a conflict and latches Accounting
   unhealthy;
 - ledger transaction/posting IDs are deterministic from complete canonical
-  content;
+  economic draft content, source facts and mapping policy;
+- `posted_at_ns` and `ledger_sequence` are durable commit metadata and are not
+  inputs to transaction/posting identity;
 - IDs are causation/integrity references, not authentication tokens.
 
 ### Generic economic-owner reference
@@ -346,6 +354,39 @@ This separation is mandatory. The same economic commission may be observed
 once on a private stream and again in authenticated trade/income history. Both
 observations must converge on one `FinancialFactId`; receive time, transport
 and pagination cursor cannot create a second financial fact.
+
+### 4.1.1 Economic, observation and posting time
+
+Accounting records three different time meanings:
+
+| Time | Contract field | Authority and use |
+|---|---|---|
+| Economic time | `FinancialFactMetadata.effective_time_ns` | Venue/business time at which the fill, Funding settlement, fee, interest or transfer economically affects the account; used for accounting interval membership and economic attribution |
+| Observation time | `FinancialFactObservation.observed_at_ns` | Platform receive time for one stream/history observation at the adapter boundary; used for latency, source coverage, late-arrival and replay evidence |
+| Posting time | `LedgerTransaction.posted_at_ns` | Platform time at which the transaction is durably appended to the canonical ledger; used with `ledger_sequence` for audit and publication ordering |
+
+Rules:
+
+- all three are UTC `UnixNanos`; elapsed-time safety uses the existing
+  monotonic clock contracts separately;
+- venue business identity and economic time never derive from local receive
+  or posting time;
+- one fact may have many observation times but exactly one economic time;
+- `observed_at_ns` for REST history is when that historical record reaches
+  the platform, not the historical record's effective time;
+- a late fact keeps its original economic time and receives its actual later
+  observation and posting times;
+- posting order is the durable `ledger_sequence`; wall-clock ties or rollback
+  cannot reorder the journal;
+- reconciliation windows declare whether their boundaries apply to economic
+  time, source cursor or observation time and may not mix them implicitly;
+- PnL interval membership uses economic time; completeness watermarks use
+  source/observation evidence; audit replay uses posting sequence;
+- a correction/reversal references the original transaction, retains the
+  original evidence and records its own economic, observation and posting
+  semantics; it is never back-inserted into an earlier ledger sequence;
+- missing authoritative economic time makes the fact incomplete unless a
+  versioned venue/source policy explicitly defines a documented substitute.
 
 Exact account-affecting components use:
 
@@ -557,7 +598,8 @@ class LedgerTransaction:
     transaction_type: LedgerTransactionType
     postings: tuple[LedgerPosting, ...]
     effective_time_ns: UnixNanos
-    recorded_at_ns: UnixNanos
+    posted_at_ns: UnixNanos
+    ledger_sequence: int
     schema_version: int
     reverses_transaction_id: LedgerTransactionId | None = None
 ```
@@ -619,16 +661,20 @@ It declares:
 - correction/reversal rules;
 - maximum postings per transaction.
 
-The pure mapper:
+The pure mapper produces uncommitted transaction drafts:
 
 ```python
 map_fact(
     fact: FinancialSourceFact,
     policy: LedgerMappingPolicy,
-) -> tuple[LedgerTransaction, ...]
+) -> tuple[LedgerTransactionDraft, ...]
 ```
 
 performs no I/O and reads no mutable state.
+
+The single-writer coordinator assigns `posted_at_ns` and the next
+`ledger_sequence` only at durable append. Those fields are persisted and
+replayed; they are not recomputed from the current clock.
 
 Unsupported product, missing amount, unknown asset, precision loss or
 ambiguous mapping fails closed. No generic "other income" fallback is allowed.
@@ -893,18 +939,54 @@ class ValuationSnapshot:
     reporting_asset: AssetId
     position_values: tuple[PositionValuation, ...]
     unrealized_pnl: Money
-    policy_version: int
+    valuation_policy: ValuationPolicyRef
+    conversion_evidence: tuple[ConversionRateEvidence, ...]
 ```
+
+### 13.1 Multi-currency valuation policy
+
+The ledger remains authoritative only in original assets. A
+`ValuationPolicyRef` is a versioned derived-view policy that declares:
+
+- reporting asset;
+- permitted authoritative mark/index/FX/crypto conversion sources;
+- quote direction and inversion rules;
+- maximum source age and cross-source coherence;
+- deterministic direct-versus-multi-hop path priority;
+- maximum conversion hops and forbidden assets/venues;
+- precision and rounding at each conversion boundary;
+- treatment of fees, Funding and realized components at economic time versus
+  valuation-snapshot time;
+- interval endpoint policy for unrealized and marked PnL;
+- missing/stale/conflicting-rate behavior.
+
+Each `ConversionRateEvidence` retains:
+
+- source asset and destination asset;
+- exact rate and quote convention;
+- source identity and observation/as-of time;
+- conversion path and hop order;
+- policy version and valuation snapshot identity.
 
 Rules:
 
 - every amount retains original asset before explicit conversion;
-- conversion source/time is evidence;
+- conversion source, time, direction and path are evidence;
+- direct and triangular paths cannot be selected opportunistically; policy
+  priority is deterministic;
+- stablecoins are not assumed equal to the reporting asset;
+- historical realized components cannot silently use a current conversion
+  rate; the policy states whether economic-time or declared endpoint
+  conversion is used;
 - unsupported/missing marks or models make valuation incomplete;
 - incomplete valuation is never displayed as zero;
 - valuation does not mutate ledger balances;
+- a conversion is not a transfer or synthetic ledger posting;
 - option IV/Greeks remain Features, not ledger entries;
-- no cross-asset total exists without explicit conversion.
+- no cross-asset total exists without explicit conversion;
+- Accounting valuation is for reconciliation, attribution and reporting.
+  ADR-012 Risk retains its own conservative mark and stress policy and may not
+  silently substitute this reporting valuation for Risk authorization.
 
 ## 14. PnL Attribution
 

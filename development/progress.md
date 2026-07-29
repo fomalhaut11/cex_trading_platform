@@ -225,12 +225,11 @@ target-host performance and authenticated Testnet gates.
 
 ## In Progress
 
-- ADR-013 Financial Ledger and PnL Attribution is Proposed with a dedicated
-  review entry at
-  `ai_collaboration/topics/financial_ledger/20_codex_architecture_response.md`.
-  It freezes fill/account facts, a balanced per-asset ledger,
-  source/balance reconciliation, generic `EconomicOwnerRef`, allocation and
-  derived PnL. No Accounting source package has been implemented.
+- ADR-013 Financial Ledger and PnL Attribution is Proposed and approved in
+  principle. Web GPT requested two non-blocking clarifications; the response
+  at `ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`
+  freezes economic/observation/posting time and the multi-currency valuation
+  policy. No Accounting source package has been implemented.
 - ADR-014 Carry Application Boundary remains Proposed. Its draft keeps
   economic lifecycle, hedge assessment and ownership in
   `applications.carry`, but formal review waits for ADR-013
@@ -255,7 +254,8 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review and accept or revise ADR-013 through the `financial_ledger` topic
+1. Complete ADR-013 final review using
+   `ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`
    before assigning Accounting implementation tasks.
 2. Align ADR-014 with the accepted ADR-013 ownership/allocation/read ports,
    then perform its formal review; do not treat the existing draft as

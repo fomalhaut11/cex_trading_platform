@@ -2,7 +2,7 @@
 id: AI-20260729-015
 title: Financial Ledger and PnL Attribution Resolution
 origin: joint
-status: PENDING_REVIEW
+status: AWAITING_FINAL_ACCEPTANCE
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -10,6 +10,7 @@ related:
   - 10_web_gpt_input.md
   - 20_codex_architecture_response.md
   - 30_web_gpt_review.md
+  - 40_codex_clarification_response.md
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - ../carry_application/90_resolution.md
 external_share: allowed
@@ -20,10 +21,11 @@ sensitivity: public-project
 
 ## Current Status
 
-`PENDING_REVIEW`
+`AWAITING_FINAL_ACCEPTANCE`
 
-ADR-013 has a current input and Codex architecture response. Web GPT has not
-yet returned its review. No Accounting implementation authority exists.
+Web GPT approved ADR-013 in principle without architectural redesign. The two
+requested non-blocking clarifications have been added. Final acceptance has
+not yet been returned, so no Accounting implementation authority exists.
 
 ## Frozen Baseline Facts
 
@@ -34,6 +36,9 @@ yet returned its review. No Accounting implementation authority exists.
 - actual Funding is authenticated financial evidence, not market Funding rate.
 - ledger truth precedes ownership allocation.
 - Accounting cannot import Carry.
+- economic, observation and posting time have distinct authority and use.
+- cross-asset valuation requires an explicit versioned conversion policy and
+  evidence.
 - ADR-014 formal review waits for ADR-013 ownership/allocation/read-port scope
   alignment.
 
@@ -43,17 +48,30 @@ Accounting uses a generic, versioned `EconomicOwnerRef`. A future Carry
 `ApplicationPositionId` is mapped to that opaque reference outside
 Accounting. `UNALLOCATED` remains explicit when evidence is incomplete.
 
-## Pending Decision
+## Clarification Result
 
-After Web GPT review, record:
+- Economic time controls accounting interval membership.
+- Observation time records platform receipt/source-coverage evidence.
+- Posting time plus ledger sequence controls durable audit order.
+- Original-asset ledger facts remain canonical.
+- Multi-currency totals are derived through a versioned
+  `ValuationPolicyRef` and exact conversion evidence.
+- Reporting valuation does not replace ADR-012 Risk valuation policy.
+
+Clarification handoff:
+
+`40_codex_clarification_response.md`
+
+## Pending Final Decision
+
+After Web GPT final review, record:
 
 1. accepted ADR-013 source-fact boundary;
 2. ledger invariant and durability decision;
 3. reconciliation and allocation decision;
-4. PnL/slippage/double-counting corrections, if any;
-5. A-class corrections;
-6. implementation authorization or continued block;
-7. ADR-014 scope-alignment outcome;
-8. exact promoted files and commit.
+4. time and multi-currency clarification acceptance;
+5. implementation authorization or continued block;
+6. ADR-014 scope-alignment outcome;
+7. exact promoted files and commit.
 
-Until then, this file is not an ADR acceptance.
+Until then, approval in principle is not final ADR acceptance.

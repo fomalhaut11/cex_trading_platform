@@ -2,7 +2,7 @@
 id: AI-20260729-013
 title: Codex Financial Ledger and PnL Architecture Response
 origin: codex
-status: READY_FOR_REVIEW
+status: CLARIFICATIONS_ADDED_READY_FOR_FINAL_REVIEW
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -37,9 +37,11 @@ authenticated venue financial evidence
 
 No accepted ADR-009 through ADR-012 contract requires redesign.
 
-ADR-013 design is ready for Web GPT review. Source implementation remains
-unauthorized. ADR-014 formal review should use the generic ownership and
-attribution boundary defined here; Accounting must never import Carry.
+Web GPT approved ADR-013 in principle. The requested time-semantics and
+multi-currency valuation-policy clarifications are now included. Source
+implementation remains unauthorized until final acceptance. ADR-014 formal
+review should use the generic ownership and attribution boundary defined
+here; Accounting must never import Carry.
 
 ## 1. Current-Code Audit
 
@@ -228,6 +230,27 @@ Rules:
 - same fact identity with changed economic content is a conflict;
 - ambiguous venue aliasing becomes reconciliation failure, not auto-merge;
 - one economic fact maps to ledger transactions once.
+
+### Economic, observation and posting time
+
+The three accounting clocks are not interchangeable:
+
+| Meaning | Field | Used for |
+|---|---|---|
+| Economic time | `FinancialFactMetadata.effective_time_ns` | accounting interval membership and economic attribution |
+| Observation time | `FinancialFactObservation.observed_at_ns` | platform receive, latency, source coverage and late-arrival evidence |
+| Posting time | `LedgerTransaction.posted_at_ns` plus `ledger_sequence` | durable ledger audit/publication order |
+
+A late REST-history fact retains its original venue economic time, has a later
+platform observation time and is appended at its actual posting sequence.
+PnL interval membership uses economic time; completeness uses source cursor
+and observation evidence; replay order uses ledger sequence.
+
+Receive/posting time never becomes venue identity. Corrections retain the
+original evidence, carry their own three time meanings and are never
+back-inserted into an earlier ledger sequence. UTC `UnixNanos` represents
+timestamps; elapsed-time protection continues to use monotonic clock
+contracts.
 
 ## 5. One-Pass Private-Message Projection
 
@@ -439,6 +462,28 @@ Funding ownership is incomplete, attribution stays incomplete.
 Valuation consumes a coherent snapshot and never writes mark ticks into the
 ledger. Missing marks/conversion/models produce `INCOMPLETE`, not zero.
 
+### Multi-currency valuation policy
+
+Original-asset ledger balances remain canonical. A versioned
+`ValuationPolicyRef` must declare:
+
+- reporting asset and permitted conversion sources;
+- quote direction/inversion and deterministic direct-versus-multi-hop path;
+- maximum rate age, source coherence and hop count;
+- precision and rounding;
+- economic-time versus endpoint conversion for realized components;
+- interval endpoint policy for marked/unrealized components;
+- missing, stale and conflicting-rate behavior.
+
+Every converted value retains exact `ConversionRateEvidence`: source and
+destination assets, rate, quote convention, source identity/time, path and
+policy version.
+
+Stablecoins are not assumed equal. Historical components cannot silently use
+current FX/crypto rates. Conversion produces a derived reporting view, not a
+transfer or ledger posting. Accounting reporting valuation also cannot
+replace ADR-012's conservative Risk marks/stress policy.
+
 ### Signed PnL
 
 A generic view may present:
@@ -561,7 +606,8 @@ Accounting unhealthy
 Current authorization:
 
 ```text
-ADR-013 design/review             AUTHORIZED
+ADR-013 design                    APPROVED IN PRINCIPLE
+ADR-013 final acceptance          PENDING CLARIFICATION REVIEW
 ADR-013 source implementation     NOT AUTHORIZED
 ADR-014 formal review             WAITING FOR SCOPE ALIGNMENT
 Carry/Funding implementation      NOT AUTHORIZED

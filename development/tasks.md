@@ -114,6 +114,8 @@ final result:
 ADR-013 Financial Ledger and PnL Attribution and ADR-014 Carry Application
 Boundary remain Proposed. Funding Arbitrage, Accounting implementation,
 Testnet and production multi-leg execution remain unauthorized. Current
-ADR-013 review entry:
-`ai_collaboration/topics/financial_ledger/20_codex_architecture_response.md`.
+ADR-013 clarification/final-review entry:
+`ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`.
+Web GPT has approved the design in principle; this is not source
+implementation authorization.
 ADR-014 formal review follows ADR-013 scope alignment.
