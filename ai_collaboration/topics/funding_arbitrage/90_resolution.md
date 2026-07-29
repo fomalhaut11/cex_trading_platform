@@ -640,6 +640,10 @@ Testnet 或生产交易。
 
 `94_web_gpt_adr012_final_acceptance.md`
 
+详细委员会复核：
+
+`95_web_gpt_adr012_final_committee_review.md`
+
 下一阶段进入 Carry Application 架构议题，不直接实现 Funding Arbitrage。
 评审意见中所称“ADR-013 Carry”按仓库既有编号规范化为：
 

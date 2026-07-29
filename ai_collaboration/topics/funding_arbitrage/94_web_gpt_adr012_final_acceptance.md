@@ -9,6 +9,7 @@ supersedes: none
 related:
   - 92_web_gpt_adr012_implementation_review.md
   - 93_codex_adr012_remediation_response.md
+  - 95_web_gpt_adr012_final_committee_review.md
   - ../../../adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md
 external_share: allowed
 sensitivity: public-project
@@ -65,3 +66,7 @@ This result is promoted to:
 This record authorizes architecture discussion only for the next application
 layer. It does not authorize Carry implementation, Funding execution,
 authenticated Testnet use or production trading.
+
+The committee's detailed assessment is preserved in:
+
+`95_web_gpt_adr012_final_committee_review.md`

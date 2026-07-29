@@ -8,6 +8,7 @@ code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
 related:
   - ../funding_arbitrage/94_web_gpt_adr012_final_acceptance.md
+  - ../funding_arbitrage/95_web_gpt_adr012_final_committee_review.md
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
@@ -49,6 +50,40 @@ Create a separate collaboration lifecycle:
 The first application should exercise the execution-authorization kernel
 without becoming a special branch inside Strategy, Risk, OMS, Accounting or
 Execution.
+
+## Committee Transition Decision
+
+The final ADR-012 committee review explicitly authorizes ADR-014 design and
+asks it to cover four concrete areas.
+
+### Carry position
+
+The application must represent one economic Carry position and the
+relationship among its Spot, perpetual and future optional hedge legs.
+Economic position state belongs to the application, not the generic Portfolio
+state owner.
+
+### Financial cash flows
+
+Actual Funding payments, trading fees, borrow cost and realized PnL
+attribution belong to ADR-013 Accounting. They are not Risk values and must
+not be inferred from expected Funding Features.
+
+### Workflow
+
+The business workflow must explain:
+
+```text
+SEARCH -> OPEN -> HEDGE -> COLLECT_FUNDING -> UNWIND
+```
+
+without combining discovery, execution outcome, hedge quality and financial
+finality into one ambiguous state enum.
+
+### Basket production
+
+The application emits a generic `BasketTargetIntent`. ADR-012 then performs
+Portfolio Risk approval, and ADR-011 owns Order Group execution control.
 
 ## Repository Numbering
 

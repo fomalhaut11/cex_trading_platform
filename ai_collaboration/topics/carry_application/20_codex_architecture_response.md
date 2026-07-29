@@ -174,6 +174,23 @@ status and is not inferred from child fills alone.
 `CLOSED` describes physical/economic closure. It does not imply that all
 financial facts have reconciled.
 
+### Workflow-to-state mapping
+
+The committee's business workflow is retained, but it is mapped onto the
+orthogonal model instead of becoming one lifecycle enum:
+
+| Business workflow term | Architectural meaning |
+|---|---|
+| `SEARCH` | stateless candidate discovery over a READY entry snapshot; no Carry position exists yet |
+| `OPEN` | emit an opening Basket objective; on admission create/advance the application position to `OPENING` |
+| `HEDGE` | observe effective positions while lifecycle remains `OPENING`; hedge assessment may move through `UNHEDGED`, `PARTIALLY_HEDGED` and `HEDGED` |
+| `COLLECT_FUNDING` | lifecycle `ACTIVE` with current hedge assessment and monitoring inputs; actual payments remain Accounting facts |
+| `UNWIND` | emit a closing Basket objective and move lifecycle to `CLOSING`; OMS owns execution facts |
+| completed unwind | lifecycle `CLOSED`; financial finality may still be `PROVISIONAL` |
+
+This prevents `SEARCH`, `HEDGED`, `CARRYING` and `CLOSED` from being placed in
+one state field even though they describe different dimensions.
+
 ## 5. Typed Snapshot Boundary
 
 Carry should not introduce a universal state object filled with optional

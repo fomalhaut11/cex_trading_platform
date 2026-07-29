@@ -22,6 +22,11 @@ Pending Web GPT review.
 
 No review result has been inferred or pre-filled by Codex.
 
+The latest committee message accepted ADR-012 and authorized the start of
+ADR-014 design. It did not review `20_codex_architecture_response.md`, so that
+transition message is preserved as input rather than recorded here as an
+ADR-014 decision.
+
 ## Review Material
 
 Primary handoff:
