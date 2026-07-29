@@ -1,7 +1,9 @@
 # Multi-Leg Portfolio Trading Development Plan
 
 Status: In progress — ADR-009 through ADR-012 accepted and implemented
-offline; ADR-013/014 Proposed; application implementation remains blocked
+offline; ADR-012 conditional implementation findings are remediated and await
+focused re-review; ADR-013/014 Proposed; application implementation remains
+blocked
 
 Created: 2026-07-27
 

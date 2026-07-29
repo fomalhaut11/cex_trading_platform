@@ -99,6 +99,9 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   supervision, recovery evidence and the shared immediate guard. **Offline
   acceptance is complete; the grouped external route remains blocked until a
   separate Testnet authorization.**
+  Web GPT's conditional implementation findings are remediated locally with
+  typed freshness, invalidation, resource, tolerance and failure contracts;
+  focused re-review is pending.
 - ADR-013 Financial Ledger and PnL Attribution is Proposed for the same review
   batch. It covers canonical fill/account financial facts, a balanced
   per-asset ledger, source/balance reconciliation, ownership allocation and

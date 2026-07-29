@@ -12,6 +12,12 @@ were already closed by the accepted ADR-011 remediation evidence.
 Acceptance authorizes T032-T035 and A015 offline work only. It does not
 authorize Funding Arbitrage, Testnet or production execution.
 
+Web GPT's implementation review retained this ADR as Accepted and assigned
+`CONDITIONAL ACCEPTANCE` to the implementation. A-01 through A-07 are
+remediated or confirmed at implementation commit
+`b082af0618e180f98441af5dc6d49c906994a012` and await focused re-review.
+The remediation adds no external-execution authority.
+
 Grouped external execution remains hard-blocked by
 `GroupedExecutionBlockedError`. Removing that block requires completed
 offline acceptance and a later explicit Testnet authorization.

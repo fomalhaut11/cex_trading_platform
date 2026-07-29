@@ -587,11 +587,11 @@ runtime -> all required domain ports
 | 检查 | 结果 |
 |---|---|
 | 源码编译 | 通过 |
-| 完整回归 | 462 passed，另有 141 subtests |
+| 完整回归 | 467 passed，另有 141 subtests |
 | Acceptance 场景 | 39 passed |
 | Ruff | 通过 |
 | strict MyPy | 100 个源码文件通过 |
-| Branch coverage | 85.12%，高于 85% CI 门禁 |
+| Branch coverage | 85.11%，高于 85% CI 门禁 |
 | Python | 3.11 和 3.14 通过 |
 | 高置信度秘密扫描 | 通过 |
 
@@ -725,7 +725,7 @@ ADR 状态：
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
 | ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成 |
-| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现，外部组合提交等待独立 Testnet 授权 |
+| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现；条件验收 A-01 至 A-07 已整改/确认并等待复审；外部组合提交等待独立 Testnet 授权 |
 | ADR-013 | Financial Ledger and PnL Attribution | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
 | ADR-014 | Carry Application Boundary | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
 

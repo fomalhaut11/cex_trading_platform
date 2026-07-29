@@ -216,6 +216,11 @@ target-host performance and authenticated Testnet gates.
   spread plus Delta hedge, position coverage, reservation races, journal
   failures, action residuals and restart. Grouped external submission remains
   hard-blocked pending separate Testnet authorization.
+- Web GPT conditionally accepted the ADR-012 implementation. Commit
+  `b082af0618e180f98441af5dc6d49c906994a012` closes A-01/A-02/A-03/A-04/A-07
+  with explicit freshness, typed invalidation, resource claims, target
+  tolerance and failure statuses; A-05 Feature-owned Greeks and A-06
+  consume-before-I/O were confirmed unchanged.
 
 ## In Progress
 
@@ -227,8 +232,8 @@ target-host performance and authenticated Testnet gates.
   batch. It keeps economic lifecycle, hedge assessment and ownership in
   `applications.carry` while preserving generic Risk/OMS/Accounting
   authority. No Carry/Funding application code has been implemented.
-- The current ADR-012 implementation review entry point is
-  `ai_collaboration/topics/funding_arbitrage/91_codex_adr012_implementation_acceptance.md`.
+- The current ADR-012 remediation review entry point is
+  `ai_collaboration/topics/funding_arbitrage/93_codex_adr012_remediation_response.md`.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -248,9 +253,9 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review the ADR-012 T032-T035/A015 implementation handoff and classify
-   findings as ADR-012 implementation errors, ADR-013/014 concerns or
-   long-term optimizations.
+1. Review whether ADR-012 conditional findings A-01 through A-07 are closed;
+   classify any new issue as an ADR-012 remediation error, ADR-013/014 concern
+   or long-term optimization.
 2. Review and accept or revise ADR-013 before assigning Accounting
    implementation tasks.
 3. Keep grouped external submission blocked until a later explicit Testnet
@@ -268,11 +273,11 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -q`: 462 passed.
+- `python -m unittest discover -s tests -q`: 467 passed.
 - `python -m unittest discover -s tests/acceptance -q`: 39 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
 - `python -m mypy --strict src`: passed with MyPy 2.3.0 for 100 source files.
-- Pytest branch coverage: 85.12%; the 85% CI gate passes locally with 462
+- Pytest branch coverage: 85.11%; the 85% CI gate passes locally with 467
   tests and 141 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote

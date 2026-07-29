@@ -90,6 +90,11 @@ portfolio.risk_inputs
 T032-T035/A015 are complete offline. The final arrow remains hard-blocked
 pending a separate explicit Testnet promotion.
 
+The ADR-012 conditional-review remediation adds typed freshness,
+`RiskInvalidationTrigger`, `RiskResourceClaim`, `TargetMatchPolicy` and
+non-economic failure statuses inside the same ownership boundaries. It does
+not add an OMS, Execution or application dependency to Risk.
+
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
 listener. Concrete TLS termination remains a deployment boundary.

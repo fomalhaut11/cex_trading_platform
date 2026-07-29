@@ -596,3 +596,31 @@ external execution。
 当前 Web GPT 审核入口：
 
 `91_codex_adr012_implementation_acceptance.md`
+
+## 20. ADR-012 Conditional Implementation Review
+
+Web GPT 保持 ADR-012 `Accepted`，对实现给出 `CONDITIONAL ACCEPTANCE`。
+评审原文固化为：
+
+`92_web_gpt_adr012_implementation_review.md`
+
+Codex 对 A-01 至 A-07 的处理：
+
+- A-01：建立明确的 Risk snapshot 时间与有效期证据；
+- A-02：用 typed invalidation trigger 取代无类型 changed 标记；
+- A-03：reservation 改为 explicit resource key/claim 与共享容量序列化；
+- A-04：target confirmation 使用版本化数量容差；
+- A-05：确认 Greeks 仍由 Feature/Risk Analytics 生成，Risk 只消费；
+- A-06：确认 permit 必须先 durable consume，之后才允许未来外部 I/O；
+- A-07：区分经济拒绝、stale、insufficient data 和 recovery required。
+
+整改实现基线：
+
+`b082af0618e180f98441af5dc6d49c906994a012`
+
+复审入口：
+
+`93_codex_adr012_remediation_response.md`
+
+本次整改不实现 ADR-013/014，不打开 grouped external execution，也不授权
+Testnet 或生产交易。

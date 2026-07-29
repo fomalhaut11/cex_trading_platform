@@ -13,6 +13,8 @@ contracts, single-writer state and a deterministic hot path.
 - ADR-011's bounded offline N-leg Order Group foundation is implemented;
   accepted ADR-012 adds execution-consistent Portfolio inputs, generic N-leg
   Risk authorization, durable reservations/permits and recovery evidence.
+  Its Web GPT conditional implementation findings are remediated locally and
+  await focused re-review.
   ADR-013 Financial Ledger and ADR-014 Carry Application Boundary remain
   Proposed. Grouped external execution remains blocked pending a separate
   explicit Testnet authorization.

@@ -1,6 +1,8 @@
 # Portfolio Risk Authorization Schema
 
-Status: Implemented offline under accepted ADR-012 on 2026-07-29.
+Status: Implemented offline under accepted ADR-012 on 2026-07-29; Web GPT
+conditional implementation findings A-01 through A-07 are
+remediated/confirmed at `b082af0` and await focused re-review.
 
 ## Topology
 
@@ -24,6 +26,26 @@ AccountPositionRiskView
 
 The final route is intentionally disabled. The schema is offline authority
 evidence, not Testnet authorization.
+
+## Snapshot Freshness
+
+Generic identity, assembly time and coherence remain owned by ADR-009
+`DecisionSnapshotMetadata`.
+
+ADR-012 derives `RiskSnapshotMetadata` for each assessment:
+
+```text
+snapshot_id
+generated_at_ns
+market_data_as_of_ns
+portfolio_state_as_of_ns
+valid_until_ns
+risk_policy_version
+```
+
+`valid_until_ns` is the earliest deadline across snapshot, positions, marks,
+spreads, sensitivities, margin and liquidation evidence. Approval and permit
+deadlines cannot exceed it.
 
 ## Package Ownership
 
@@ -96,6 +118,12 @@ ALLOW contains `PortfolioApprovalEvidence`. It is not publishable until
 `PortfolioRiskCoordinator.reserve_approval()` has durably appended the
 approval/reservation evidence.
 
+Approval also carries canonical `RiskResourceClaim` values. Position targets
+are exclusive resources. Available margin, gross/initial margin and configured
+factor Delta/Gamma/Vega limits are shared-capacity resources. The coordinator
+serializes claims by `RiskResourceKey`; disjoint instruments may proceed while
+shared capacity permits.
+
 ## Per-Action Authorization
 
 ```python
@@ -120,9 +148,9 @@ to:
 
 The coordinator records the issuance generation before returning the permit.
 Every material position, order, margin, market, policy, health, operator,
-reservation or reconciliation change must call
-`record_material_change()`. That advances the durable generation and
-invalidates unconsumed permits.
+reservation or reconciliation change must call `record_material_change()`
+with a typed `RiskInvalidationTrigger`. That trigger is journaled, advances
+the durable generation and invalidates unconsumed permits.
 
 Immediately before future external I/O, the runtime guard proves:
 
@@ -166,6 +194,11 @@ It requires:
 - ready effective positions equal to every Basket target;
 - no conflicting active reservation.
 
+Position equality uses a versioned `TargetMatchPolicy` with a default and
+optional per-instrument absolute quantity tolerance. Confirmation evidence
+persists the policy version and checksum. Price and Greek tolerances do not
+belong to this position-target boundary.
+
 Confirmation does not create application `HEDGED` or `ACTIVE` state.
 
 ## Compatibility
@@ -177,3 +210,6 @@ Confirmation does not create application `HEDGED` or `ACTIVE` state.
   evidence; Risk does not construct volatility surfaces or calculate Greeks.
 - Quanto and unregistered models fail closed.
 - Risk directives never call OMS or Execution.
+- Decision status distinguishes `REJECT`, `STALE`, `INSUFFICIENT_DATA` and
+  `RECOVERY_REQUIRED`; missing or old evidence is not mislabeled as an
+  economic limit rejection.

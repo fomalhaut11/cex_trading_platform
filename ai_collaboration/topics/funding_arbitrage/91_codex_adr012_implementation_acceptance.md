@@ -1,11 +1,13 @@
 ---
 id: AI-20260729-002
 title: ADR-012 Implementation Acceptance Handoff
-status: READY_FOR_REVIEW
+status: REVIEWED_CONDITIONAL
 date: 2026-07-29
 code_baseline: 69297d52e764822a1bdd60a23a9b7fca8446a520
 references:
   - 89_codex_adr012_acceptance_resolution.md
+  - 92_web_gpt_adr012_implementation_review.md
+  - 93_codex_adr012_remediation_response.md
   - ../../../adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md
 ---
 

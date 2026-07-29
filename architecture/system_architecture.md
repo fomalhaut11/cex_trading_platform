@@ -71,6 +71,12 @@ reservations, current per-action authorization and continuous supervision.
 The real offline permit issuer exists; the grouped external route remains
 disabled pending separate Testnet authorization.
 
+Conditional implementation review added explicit Risk snapshot validity,
+typed invalidation triggers, resource-key reservation serialization,
+versioned position-target tolerance and distinct stale/insufficient/recovery
+decision statuses. Greeks remain supplied Feature evidence, and permit
+consumption remains durable before any future external side effect.
+
 Proposed ADR-013 adds a separate Accounting flow:
 
 ```text

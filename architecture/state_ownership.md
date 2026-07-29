@@ -25,7 +25,8 @@ Order Group state is deliberately not portfolio state. OMS exposes immutable
 per-leg signed fill and working-quantity vectors. Accepted ADR-012 keeps
 generic Delta, basis, margin, liquidation, exposure and safety assessment in
 Portfolio Risk. The Risk Coordinator is the single writer for reservations,
-permit liveness and recovery evidence; the pure Risk Engine owns no mutable
-state. Proposed ADR-014 keeps application-specific `HEDGED`
+typed resource claims, authorization generations, permit liveness and
+recovery evidence; the pure Risk Engine owns no mutable state. Proposed
+ADR-014 keeps application-specific `HEDGED`
 interpretation in the owning application aggregate. `RECOVERY_REQUIRED` is an
 OMS execution-control state; `HEDGED` is not.

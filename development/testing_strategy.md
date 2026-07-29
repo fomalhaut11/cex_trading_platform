@@ -139,6 +139,14 @@ A015 covers:
   inputs;
 - exact per-action permit issuance, material-update invalidation and the
   immediate pre-I/O Risk generation check;
+- typed material-change triggers and journal replay;
+- snapshot validity capped by position, market, margin and liquidation
+  evidence;
+- independent resource reservations plus stale concurrent shared-capacity
+  rejection;
+- target confirmation inside/outside versioned quantity tolerance;
+- `REJECT`, `STALE`, `INSUFFICIENT_DATA` and `RECOVERY_REQUIRED`
+  classification;
 - `REDUCE_ONLY` as proved portfolio reduction rather than only an exchange
   flag;
 - continuous directives that never create orders or call Execution;
