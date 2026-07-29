@@ -107,7 +107,8 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   multi-currency valuation-policy boundary were added for final review. It
   covers canonical fill/account financial facts, a balanced per-asset ledger,
   source/balance reconciliation, generic ownership allocation and derived
-  PnL. **No implementation task is authorized yet.**
+  PnL. **Project-owner-authorized offline T036-T039/A016 implementation is
+  complete; final Web GPT acceptance and external activation remain pending.**
 - ADR-014 Carry Application Boundary is Proposed for the same review batch. It
   places economic lifecycle, hedge assessment and ownership evidence in
   `applications.carry` while preserving generic platform authority.
@@ -119,8 +120,8 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   foundation complete as T029-T031/A014 and Risk authority complete as
   T032-T035/A015; external group submission remains blocked.**
 - Add normalized margin/collateral state and an idempotent Financial Ledger.
-  **Margin/collateral input is complete under ADR-012; Financial Ledger
-  remains Proposed under ADR-013.**
+  **Margin/collateral input is complete under ADR-012; the offline Financial
+  Ledger foundation is complete under ADR-013 project-owner authority.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding
   Arbitrage is the first validating application. **Proposed under ADR-014;
   implementation requires accepted/implemented dependencies.**

@@ -38,6 +38,10 @@
 | T033 | Immutable Portfolio Risk contracts, pure N-leg projection and whole-Basket/action decisions | Complete | T032, T027, T029 |
 | T034 | Durable Portfolio Risk reservations, permit generations, directives and recovery evidence | Complete | T033, T030 |
 | T035 | Immediate pre-I/O Portfolio Risk guard with grouped external route still blocked | Complete | T031, T034 |
+| T036 | Accounting identifiers, immutable financial facts, owner and time contracts | Complete | ADR-013, T002 |
+| T037 | Balanced per-asset ledger, deterministic mapping, journal, replay and reversals | Complete | T036, T016 |
+| T038 | Financial reconciliation, ownership allocation, valuation and PnL views | Complete | T037, T032 |
+| T039 | Bounded durable financial-fact handoff and Accounting health boundary | Complete | T037, T021 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -55,6 +59,7 @@
 | A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Complete | T027-T028 |
 | A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Complete | T029-T031 |
 | A015 | Offline Portfolio position coverage, N-leg Risk, reservation, permit, recovery and blocked-route acceptance | Complete | T032-T035 |
+| A016 | Offline Accounting facts, balance, replay, reconciliation, allocation, valuation and failure acceptance | Complete | T036-T039 |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -119,3 +124,18 @@ ADR-013 clarification/final-review entry:
 Web GPT has approved the design in principle; this is not source
 implementation authorization.
 ADR-014 formal review follows ADR-013 scope alignment.
+
+Network conditions delayed final Web GPT review. The project owner authorized
+bounded credential-free offline T036-T039/A016 engineering in
+`ai_collaboration/topics/financial_ledger/41_project_owner_offline_continuation.md`.
+Authenticated financial ingestion, grouped external execution, Testnet,
+production and Carry/Funding execution remain unauthorized.
+
+T036-T039 and A016 are complete under that project-owner offline authority.
+The implementation adds immutable authenticated financial facts, a balanced
+per-asset append-only ledger, deterministic mapping and exact reversals,
+checksummed restart replay, separate source/balance reconciliation proofs,
+append-only ownership allocation, explicit conversion evidence, generic PnL
+views and a bounded fail-closed Accounting handoff. Full validation passes
+502 tests plus 188 subtests at 85.18% branch coverage. Web GPT final acceptance
+and every external execution gate remain pending.

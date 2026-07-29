@@ -2,7 +2,7 @@
 id: AI-20260729-015
 title: Financial Ledger and PnL Attribution Resolution
 origin: joint
-status: AWAITING_FINAL_ACCEPTANCE
+status: IMPLEMENTED_OFFLINE_AWAITING_FINAL_ACCEPTANCE
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -11,6 +11,7 @@ related:
   - 20_codex_architecture_response.md
   - 30_web_gpt_review.md
   - 40_codex_clarification_response.md
+  - 41_project_owner_offline_continuation.md
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - ../carry_application/90_resolution.md
 external_share: allowed
@@ -21,11 +22,12 @@ sensitivity: public-project
 
 ## Current Status
 
-`AWAITING_FINAL_ACCEPTANCE`
+`IMPLEMENTED_OFFLINE_AWAITING_FINAL_ACCEPTANCE`
 
 Web GPT approved ADR-013 in principle without architectural redesign. The two
 requested non-blocking clarifications have been added. Final acceptance has
-not yet been returned, so no Accounting implementation authority exists.
+not yet been returned. The project owner separately authorized bounded offline
+implementation, and T036-T039/A016 are now complete.
 
 ## Frozen Baseline Facts
 
@@ -75,3 +77,31 @@ After Web GPT final review, record:
 7. exact promoted files and commit.
 
 Until then, approval in principle is not final ADR acceptance.
+
+## Project-Owner Offline Continuation
+
+Because network conditions prevent immediate final Web GPT review, the project
+owner authorized bounded offline T036-T039/A016 engineering. This does not
+change Web GPT status and does not enable authenticated sources or external
+execution.
+
+Authorization record:
+
+`41_project_owner_offline_continuation.md`
+
+## Offline Implementation Result
+
+- immutable financial facts and generic owner references;
+- balanced per-asset ledger with deterministic IDs and exact reversals;
+- checksummed durable journal, source convergence and restart replay;
+- separate source-completeness and balance-reconciliation proofs;
+- append-only allocation with explicit unallocated remainder;
+- explicit versioned valuation paths and conversion evidence;
+- generic PnL attribution views;
+- bounded single-writer Accounting handoff and health failure propagation;
+- 502 tests, 188 subtests, 85.18% branch coverage, Ruff, strict MyPy and
+  secret scan passing.
+
+Handoff:
+
+`50_codex_adr013_offline_implementation_handoff.md`

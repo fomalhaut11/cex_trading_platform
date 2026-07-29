@@ -11,8 +11,14 @@ EventId = NewType("EventId", str)
 ExecutionPermitId = NewType("ExecutionPermitId", str)
 ExecutionPlanId = NewType("ExecutionPlanId", str)
 FeatureId = NewType("FeatureId", str)
+FinancialFactId = NewType("FinancialFactId", str)
+FinancialObservationId = NewType("FinancialObservationId", str)
+FinancialReconciliationId = NewType("FinancialReconciliationId", str)
 GroupActionId = NewType("GroupActionId", str)
 IntentId = NewType("IntentId", str)
+LedgerAccountId = NewType("LedgerAccountId", str)
+LedgerPostingId = NewType("LedgerPostingId", str)
+LedgerTransactionId = NewType("LedgerTransactionId", str)
 MarginScopeId = NewType("MarginScopeId", str)
 ObjectiveTypeId = NewType("ObjectiveTypeId", str)
 OrderGroupId = NewType("OrderGroupId", str)
@@ -27,12 +33,14 @@ PositionId = NewType("PositionId", str)
 SpreadRiskId = NewType("SpreadRiskId", str)
 StrategyId = NewType("StrategyId", str)
 TradeId = NewType("TradeId", str)
+AttributionAllocationId = NewType("AttributionAllocationId", str)
 VenueId = NewType("VenueId", str)
 VenueOrderId = NewType("VenueOrderId", str)
 
 __all__ = [
     "AccountId",
     "AssetId",
+    "AttributionAllocationId",
     "BasketLegId",
     "ClientOrderId",
     "CorrelationId",
@@ -40,8 +48,14 @@ __all__ = [
     "ExecutionPermitId",
     "ExecutionPlanId",
     "FeatureId",
+    "FinancialFactId",
+    "FinancialObservationId",
+    "FinancialReconciliationId",
     "GroupActionId",
     "IntentId",
+    "LedgerAccountId",
+    "LedgerPostingId",
+    "LedgerTransactionId",
     "MarginScopeId",
     "ObjectiveTypeId",
     "OrderGroupId",

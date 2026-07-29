@@ -48,6 +48,17 @@ from .execution_handoff import (
     ExternalSubmitGuardPort,
     SynchronousExecutionSubmitPort,
 )
+from .financial_fact_handoff import (
+    FinancialFactExpiredError,
+    FinancialFactHandoff,
+    FinancialFactHandoffError,
+    FinancialFactHandoffSnapshot,
+    FinancialFactHandoffStateError,
+    FinancialFactHandoffStatus,
+    FinancialFactOverflowError,
+    FinancialFactSink,
+    FinancialFactWorkerFailedError,
+)
 from .operations import (
     OperatorAction,
     OperatorCommand,
@@ -196,6 +207,15 @@ __all__ = [
     "ExternalSubmitGuardPort",
     "FeatureEngineAdapter",
     "FeaturePort",
+    "FinancialFactExpiredError",
+    "FinancialFactHandoff",
+    "FinancialFactHandoffError",
+    "FinancialFactHandoffSnapshot",
+    "FinancialFactHandoffStateError",
+    "FinancialFactHandoffStatus",
+    "FinancialFactOverflowError",
+    "FinancialFactSink",
+    "FinancialFactWorkerFailedError",
     "GroupedExecutionBlockedError",
     "HealthPort",
     "HmacOperatorCommandAuthenticator",

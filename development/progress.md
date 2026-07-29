@@ -222,14 +222,29 @@ target-host performance and authenticated Testnet gates.
   Feature-owned Greeks and durable permit-consume-before-I/O remain unchanged.
   ADR-012 implementation is now Accepted and its acceptance process is
   formally closed without reopening the ADR.
+- T036 immutable authenticated financial facts, strong Accounting identities,
+  generic economic-owner references and separate economic/observation/posting
+  time contracts.
+- T037 deterministic balanced per-asset mapping, checksummed append-only
+  Accounting journal, durable-before-publish ledger state, source convergence,
+  restart replay and exact append-only reversals.
+- T038 independent source-completeness and balance proofs, append-only
+  allocation with explicit unallocated remainder, versioned conversion paths
+  and evidence, and generic realized/marked PnL read views.
+- T039 bounded single-writer financial-fact handoff with explicit overflow,
+  age, persistence-failure and aggregate-health semantics.
+- A016 offline acceptance covers Spot, Perpetual, Funding, fees, private/history
+  convergence, restart, reconciliation, allocation and valuation. The full
+  regression passes 502 tests and 188 subtests with 85.18% branch coverage;
+  Ruff, strict MyPy over 115 source files and the secret scan pass.
 
 ## In Progress
 
-- ADR-013 Financial Ledger and PnL Attribution is Proposed and approved in
-  principle. Web GPT requested two non-blocking clarifications; the response
-  at `ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`
-  freezes economic/observation/posting time and the multi-currency valuation
-  policy. No Accounting source package has been implemented.
+- ADR-013 Financial Ledger and PnL Attribution remains approved in principle,
+  awaiting final Web GPT acceptance. Project-owner-authorized offline
+  implementation T036-T039/A016 is complete and recorded in
+  `ai_collaboration/topics/financial_ledger/50_codex_adr013_offline_implementation_handoff.md`.
+  This does not authorize authenticated source activation or external trading.
 - ADR-014 Carry Application Boundary remains Proposed. Its draft keeps
   economic lifecycle, hedge assessment and ownership in
   `applications.carry`, but formal review waits for ADR-013
@@ -254,9 +269,8 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Complete ADR-013 final review using
-   `ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`
-   before assigning Accounting implementation tasks.
+1. Complete ADR-013 final review using the clarification response and offline
+   implementation handoff; do not enable authenticated sources or trading.
 2. Align ADR-014 with the accepted ADR-013 ownership/allocation/read ports,
    then perform its formal review; do not treat the existing draft as
    implementation authorization.

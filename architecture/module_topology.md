@@ -90,6 +90,24 @@ portfolio.risk_inputs
 T032-T035/A015 are complete offline. The final arrow remains hard-blocked
 pending a separate explicit Testnet promotion.
 
+The project-owner-authorized ADR-013 offline foundation adds:
+
+```text
+authenticated normalized financial evidence
+  -> runtime.financial_fact_handoff
+  -> accounting facts / deterministic mapping
+  -> durable balanced ledger / replay / reversal
+  -> reconciliation + allocation
+  -> valuation + PnL read views
+```
+
+Accounting is an independent domain. It does not import Carry, issue execution
+permits, mutate OMS/Portfolio, infer Funding from market rates or treat marks
+as ledger facts. The bounded runtime handoff creates the ledger on its owning
+worker and reports overflow, excessive queue age or persistence failure as
+unhealthy. T036-T039/A016 are complete offline; authenticated source activation
+and every external execution route remain blocked.
+
 The ADR-012 conditional-review remediation adds typed freshness,
 `RiskInvalidationTrigger`, `RiskResourceClaim`, `TargetMatchPolicy` and
 non-economic failure statuses inside the same ownership boundaries. It does
@@ -132,10 +150,10 @@ listener. Concrete TLS termination remains a deployment boundary.
     margin facts in Portfolio, exposure/approval/permit authority in Risk,
     group/action/child facts in OMS and ordered coordination in Runtime.
     Risk directives never mutate OMS or call Execution.
-20. Proposed ADR-013 adds an independent Accounting domain for immutable
+20. ADR-013 offline implementation adds an independent Accounting domain for immutable
     financial facts, balanced per-asset postings, reconciliation, allocation
     and derived PnL. Accounting cannot mutate OMS/Portfolio or import an
-    application implementation.
+    application implementation. Final Web GPT acceptance is pending.
 21. Proposed ADR-014 places Carry economic state in
     `applications.carry`; applications consume immutable public views and emit
     Basket targets, but cannot issue permits, create child orders, write the
