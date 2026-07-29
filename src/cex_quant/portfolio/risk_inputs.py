@@ -152,12 +152,15 @@ class AccountPositionRiskView:
     reconciliation_id: PortfolioReconciliationId | None
     observation_id: ObservationId | None
     coverage: ExecutionCoverage
+    as_of_ns: UnixNanos
     positions: tuple[InstrumentPositionRiskView, ...]
     readiness: PositionRiskReadiness
     reason: str = ""
 
     def __post_init__(self) -> None:
         _require_id(self.account_id, name="account_id")
+        if self.as_of_ns < 0:
+            raise ValueError("position Risk view as_of_ns cannot be negative")
         keys = tuple(str(item.instrument_id) for item in self.positions)
         if keys != tuple(sorted(keys)) or len(set(keys)) != len(keys):
             raise ValueError("position views must be unique and canonically ordered")

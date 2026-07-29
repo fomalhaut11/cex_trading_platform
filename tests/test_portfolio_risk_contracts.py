@@ -60,6 +60,7 @@ from cex_quant.risk import (
     BasketPortfolioRiskDecision,
     ExactRiskValue,
     GroupRecoveryAuthorization,
+    InstrumentTargetTolerance,
     JsonLinesPortfolioRiskJournal,
     PortfolioApprovalEvidence,
     PortfolioExposure,
@@ -74,8 +75,48 @@ from cex_quant.risk import (
     PortfolioRiskReservationView,
     PortfolioTargetConfirmation,
     RecoveryAuthorizationMode,
+    RiskResourceClaim,
+    RiskResourceKey,
+    RiskResourceKind,
+    RiskResourceReservationMode,
+    RiskSnapshotMetadata,
+    TargetMatchPolicy,
 )
 from cex_quant.snapshots import DecisionSnapshotId, ObservationId
+from cex_quant.strategy import BasketTargetIntent
+
+
+def _risk_snapshot_metadata() -> RiskSnapshotMetadata:
+    return RiskSnapshotMetadata(
+        snapshot_id=DecisionSnapshotId("risk"),
+        generated_at_ns=UnixNanos(1),
+        market_data_as_of_ns=UnixNanos(1),
+        portfolio_state_as_of_ns=UnixNanos(1),
+        valid_until_ns=UnixNanos(2),
+        risk_policy_version=1,
+    )
+
+
+def _position_resource_claims(
+    basket: BasketTargetIntent,
+) -> tuple[RiskResourceClaim, ...]:
+    return tuple(
+        sorted(
+            (
+                RiskResourceClaim(
+                    key=RiskResourceKey(
+                        kind=RiskResourceKind.POSITION_TARGET,
+                        resource_id=f"{leg.account_id}:{leg.instrument_id}",
+                    ),
+                    mode=RiskResourceReservationMode.EXCLUSIVE,
+                    amount=FixedPoint.from_str("1"),
+                    capacity=None,
+                )
+                for leg in basket.legs
+            ),
+            key=lambda item: item.key.canonical,
+        )
+    )
 
 
 class PortfolioInputContractTests(unittest.TestCase):
@@ -97,6 +138,7 @@ class PortfolioInputContractTests(unittest.TestCase):
                 coverage=ExecutionCoverage(
                     through_oms_journal_sequence=1
                 ),
+                as_of_ns=UnixNanos(1),
                 positions=(),
                 readiness=PositionRiskReadiness.READY,
             )
@@ -108,6 +150,7 @@ class PortfolioInputContractTests(unittest.TestCase):
                 coverage=ExecutionCoverage(
                     through_oms_journal_sequence=1
                 ),
+                as_of_ns=UnixNanos(1),
                 positions=(),
                 readiness=PositionRiskReadiness.DIVERGENT,
             )
@@ -206,6 +249,78 @@ class PortfolioInputContractTests(unittest.TestCase):
 
 
 class PortfolioRiskContractTests(unittest.TestCase):
+    def test_review_remediation_contracts_fail_closed(self) -> None:
+        with self.assertRaises(ValueError):
+            RiskSnapshotMetadata(
+                snapshot_id=DecisionSnapshotId("risk"),
+                generated_at_ns=UnixNanos(-1),
+                market_data_as_of_ns=UnixNanos(0),
+                portfolio_state_as_of_ns=UnixNanos(0),
+                valid_until_ns=UnixNanos(1),
+                risk_policy_version=1,
+            )
+        with self.assertRaises(ValueError):
+            replace(_risk_snapshot_metadata(), risk_policy_version=0)
+        with self.assertRaises(ValueError):
+            RiskResourceKey(
+                kind=RiskResourceKind.POSITION_TARGET,
+                resource_id="",
+            )
+        with self.assertRaises(ValueError):
+            RiskResourceKey(
+                kind=RiskResourceKind.POSITION_TARGET,
+                resource_id="x" * 513,
+            )
+        key = RiskResourceKey(
+            kind=RiskResourceKind.AVAILABLE_MARGIN,
+            resource_id="USDT",
+        )
+        with self.assertRaises(ValueError):
+            RiskResourceClaim(
+                key=key,
+                mode=RiskResourceReservationMode.EXCLUSIVE,
+                amount=FixedPoint.from_str("2"),
+                capacity=None,
+            )
+        with self.assertRaises(ValueError):
+            RiskResourceClaim(
+                key=key,
+                mode=RiskResourceReservationMode.CAPACITY,
+                amount=FixedPoint.from_str("2"),
+                capacity=FixedPoint.from_str("1"),
+            )
+        with self.assertRaises(ValueError):
+            TargetMatchPolicy(
+                version=0,
+                default_absolute_quantity_tolerance=Quantity.from_str("0"),
+                instrument_tolerances=(),
+            )
+        spot = instrument(InstrumentKind.SPOT, "BTCUSDT")
+        tolerance = InstrumentTargetTolerance(
+            instrument_id=spot,
+            absolute_quantity_tolerance=Quantity.from_str("0.001"),
+        )
+        match_policy = TargetMatchPolicy(
+            version=1,
+            default_absolute_quantity_tolerance=Quantity.from_str("0"),
+            instrument_tolerances=(tolerance,),
+        )
+        self.assertEqual(
+            match_policy.quantity_tolerance_for(spot),
+            Quantity.from_str("0.001"),
+        )
+        self.assertEqual(
+            match_policy.quantity_tolerance_for(
+                instrument(InstrumentKind.SPOT, "ETHUSDT")
+            ),
+            Quantity.from_str("0"),
+        )
+        with self.assertRaises(ValueError):
+            replace(
+                match_policy,
+                instrument_tolerances=(tolerance, tolerance),
+            )
+
     def _base_policy(self) -> PortfolioRiskPolicy:
         spot = product(InstrumentKind.SPOT, "BTCUSDT")
         perp = product(InstrumentKind.PERPETUAL, "BTCUSDT")
@@ -242,6 +357,7 @@ class PortfolioRiskContractTests(unittest.TestCase):
                 replace(base_policy, **changes)
 
         basket = two_leg_basket()
+        resource_claims = _position_resource_claims(basket)
         with self.assertRaises(ValueError):
             PortfolioRiskReservationView(
                 reservation_id=PortfolioReservationId("reservation"),
@@ -251,6 +367,7 @@ class PortfolioRiskContractTests(unittest.TestCase):
                 state=PortfolioRiskReservationState.ATTACHED_TO_GROUP,
                 created_at_ns=UnixNanos(10),
                 valid_until_ns=UnixNanos(20),
+                resource_claims=resource_claims,
             )
         active = PortfolioRiskReservationView(
             reservation_id=PortfolioReservationId("reservation"),
@@ -260,6 +377,7 @@ class PortfolioRiskContractTests(unittest.TestCase):
             state=PortfolioRiskReservationState.ACTIVE,
             created_at_ns=UnixNanos(10),
             valid_until_ns=UnixNanos(20),
+            resource_claims=resource_claims,
         )
         self.assertTrue(active.active)
         self.assertFalse(
@@ -284,15 +402,18 @@ class PortfolioRiskContractTests(unittest.TestCase):
             basket_intent_id=basket.intent_id,
             basket_checksum="a" * 64,
             risk_snapshot_id=DecisionSnapshotId("risk"),
+            risk_snapshot_metadata=_risk_snapshot_metadata(),
             assessment_checksum="b" * 64,
             approved_at_ns=UnixNanos(1),
             valid_until_ns=UnixNanos(2),
             risk_policy_version=1,
+            resource_claims=_position_resource_claims(basket),
         )
         allowed = BasketPortfolioRiskDecision(
             status=PortfolioRiskDecisionStatus.ALLOW,
             basket=basket,
             risk_snapshot_id=DecisionSnapshotId("risk"),
+            risk_snapshot_metadata=_risk_snapshot_metadata(),
             risk_policy_version=1,
             reasons=(),
             current_exposure=exposure,
@@ -336,6 +457,8 @@ class PortfolioRiskContractTests(unittest.TestCase):
                 risk_snapshot_id=DecisionSnapshotId("risk"),
                 confirmed_at_ns=UnixNanos(1),
                 risk_policy_version=1,
+                target_match_policy_version=1,
+                target_match_policy_checksum="c" * 64,
             )
 
     def test_snapshot_duplicate_sources_are_rejected(self) -> None:

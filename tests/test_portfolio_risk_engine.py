@@ -14,6 +14,7 @@ from portfolio_risk_test_support import (
     BTC_FACTOR,
     NOW,
     exact,
+    margin_scope,
     policy,
     portfolio_snapshot,
     position_view,
@@ -105,6 +106,117 @@ def group_for_approval(
 
 
 class PortfolioRiskEngineTests(unittest.TestCase):
+    def test_freshness_horizon_and_failure_statuses_are_explicit(self) -> None:
+        spot, perp, spot_sensitivity, perp_sensitivity = two_leg_inputs()
+        instruments = (spot, perp)
+        selected_policy = replace(
+            policy(instruments),
+            approval_lifetime_ns=2_000,
+            max_margin_age_ns=60,
+        )
+        snapshot = portfolio_snapshot(
+            instruments,
+            (spot_sensitivity, perp_sensitivity),
+        )
+        snapshot = replace(snapshot, margins=(margin_scope(),))
+        engine = PortfolioRiskEngine()
+        allowed = engine.assess_basket(
+            two_leg_basket(),
+            publication(snapshot),
+            selected_policy,
+            now_ns=NOW,
+        )
+        assert allowed.approval is not None
+        self.assertEqual(
+            allowed.risk_snapshot_metadata.market_data_as_of_ns,
+            UnixNanos(1_950),
+        )
+        self.assertEqual(
+            allowed.risk_snapshot_metadata.portfolio_state_as_of_ns,
+            UnixNanos(1_950),
+        )
+        self.assertEqual(
+            allowed.risk_snapshot_metadata.valid_until_ns,
+            UnixNanos(2_010),
+        )
+        self.assertEqual(allowed.approval.valid_until_ns, UnixNanos(2_010))
+
+        stale = engine.assess_basket(
+            two_leg_basket(),
+            publication(snapshot),
+            selected_policy,
+            now_ns=UnixNanos(2_011),
+        )
+        self.assertEqual(stale.status, PortfolioRiskDecisionStatus.STALE)
+        insufficient = engine.assess_basket(
+            two_leg_basket(),
+            publication(replace(snapshot, sensitivities=())),
+            selected_policy,
+            now_ns=NOW,
+        )
+        self.assertEqual(
+            insufficient.status,
+            PortfolioRiskDecisionStatus.INSUFFICIENT_DATA,
+        )
+
+    def test_recovery_group_action_has_recovery_required_status(self) -> None:
+        spot, perp, spot_sensitivity, perp_sensitivity = two_leg_inputs()
+        instruments = (spot, perp)
+        selected_policy = policy(instruments)
+        engine = PortfolioRiskEngine()
+        basket = two_leg_basket()
+        admitted = engine.assess_basket(
+            basket,
+            publication(
+                portfolio_snapshot(
+                    instruments,
+                    (spot_sensitivity, perp_sensitivity),
+                )
+            ),
+            selected_policy,
+            now_ns=NOW,
+        )
+        assert admitted.approval is not None
+        runtime, active = group_for_approval(admitted.approval, basket=basket)
+        recovery = runtime.require_recovery(
+            active.order_group_id,
+            reason="synthetic unknown",
+        )
+        reservation = PortfolioRiskReservationView(
+            reservation_id=PortfolioReservationId("recovery-reservation"),
+            approval_id=admitted.approval.approval_id,
+            strategy_id=basket.strategy_id,
+            basket=basket,
+            state=PortfolioRiskReservationState.ATTACHED_TO_GROUP,
+            created_at_ns=NOW,
+            valid_until_ns=UnixNanos(2_400),
+            resource_claims=admitted.approval.resource_claims,
+            group_id=recovery.order_group_id,
+        )
+        action = action_for(
+            recovery,
+            leg_index=0,
+            now_ns=UnixNanos(2_010),
+            quantity="1",
+        )
+        decision = engine.authorize_action(
+            recovery,
+            action,
+            publication(
+                portfolio_snapshot(
+                    instruments,
+                    (spot_sensitivity, perp_sensitivity),
+                    reservations=(reservation,),
+                )
+            ),
+            selected_policy,
+            now_ns=UnixNanos(2_010),
+        )
+        self.assertEqual(
+            decision.status,
+            PortfolioRiskDecisionStatus.RECOVERY_REQUIRED,
+        )
+
     def test_whole_basket_projects_complete_delta_neutral_target(self) -> None:
         spot, perp, spot_sensitivity, perp_sensitivity = two_leg_inputs()
         instruments = (spot, perp)
@@ -306,6 +418,7 @@ class PortfolioRiskEngineTests(unittest.TestCase):
             state=PortfolioRiskReservationState.ATTACHED_TO_GROUP,
             created_at_ns=NOW,
             valid_until_ns=UnixNanos(2_400),
+            resource_claims=initial.approval.resource_claims,
             group_id=group.order_group_id,
         )
         risk_view = portfolio_snapshot(

@@ -192,6 +192,7 @@ def position_view(
             else None
         ),
         coverage=ExecutionCoverage(through_oms_journal_sequence=20),
+        as_of_ns=UnixNanos(1_995),
         positions=positions,
         readiness=readiness,
         reason=(

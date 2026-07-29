@@ -27,6 +27,7 @@ from cex_quant.core import (
     PortfolioConfirmationId,
     PortfolioReconciliationId,
     PortfolioReservationId,
+    Quantity,
     Rate,
     RecoveryAuthorizationId,
     RiskDirectiveId,
@@ -55,6 +56,42 @@ T = TypeVar("T")
 class PortfolioRiskDecisionStatus(StrEnum):
     ALLOW = "allow"
     REJECT = "reject"
+    STALE = "stale"
+    INSUFFICIENT_DATA = "insufficient_data"
+    RECOVERY_REQUIRED = "recovery_required"
+
+
+class RiskInvalidationTrigger(StrEnum):
+    PRICE_CHANGE = "price_change"
+    VOLATILITY_CHANGE = "volatility_change"
+    MARGIN_CHANGE = "margin_change"
+    POSITION_CHANGE = "position_change"
+    COLLATERAL_CHANGE = "collateral_change"
+    POLICY_CHANGE = "policy_change"
+    MARKET_STATUS_CHANGE = "market_status_change"
+    WORKING_ORDER_CHANGE = "working_order_change"
+    RESERVATION_CHANGE = "reservation_change"
+    EXECUTION_STATE_CHANGE = "execution_state_change"
+    RECONCILIATION_CHANGE = "reconciliation_change"
+    HEALTH_CHANGE = "health_change"
+    PROCESS_RESTART = "process_restart"
+    RISK_DIRECTIVE = "risk_directive"
+
+
+class RiskResourceKind(StrEnum):
+    POSITION_TARGET = "position_target"
+    AVAILABLE_MARGIN = "available_margin"
+    GROSS_NOTIONAL = "gross_notional"
+    INITIAL_MARGIN = "initial_margin"
+    FACTOR_ABS_NET_DELTA = "factor_abs_net_delta"
+    FACTOR_GROSS_DELTA = "factor_gross_delta"
+    FACTOR_GAMMA = "factor_gamma"
+    FACTOR_VEGA = "factor_vega"
+
+
+class RiskResourceReservationMode(StrEnum):
+    EXCLUSIVE = "exclusive"
+    CAPACITY = "capacity"
 
 
 class PortfolioRiskRejectReason(StrEnum):
@@ -170,6 +207,51 @@ class SpreadRiskInput:
         _require_id(self.spread_id, name="spread_id")
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class RiskResourceKey:
+    """One coordinator-owned reservation namespace."""
+
+    kind: RiskResourceKind
+    resource_id: str
+
+    def __post_init__(self) -> None:
+        if not self.resource_id or self.resource_id != self.resource_id.strip():
+            raise ValueError("resource_id must be non-empty and trimmed")
+        if len(self.resource_id) > 512:
+            raise ValueError("resource_id exceeds maximum length 512")
+
+    @property
+    def canonical(self) -> str:
+        return f"{self.kind.value}:{self.resource_id}"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class RiskResourceClaim:
+    """Exclusive ownership or bounded shared capacity for one Risk resource."""
+
+    key: RiskResourceKey
+    mode: RiskResourceReservationMode
+    amount: FixedPoint
+    capacity: FixedPoint | None
+
+    def __post_init__(self) -> None:
+        if self.amount.as_decimal() < 0:
+            raise ValueError("Risk resource claim amount cannot be negative")
+        if self.mode is RiskResourceReservationMode.EXCLUSIVE:
+            if self.capacity is not None or self.amount.as_decimal() != 1:
+                raise ValueError(
+                    "exclusive Risk resource claim requires amount 1 and no capacity"
+                )
+        elif (
+            self.capacity is None
+            or self.capacity.as_decimal() < 0
+            or self.amount.as_decimal() > self.capacity.as_decimal()
+        ):
+            raise ValueError(
+                "capacity Risk resource claim requires amount within capacity"
+            )
+
+
 class PortfolioRiskReservationState(StrEnum):
     ACTIVE = "active"
     ATTACHED_TO_GROUP = "attached_to_group"
@@ -187,6 +269,7 @@ class PortfolioRiskReservationView:
     state: PortfolioRiskReservationState
     created_at_ns: UnixNanos
     valid_until_ns: UnixNanos
+    resource_claims: tuple[RiskResourceClaim, ...]
     group_id: OrderGroupId | None = None
 
     def __post_init__(self) -> None:
@@ -197,6 +280,11 @@ class PortfolioRiskReservationView:
             raise ValueError("reservation strategy does not match Basket")
         if self.valid_until_ns < self.created_at_ns:
             raise ValueError("reservation expiry cannot precede creation")
+        claim_keys = tuple(item.key.canonical for item in self.resource_claims)
+        if claim_keys != tuple(sorted(claim_keys)) or len(set(claim_keys)) != len(
+            claim_keys
+        ):
+            raise ValueError("Risk resource claims must be unique and sorted")
         if (
             self.state is PortfolioRiskReservationState.ATTACHED_TO_GROUP
             and self.group_id is None
@@ -263,6 +351,31 @@ class PortfolioRiskSnapshot:
             self.active_reservations, key=lambda item: str(item.approval_id)
         )
         _require_unique(self.margins, key=lambda item: str(item.scope_id))
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class RiskSnapshotMetadata:
+    """Explicit temporal validity for one Portfolio Risk assessment input."""
+
+    snapshot_id: DecisionSnapshotId
+    generated_at_ns: UnixNanos
+    market_data_as_of_ns: UnixNanos
+    portfolio_state_as_of_ns: UnixNanos
+    valid_until_ns: UnixNanos
+    risk_policy_version: int
+
+    def __post_init__(self) -> None:
+        _require_id(self.snapshot_id, name="snapshot_id")
+        if min(
+            self.generated_at_ns,
+            self.market_data_as_of_ns,
+            self.portfolio_state_as_of_ns,
+        ) < 0:
+            raise ValueError("Risk snapshot times cannot be negative")
+        if self.valid_until_ns < 0:
+            raise ValueError("Risk snapshot expiry cannot be negative")
+        if self.risk_policy_version <= 0:
+            raise ValueError("risk_policy_version must be positive")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -475,21 +588,36 @@ class PortfolioApprovalEvidence:
     basket_intent_id: IntentId
     basket_checksum: str
     risk_snapshot_id: DecisionSnapshotId
+    risk_snapshot_metadata: RiskSnapshotMetadata
     assessment_checksum: str
     approved_at_ns: UnixNanos
     valid_until_ns: UnixNanos
     risk_policy_version: int
+    resource_claims: tuple[RiskResourceClaim, ...]
 
     def __post_init__(self) -> None:
         _require_id(self.approval_id, name="approval_id")
         _require_id(self.basket_intent_id, name="basket_intent_id")
         _require_checksum(self.basket_checksum, name="basket_checksum")
         _require_id(self.risk_snapshot_id, name="risk_snapshot_id")
+        if self.risk_snapshot_metadata.snapshot_id != self.risk_snapshot_id:
+            raise ValueError("approval Risk snapshot metadata identity mismatch")
         _require_checksum(self.assessment_checksum, name="assessment_checksum")
         if self.valid_until_ns < self.approved_at_ns:
             raise ValueError("approval expiry cannot precede issuance")
         if self.risk_policy_version <= 0:
             raise ValueError("risk policy version must be positive")
+        if self.risk_snapshot_metadata.risk_policy_version != self.risk_policy_version:
+            raise ValueError("approval Risk snapshot policy version mismatch")
+        if self.valid_until_ns > self.risk_snapshot_metadata.valid_until_ns:
+            raise ValueError("approval cannot outlive Risk snapshot")
+        if not self.resource_claims:
+            raise ValueError("approval requires Risk resource claims")
+        claim_keys = tuple(item.key.canonical for item in self.resource_claims)
+        if claim_keys != tuple(sorted(claim_keys)) or len(set(claim_keys)) != len(
+            claim_keys
+        ):
+            raise ValueError("approval resource claims must be unique and sorted")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -497,6 +625,7 @@ class BasketPortfolioRiskDecision:
     status: PortfolioRiskDecisionStatus
     basket: BasketTargetIntent
     risk_snapshot_id: DecisionSnapshotId
+    risk_snapshot_metadata: RiskSnapshotMetadata
     risk_policy_version: int
     reasons: tuple[PortfolioRiskRejectReason, ...]
     current_exposure: PortfolioExposure
@@ -505,11 +634,13 @@ class BasketPortfolioRiskDecision:
     approval: PortfolioApprovalEvidence | None
 
     def __post_init__(self) -> None:
+        if self.risk_snapshot_metadata.snapshot_id != self.risk_snapshot_id:
+            raise ValueError("Basket decision Risk snapshot identity mismatch")
         if self.status is PortfolioRiskDecisionStatus.ALLOW:
             if self.reasons or self.approval is None:
                 raise ValueError("ALLOW requires approval and no rejection reasons")
         elif not self.reasons or self.approval is not None:
-            raise ValueError("REJECT requires reasons and no approval")
+            raise ValueError("non-ALLOW decision requires reasons and no approval")
 
     @property
     def allowed(self) -> bool:
@@ -522,6 +653,7 @@ class ExecutionActionRiskDecision:
     group_id: OrderGroupId
     action_id: GroupActionId
     risk_snapshot_id: DecisionSnapshotId
+    risk_snapshot_metadata: RiskSnapshotMetadata
     reasons: tuple[PortfolioRiskRejectReason, ...]
     current_exposure: PortfolioExposure
     projected_exposure: PortfolioExposure
@@ -529,11 +661,13 @@ class ExecutionActionRiskDecision:
     permit: ExecutionActionPermit | None
 
     def __post_init__(self) -> None:
+        if self.risk_snapshot_metadata.snapshot_id != self.risk_snapshot_id:
+            raise ValueError("action decision Risk snapshot identity mismatch")
         if self.status is PortfolioRiskDecisionStatus.ALLOW:
             if self.reasons or self.permit is None:
                 raise ValueError("ALLOW requires permit and no rejection reasons")
         elif not self.reasons or self.permit is not None:
-            raise ValueError("REJECT requires reasons and no permit")
+            raise ValueError("non-ALLOW decision requires reasons and no permit")
 
     @property
     def allowed(self) -> bool:
@@ -604,6 +738,42 @@ class GroupRecoveryAuthorization:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class InstrumentTargetTolerance:
+    instrument_id: InstrumentId
+    absolute_quantity_tolerance: Quantity
+
+    def __post_init__(self) -> None:
+        if self.absolute_quantity_tolerance.as_decimal() < 0:
+            raise ValueError("target quantity tolerance cannot be negative")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class TargetMatchPolicy:
+    """Versioned quantity-only policy for confirming an economic target."""
+
+    version: int
+    default_absolute_quantity_tolerance: Quantity
+    instrument_tolerances: tuple[InstrumentTargetTolerance, ...]
+
+    def __post_init__(self) -> None:
+        if self.version <= 0:
+            raise ValueError("target match policy version must be positive")
+        if self.default_absolute_quantity_tolerance.as_decimal() < 0:
+            raise ValueError("default target tolerance cannot be negative")
+        keys = tuple(str(item.instrument_id) for item in self.instrument_tolerances)
+        if keys != tuple(sorted(keys)) or len(set(keys)) != len(keys):
+            raise ValueError(
+                "instrument target tolerances must be unique and sorted"
+            )
+
+    def quantity_tolerance_for(self, instrument_id: InstrumentId) -> Quantity:
+        for item in self.instrument_tolerances:
+            if item.instrument_id == instrument_id:
+                return item.absolute_quantity_tolerance
+        return self.default_absolute_quantity_tolerance
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class PortfolioTargetConfirmation:
     confirmation_id: PortfolioConfirmationId
     group_id: OrderGroupId
@@ -612,6 +782,8 @@ class PortfolioTargetConfirmation:
     risk_snapshot_id: DecisionSnapshotId
     confirmed_at_ns: UnixNanos
     risk_policy_version: int
+    target_match_policy_version: int
+    target_match_policy_checksum: str
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -623,6 +795,12 @@ class PortfolioTargetConfirmation:
             _require_id(value, name=name)
         if self.expected_group_revision <= 0:
             raise ValueError("confirmation group revision must be positive")
+        if self.target_match_policy_version <= 0:
+            raise ValueError("target match policy version must be positive")
+        _require_checksum(
+            self.target_match_policy_checksum,
+            name="target_match_policy_checksum",
+        )
 
 
 def _require_unique(
@@ -666,6 +844,7 @@ __all__ = [
     "GroupRecoveryAuthorization",
     "InstrumentRiskModelPolicy",
     "InstrumentSensitivity",
+    "InstrumentTargetTolerance",
     "LiquidationRequirement",
     "MarginScopeExposure",
     "PortfolioApprovalEvidence",
@@ -682,8 +861,15 @@ __all__ = [
     "RecoveryAuthorizationMode",
     "RiskFactorExposure",
     "RiskFactorLimit",
+    "RiskInvalidationTrigger",
     "RiskMark",
+    "RiskResourceClaim",
+    "RiskResourceKey",
+    "RiskResourceKind",
+    "RiskResourceReservationMode",
+    "RiskSnapshotMetadata",
     "SpreadRiskInput",
     "SpreadRiskLimit",
+    "TargetMatchPolicy",
     "WorkingOrderRiskView",
 ]

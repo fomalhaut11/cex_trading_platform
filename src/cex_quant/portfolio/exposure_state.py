@@ -5,7 +5,7 @@ from __future__ import annotations
 import threading
 from decimal import Decimal
 
-from cex_quant.core import AccountId, ClientOrderId, EventId, Quantity
+from cex_quant.core import AccountId, ClientOrderId, EventId, Quantity, UnixNanos
 from cex_quant.instruments import InstrumentId
 
 from .risk_inputs import (
@@ -199,6 +199,11 @@ class ExecutionConsistentPositionState:
                 None if self._baseline is None else self._baseline.observation_id
             ),
             coverage=self._coverage,
+            as_of_ns=UnixNanos(
+                int(self._baseline.account.as_of_time_ns or 0)
+                if self._baseline is not None
+                else 0
+            ),
             positions=positions,
             readiness=self._readiness,
             reason=self._reason,

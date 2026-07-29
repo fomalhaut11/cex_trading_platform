@@ -25,8 +25,10 @@ from portfolio_risk_test_support import (
 
 from cex_quant.core import (
     IntentId,
+    Money,
     OrderGroupId,
     PortfolioReconciliationId,
+    Quantity,
     RiskDirectiveId,
     StrategyId,
     UnixNanos,
@@ -35,6 +37,7 @@ from cex_quant.instruments import Instrument, InstrumentKind
 from cex_quant.oms import OrderGroupAdmission, OrderGroupView
 from cex_quant.risk import (
     InstrumentSensitivity,
+    InstrumentTargetTolerance,
     JsonLinesPortfolioRiskJournal,
     PortfolioApprovalEvidence,
     PortfolioRiskAuthorizationError,
@@ -51,10 +54,13 @@ from cex_quant.risk import (
     PortfolioRiskReservationState,
     PortfolioRiskWriterViolationError,
     RecoveryAuthorizationMode,
+    RiskInvalidationTrigger,
+    TargetMatchPolicy,
 )
 from cex_quant.runtime import OrderGroupRuntime
 from cex_quant.snapshots import ObservationId
 from cex_quant.strategy import (
+    BasketTargetIntent,
     basket_target_intent_checksum,
     create_basket_target_intent,
 )
@@ -90,6 +96,29 @@ def risk_inputs() -> tuple[
     return spot, perp, instruments, sensitivities
 
 
+def basket_for_products(
+    spot: Instrument,
+    perp: Instrument,
+    *,
+    intent_id: str,
+) -> BasketTargetIntent:
+    base = two_leg_basket()
+    return create_basket_target_intent(
+        strategy_id=base.strategy_id,
+        decision_snapshot_id=base.decision_snapshot_id,
+        objective=base.objective,
+        legs=(
+            replace(base.legs[0], instrument_id=spot.instrument_id),
+            replace(base.legs[1], instrument_id=perp.instrument_id),
+        ),
+        decision_time_ns=base.decision_time_ns,
+        valid_until_ns=base.valid_until_ns,
+        policy_version=base.policy_version,
+        reason=f"resource test {intent_id}",
+        intent_id=IntentId(intent_id),
+    )
+
+
 def create_group(
     approval: PortfolioApprovalEvidence,
     clock: ManualClock,
@@ -111,6 +140,89 @@ def create_group(
 
 
 class PortfolioRiskCoordinatorTests(unittest.TestCase):
+    def test_typed_resources_allow_independence_and_serialize_capacity(
+        self,
+    ) -> None:
+        btc_spot, btc_perp, _, _ = risk_inputs()
+        eth_spot = product(InstrumentKind.SPOT, "ETHUSDT")
+        eth_perp = product(InstrumentKind.PERPETUAL, "ETHUSDT")
+        instruments = (btc_spot, eth_spot, btc_perp, eth_perp)
+        sensitivities = tuple(
+            sensitivity(
+                item.instrument_id,
+                delta="1",
+                margin=(
+                    "0"
+                    if item.instrument_id.kind is InstrumentKind.SPOT
+                    else "10"
+                ),
+            )
+            for item in instruments
+        )
+        engine = PortfolioRiskEngine()
+        normal_policy = policy(instruments)
+        snapshot = publication(portfolio_snapshot(instruments, sensitivities))
+        btc_decision = engine.assess_basket(
+            basket_for_products(
+                btc_spot,
+                btc_perp,
+                intent_id="btc-resource-basket",
+            ),
+            snapshot,
+            normal_policy,
+            now_ns=NOW,
+        )
+        eth_decision = engine.assess_basket(
+            basket_for_products(
+                eth_spot,
+                eth_perp,
+                intent_id="eth-resource-basket",
+            ),
+            snapshot,
+            normal_policy,
+            now_ns=NOW,
+        )
+        coordinator = PortfolioRiskCoordinator(
+            journal=MemoryRiskJournal(),
+            risk_policy_version=normal_policy.version,
+            reservation_lifetime_ns=normal_policy.reservation_lifetime_ns,
+            max_active_reservations=normal_policy.max_active_reservations,
+            now_ns=NOW,
+        )
+        coordinator.reserve_approval(btc_decision, now_ns=NOW)
+        coordinator.reserve_approval(eth_decision, now_ns=NOW)
+        self.assertEqual(len(coordinator.reservations()), 2)
+
+        constrained_policy = replace(
+            normal_policy,
+            max_gross_notional=Money.from_str("3000"),
+        )
+        btc_constrained = engine.assess_basket(
+            btc_decision.basket,
+            snapshot,
+            constrained_policy,
+            now_ns=NOW,
+        )
+        eth_constrained = engine.assess_basket(
+            eth_decision.basket,
+            snapshot,
+            constrained_policy,
+            now_ns=NOW,
+        )
+        constrained = PortfolioRiskCoordinator(
+            journal=MemoryRiskJournal(),
+            risk_policy_version=constrained_policy.version,
+            reservation_lifetime_ns=constrained_policy.reservation_lifetime_ns,
+            max_active_reservations=constrained_policy.max_active_reservations,
+            now_ns=NOW,
+        )
+        constrained.reserve_approval(btc_constrained, now_ns=NOW)
+        with self.assertRaisesRegex(
+            PortfolioRiskAuthorizationError,
+            "capacity exceeded",
+        ):
+            constrained.reserve_approval(eth_constrained, now_ns=NOW)
+
     def _admit(
         self,
         journal: MemoryRiskJournal | JsonLinesPortfolioRiskJournal,
@@ -304,7 +416,12 @@ class PortfolioRiskCoordinatorTests(unittest.TestCase):
             prepared = runtime.group(group.order_group_id)
             coordinator.record_material_change(
                 now_ns=UnixNanos(2_031),
+                trigger=RiskInvalidationTrigger.MARGIN_CHANGE,
                 reason="margin update",
+            )
+            self.assertEqual(
+                tuple(first_journal.read())[-1].payload["trigger"],
+                RiskInvalidationTrigger.MARGIN_CHANGE.value,
             )
             with self.assertRaisesRegex(
                 PortfolioRiskAuthorizationError,
@@ -385,6 +502,11 @@ class PortfolioRiskCoordinatorTests(unittest.TestCase):
             basket=two_leg_basket(),
             position_views=(reconciled,),
             risk_snapshot_id=approval.risk_snapshot_id,
+            match_policy=TargetMatchPolicy(
+                version=1,
+                default_absolute_quantity_tolerance=Quantity.from_str("0"),
+                instrument_tolerances=(),
+            ),
             confirmed_at_ns=UnixNanos(2_030),
         )
         self.assertEqual(confirmation.group_id, group.order_group_id)
@@ -400,6 +522,65 @@ class PortfolioRiskCoordinatorTests(unittest.TestCase):
                 for entry in journal.entries
             )
         )
+
+    def test_target_confirmation_uses_versioned_quantity_tolerance(self) -> None:
+        journal = MemoryRiskJournal()
+        approval, coordinator, spot, perp, _ = self._admit(journal)
+        runtime, group = create_group(approval, ManualClock(value=2_010))
+        coordinator.attach_reservation(
+            approval.approval_id,
+            group.order_group_id,
+            now_ns=UnixNanos(2_015),
+        )
+        closing = runtime.begin_closing(group.order_group_id)
+        near_target = position_view(
+            {
+                spot.instrument_id: "9.9997",
+                perp.instrument_id: "-10",
+            }
+        )
+        with self.assertRaisesRegex(
+            PortfolioRiskAuthorizationError,
+            "do not match",
+        ):
+            coordinator.confirm_portfolio_target(
+                group=closing,
+                basket=two_leg_basket(),
+                position_views=(near_target,),
+                risk_snapshot_id=approval.risk_snapshot_id,
+                match_policy=TargetMatchPolicy(
+                    version=1,
+                    default_absolute_quantity_tolerance=Quantity.from_str("0"),
+                    instrument_tolerances=(
+                        InstrumentTargetTolerance(
+                            instrument_id=spot.instrument_id,
+                            absolute_quantity_tolerance=Quantity.from_str(
+                                "0.0001"
+                            ),
+                        ),
+                    ),
+                ),
+                confirmed_at_ns=UnixNanos(2_020),
+            )
+        confirmation = coordinator.confirm_portfolio_target(
+            group=closing,
+            basket=two_leg_basket(),
+            position_views=(near_target,),
+            risk_snapshot_id=approval.risk_snapshot_id,
+            match_policy=TargetMatchPolicy(
+                version=2,
+                default_absolute_quantity_tolerance=Quantity.from_str("0"),
+                instrument_tolerances=(
+                    InstrumentTargetTolerance(
+                        instrument_id=spot.instrument_id,
+                        absolute_quantity_tolerance=Quantity.from_str("0.001"),
+                    ),
+                ),
+            ),
+            confirmed_at_ns=UnixNanos(2_021),
+        )
+        self.assertEqual(confirmation.target_match_policy_version, 2)
+        self.assertEqual(len(confirmation.target_match_policy_checksum), 64)
 
     def test_persistence_failure_latches_and_corruption_fails_closed(self) -> None:
         journal = MemoryRiskJournal()
@@ -460,6 +641,7 @@ class PortfolioRiskCoordinatorTests(unittest.TestCase):
             try:
                 coordinator.record_material_change(
                     now_ns=UnixNanos(2_503),
+                    trigger=RiskInvalidationTrigger.POSITION_CHANGE,
                     reason="cross-thread update",
                 )
             except Exception as error:

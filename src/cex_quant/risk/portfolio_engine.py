@@ -55,6 +55,11 @@ from .portfolio_model import (
     PortfolioRiskReservationView,
     PortfolioRiskSnapshot,
     RiskFactorExposure,
+    RiskResourceClaim,
+    RiskResourceKey,
+    RiskResourceKind,
+    RiskResourceReservationMode,
+    RiskSnapshotMetadata,
 )
 
 ScopeKey = tuple[AccountId, InstrumentId]
@@ -72,6 +77,7 @@ class PortfolioRiskEngine:
         now_ns: UnixNanos,
     ) -> BasketPortfolioRiskDecision:
         value = risk_snapshot.value
+        snapshot_metadata = _risk_snapshot_metadata(risk_snapshot, policy)
         reasons = self._validate_snapshot(
             risk_snapshot,
             policy,
@@ -95,6 +101,11 @@ class PortfolioRiskEngine:
             incoming_basket=basket,
         )
         reasons.extend(reservation_reasons)
+        reservation_baseline, _ = _calculate_exposure(
+            _apply_working_envelope(reserved, value),
+            value,
+            policy,
+        )
         projected = dict(reserved)
         for leg in basket.legs:
             projected[(leg.account_id, leg.instrument_id)] = (
@@ -127,9 +138,14 @@ class PortfolioRiskEngine:
         reasons.extend(conservative_reasons)
         reasons.extend(_limit_reasons(conservative_exposure, value, policy))
         reasons = _deduplicate_reasons(reasons)
-
         approval: PortfolioApprovalEvidence | None = None
         if not reasons:
+            resource_claims = _resource_claims(
+                basket=basket,
+                baseline=reservation_baseline,
+                projected=conservative_exposure,
+                policy=policy,
+            )
             assessment_checksum = _assessment_checksum(
                 basket=basket,
                 snapshot_id=risk_snapshot.metadata.snapshot_id,
@@ -142,13 +158,16 @@ class PortfolioRiskEngine:
                 min(
                     int(basket.valid_until_ns),
                     int(now_ns) + policy.approval_lifetime_ns,
-                    _source_valid_until(value),
+                    int(snapshot_metadata.valid_until_ns),
                 )
             )
             content = {
                 "assessment_checksum": assessment_checksum,
                 "basket_checksum": basket_target_intent_checksum(basket),
                 "basket_intent_id": str(basket.intent_id),
+                "resource_claims_checksum": _resource_claims_checksum(
+                    resource_claims
+                ),
                 "risk_policy_version": policy.version,
                 "risk_snapshot_id": str(risk_snapshot.metadata.snapshot_id),
                 "valid_until_ns": int(valid_until_ns),
@@ -158,20 +177,19 @@ class PortfolioRiskEngine:
                 basket_intent_id=basket.intent_id,
                 basket_checksum=basket_target_intent_checksum(basket),
                 risk_snapshot_id=risk_snapshot.metadata.snapshot_id,
+                risk_snapshot_metadata=snapshot_metadata,
                 assessment_checksum=assessment_checksum,
                 approved_at_ns=now_ns,
                 valid_until_ns=valid_until_ns,
                 risk_policy_version=policy.version,
+                resource_claims=resource_claims,
             )
 
         return BasketPortfolioRiskDecision(
-            status=(
-                PortfolioRiskDecisionStatus.ALLOW
-                if approval is not None
-                else PortfolioRiskDecisionStatus.REJECT
-            ),
+            status=_decision_status(reasons),
             basket=basket,
             risk_snapshot_id=risk_snapshot.metadata.snapshot_id,
+            risk_snapshot_metadata=snapshot_metadata,
             risk_policy_version=policy.version,
             reasons=tuple(reasons),
             current_exposure=current_exposure,
@@ -190,6 +208,7 @@ class PortfolioRiskEngine:
         now_ns: UnixNanos,
     ) -> ExecutionActionRiskDecision:
         value = risk_snapshot.value
+        snapshot_metadata = _risk_snapshot_metadata(risk_snapshot, policy)
         reasons = self._validate_snapshot(
             risk_snapshot,
             policy,
@@ -198,7 +217,9 @@ class PortfolioRiskEngine:
         )
         if group.order_group_id != action.group_id:
             reasons.append(PortfolioRiskRejectReason.GROUP_IDENTITY_MISMATCH)
-        if group.status is not OrderGroupStatus.ACTIVE:
+        if group.status is OrderGroupStatus.RECOVERY_REQUIRED:
+            reasons.append(PortfolioRiskRejectReason.RECOVERY_REQUIRED)
+        elif group.status is not OrderGroupStatus.ACTIVE:
             reasons.append(PortfolioRiskRejectReason.GROUP_NOT_ACTIONABLE)
         if group.revision != action.expected_group_revision:
             reasons.append(PortfolioRiskRejectReason.GROUP_REVISION_MISMATCH)
@@ -273,7 +294,7 @@ class PortfolioRiskEngine:
             valid_until = UnixNanos(
                 min(
                     int(now_ns) + policy.permit_lifetime_ns,
-                    _source_valid_until(value),
+                    int(snapshot_metadata.valid_until_ns),
                     int(reservations[0].valid_until_ns),
                 )
             )
@@ -306,14 +327,11 @@ class PortfolioRiskEngine:
             )
 
         return ExecutionActionRiskDecision(
-            status=(
-                PortfolioRiskDecisionStatus.ALLOW
-                if permit is not None
-                else PortfolioRiskDecisionStatus.REJECT
-            ),
+            status=_decision_status(reasons),
             group_id=action.group_id,
             action_id=action.action_id,
             risk_snapshot_id=risk_snapshot.metadata.snapshot_id,
+            risk_snapshot_metadata=snapshot_metadata,
             reasons=tuple(reasons),
             current_exposure=current_exposure,
             projected_exposure=projected_exposure,
@@ -422,6 +440,13 @@ class PortfolioRiskEngine:
             for item in value.positions
         ):
             reasons.append(PortfolioRiskRejectReason.POSITION_NOT_READY)
+        if any(item.as_of_ns > now_ns for item in value.positions):
+            reasons.append(PortfolioRiskRejectReason.SNAPSHOT_FROM_FUTURE)
+        elif any(
+            now_ns - item.as_of_ns > policy.max_snapshot_age_ns
+            for item in value.positions
+        ):
+            reasons.append(PortfolioRiskRejectReason.SNAPSHOT_EXPIRED)
         account_ids = {item.account_id for item in value.positions}
         if not set(policy.required_account_ids).issubset(account_ids):
             reasons.append(PortfolioRiskRejectReason.SCOPE_INCOMPLETE)
@@ -511,6 +536,14 @@ class PortfolioRiskEngine:
                 for item in sources
             ):
                 reasons.append(PortfolioRiskRejectReason.SENSITIVITY_STALE)
+        for spread in value.spread_inputs:
+            if spread.value.as_of_ns > now_ns:
+                reasons.append(PortfolioRiskRejectReason.SNAPSHOT_FROM_FUTURE)
+            elif (
+                now_ns - spread.value.as_of_ns > policy.max_mark_age_ns
+                or now_ns > spread.value.valid_until_ns
+            ):
+                reasons.append(PortfolioRiskRejectReason.MARK_STALE)
         return reasons
 
 
@@ -871,22 +904,258 @@ class UnsupportedPortfolioRiskModelError(ValueError):
     """Instrument valuation model is intentionally unsupported."""
 
 
-def _source_valid_until(snapshot: PortfolioRiskSnapshot) -> int:
-    deadlines = [
-        int(item.price.valid_until_ns) for item in snapshot.marks
+def _risk_snapshot_metadata(
+    publication: DecisionSnapshotPublication[PortfolioRiskSnapshot],
+    policy: PortfolioRiskPolicy,
+) -> RiskSnapshotMetadata:
+    value = publication.value
+    generated_at = publication.metadata.assembled_at_ns
+    mark_values = [item.price for item in value.marks] + [
+        item.value for item in value.spread_inputs
     ]
-    for item in snapshot.sensitivities:
-        deadlines.extend(
-            int(value.valid_until_ns)
-            for value in (
-                item.delta_per_quantity,
-                item.initial_margin_per_quantity,
-                item.gamma_per_quantity,
-                item.vega_per_quantity,
-            )
-            if value is not None
+    sensitivity_values = [
+        source
+        for sensitivity in value.sensitivities
+        for source in (
+            sensitivity.delta_per_quantity,
+            sensitivity.initial_margin_per_quantity,
+            sensitivity.gamma_per_quantity,
+            sensitivity.vega_per_quantity,
         )
-    return min(deadlines) if deadlines else 0
+        if source is not None
+    ]
+    market_values = mark_values + sensitivity_values
+    portfolio_as_of_values = [
+        int(item.as_of_ns) for item in value.positions
+    ] + [
+        int(item.as_of_ns) for item in value.margins
+    ] + [
+        int(item.as_of_ns) for item in value.liquidation_references
+    ]
+    deadlines = [int(generated_at) + policy.max_snapshot_age_ns]
+    deadlines.extend(
+        min(
+            int(source.valid_until_ns),
+            int(source.as_of_ns) + policy.max_mark_age_ns,
+        )
+        for source in mark_values
+    )
+    deadlines.extend(
+        min(
+            int(source.valid_until_ns),
+            int(source.as_of_ns) + policy.max_sensitivity_age_ns,
+        )
+        for source in sensitivity_values
+    )
+    deadlines.extend(
+        int(item.as_of_ns) + policy.max_snapshot_age_ns
+        for item in value.positions
+    )
+    deadlines.extend(
+        int(item.as_of_ns) + policy.max_margin_age_ns
+        for item in value.margins
+    )
+    deadlines.extend(
+        int(item.as_of_ns) + policy.max_liquidation_age_ns
+        for item in value.liquidation_references
+    )
+    return RiskSnapshotMetadata(
+        snapshot_id=publication.metadata.snapshot_id,
+        generated_at_ns=generated_at,
+        market_data_as_of_ns=UnixNanos(
+            min((int(item.as_of_ns) for item in market_values), default=0)
+        ),
+        portfolio_state_as_of_ns=UnixNanos(
+            min(portfolio_as_of_values, default=0)
+        ),
+        valid_until_ns=UnixNanos(min(deadlines)),
+        risk_policy_version=policy.version,
+    )
+
+
+def _decision_status(
+    reasons: list[PortfolioRiskRejectReason],
+) -> PortfolioRiskDecisionStatus:
+    if not reasons:
+        return PortfolioRiskDecisionStatus.ALLOW
+    if PortfolioRiskRejectReason.RECOVERY_REQUIRED in reasons:
+        return PortfolioRiskDecisionStatus.RECOVERY_REQUIRED
+    if any(
+        item
+        in {
+            PortfolioRiskRejectReason.BASKET_EXPIRED,
+            PortfolioRiskRejectReason.BASKET_FROM_FUTURE,
+            PortfolioRiskRejectReason.SNAPSHOT_EXPIRED,
+            PortfolioRiskRejectReason.SNAPSHOT_FROM_FUTURE,
+            PortfolioRiskRejectReason.MARK_STALE,
+            PortfolioRiskRejectReason.SENSITIVITY_STALE,
+        }
+        for item in reasons
+    ):
+        return PortfolioRiskDecisionStatus.STALE
+    if any(
+        item
+        in {
+            PortfolioRiskRejectReason.HEALTH_NOT_READY,
+            PortfolioRiskRejectReason.POSITION_NOT_READY,
+            PortfolioRiskRejectReason.SCOPE_INCOMPLETE,
+            PortfolioRiskRejectReason.UNSUPPORTED_INSTRUMENT_MODEL,
+            PortfolioRiskRejectReason.MARK_MISSING,
+            PortfolioRiskRejectReason.SENSITIVITY_MISSING,
+            PortfolioRiskRejectReason.SENSITIVITY_UNIT_MISMATCH,
+            PortfolioRiskRejectReason.REPORTING_ASSET_MISMATCH,
+        }
+        for item in reasons
+    ):
+        return PortfolioRiskDecisionStatus.INSUFFICIENT_DATA
+    return PortfolioRiskDecisionStatus.REJECT
+
+
+def _resource_claims(
+    *,
+    basket: BasketTargetIntent,
+    baseline: PortfolioExposure,
+    projected: PortfolioExposure,
+    policy: PortfolioRiskPolicy,
+) -> tuple[RiskResourceClaim, ...]:
+    claims: list[RiskResourceClaim] = [
+        RiskResourceClaim(
+            key=RiskResourceKey(
+                kind=RiskResourceKind.POSITION_TARGET,
+                resource_id=f"{leg.account_id}:{leg.instrument_id}",
+            ),
+            mode=RiskResourceReservationMode.EXCLUSIVE,
+            amount=FixedPoint.from_str("1"),
+            capacity=None,
+        )
+        for leg in basket.legs
+    ]
+
+    def add_capacity(
+        kind: RiskResourceKind,
+        resource_id: str,
+        amount: Decimal,
+        capacity: Decimal,
+    ) -> None:
+        if amount <= 0:
+            return
+        claims.append(
+            RiskResourceClaim(
+                key=RiskResourceKey(kind=kind, resource_id=resource_id),
+                mode=RiskResourceReservationMode.CAPACITY,
+                amount=FixedPoint.from_str(str(amount)),
+                capacity=FixedPoint.from_str(str(capacity)),
+            )
+        )
+
+    initial_margin_increment = max(
+        Decimal(0),
+        projected.initial_margin.as_decimal()
+        - baseline.initial_margin.as_decimal(),
+    )
+    add_capacity(
+        RiskResourceKind.GROSS_NOTIONAL,
+        str(policy.reporting_asset),
+        max(
+            Decimal(0),
+            projected.gross_notional.as_decimal()
+            - baseline.gross_notional.as_decimal(),
+        ),
+        policy.max_gross_notional.as_decimal(),
+    )
+    add_capacity(
+        RiskResourceKind.INITIAL_MARGIN,
+        str(policy.reporting_asset),
+        initial_margin_increment,
+        policy.max_initial_margin.as_decimal(),
+    )
+    add_capacity(
+        RiskResourceKind.AVAILABLE_MARGIN,
+        str(policy.reporting_asset),
+        initial_margin_increment,
+        baseline.available_margin.as_decimal(),
+    )
+    baseline_factors = {item.risk_factor_id: item for item in baseline.factors}
+    projected_factors = {item.risk_factor_id: item for item in projected.factors}
+    limits = {item.risk_factor_id: item for item in policy.factor_limits}
+    for factor_id in sorted(projected_factors, key=str):
+        current = baseline_factors.get(factor_id)
+        future = projected_factors[factor_id]
+        limit = limits.get(factor_id)
+        if limit is None:
+            continue
+        current_net = Decimal(0) if current is None else current.net_delta.as_decimal()
+        current_gross = (
+            Decimal(0) if current is None else current.gross_delta.as_decimal()
+        )
+        current_gamma = Decimal(0) if current is None else current.gamma.as_decimal()
+        current_vega = Decimal(0) if current is None else current.vega.as_decimal()
+        resource_id = str(factor_id)
+        add_capacity(
+            RiskResourceKind.FACTOR_ABS_NET_DELTA,
+            resource_id,
+            max(
+                Decimal(0),
+                abs(future.net_delta.as_decimal()) - abs(current_net),
+            ),
+            limit.max_abs_net_delta.as_decimal(),
+        )
+        add_capacity(
+            RiskResourceKind.FACTOR_GROSS_DELTA,
+            resource_id,
+            max(
+                Decimal(0),
+                future.gross_delta.as_decimal() - current_gross,
+            ),
+            limit.max_gross_delta.as_decimal(),
+        )
+        if limit.max_abs_gamma is not None:
+            add_capacity(
+                RiskResourceKind.FACTOR_GAMMA,
+                resource_id,
+                max(
+                    Decimal(0),
+                    abs(future.gamma.as_decimal()) - abs(current_gamma),
+                ),
+                limit.max_abs_gamma.as_decimal(),
+            )
+        if limit.max_abs_vega is not None:
+            add_capacity(
+                RiskResourceKind.FACTOR_VEGA,
+                resource_id,
+                max(
+                    Decimal(0),
+                    abs(future.vega.as_decimal()) - abs(current_vega),
+                ),
+                limit.max_abs_vega.as_decimal(),
+            )
+    return tuple(sorted(claims, key=lambda item: item.key.canonical))
+
+
+def _resource_claims_checksum(
+    claims: tuple[RiskResourceClaim, ...],
+) -> str:
+    return _sha256(
+        [
+            {
+                "amount": {
+                    "raw": item.amount.raw,
+                    "scale": item.amount.scale,
+                },
+                "capacity": (
+                    None
+                    if item.capacity is None
+                    else {
+                        "raw": item.capacity.raw,
+                        "scale": item.capacity.scale,
+                    }
+                ),
+                "key": item.key.canonical,
+                "mode": item.mode.value,
+            }
+            for item in claims
+        ]
+    )
 
 
 def _assessment_checksum(

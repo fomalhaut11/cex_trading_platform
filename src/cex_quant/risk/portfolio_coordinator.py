@@ -5,12 +5,14 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
+import json
 from dataclasses import dataclass
 from decimal import Decimal
 from threading import get_ident
 
 from cex_quant.core import (
     ExecutionPermitId,
+    FixedPoint,
     GroupActionId,
     IntentId,
     OrderGroupId,
@@ -35,6 +37,7 @@ from cex_quant.portfolio import AccountPositionRiskView, PositionRiskReadiness
 from cex_quant.snapshots import DecisionSnapshotId
 from cex_quant.strategy import (
     BasketTargetIntent,
+    basket_target_intent_checksum,
     decode_basket_target_intent,
     encode_basket_target_intent,
 )
@@ -56,6 +59,13 @@ from .portfolio_model import (
     PortfolioRiskReservationView,
     PortfolioTargetConfirmation,
     RecoveryAuthorizationMode,
+    RiskInvalidationTrigger,
+    RiskResourceClaim,
+    RiskResourceKey,
+    RiskResourceKind,
+    RiskResourceReservationMode,
+    RiskSnapshotMetadata,
+    TargetMatchPolicy,
 )
 
 
@@ -140,6 +150,7 @@ class PortfolioRiskCoordinator:
         if entries:
             self._append_generation_change(
                 at_ns=now_ns,
+                trigger=RiskInvalidationTrigger.PROCESS_RESTART,
                 reason="process restart invalidates pre-restart permits",
             )
 
@@ -170,6 +181,14 @@ class PortfolioRiskCoordinator:
                 "only an allowed Basket decision can be reserved"
             )
         approval = decision.approval
+        if (
+            approval.basket_intent_id != decision.basket.intent_id
+            or approval.basket_checksum
+            != basket_target_intent_checksum(decision.basket)
+        ):
+            raise PortfolioRiskAuthorizationError(
+                "approval does not match Basket identity"
+            )
         if approval.risk_policy_version != self._risk_policy_version:
             raise PortfolioRiskAuthorizationError(
                 "approval policy version is not current"
@@ -191,44 +210,20 @@ class PortfolioRiskCoordinator:
             raise PortfolioRiskAuthorizationError(
                 "active reservation capacity reached"
             )
-        incoming_scope = {
-            (leg.account_id, leg.instrument_id)
-            for leg in decision.basket.legs
-        }
-        if any(
-            incoming_scope
-            & {
-                (leg.account_id, leg.instrument_id)
-                for leg in item.basket.legs
-            }
-            for item in self._reservations.values()
-            if item.active
-        ):
-            raise PortfolioRiskAuthorizationError(
-                "active reservation conflicts with Basket scope"
-            )
-        reserved_margin = sum(
+        _validate_resource_claims(
+            approval.resource_claims,
+            active_reservations=tuple(
+                item for item in self._reservations.values() if item.active
+            ),
+        )
+        requested_margin = sum(
             (
-                self._reserved_initial_margin[approval_id]
-                for approval_id, item in self._reservations.items()
-                if item.active
+                item.amount.as_decimal()
+                for item in approval.resource_claims
+                if item.key.kind is RiskResourceKind.AVAILABLE_MARGIN
             ),
             Decimal(0),
         )
-        requested_margin = max(
-            Decimal(0),
-            (
-                decision.conservative_exposure.initial_margin.as_decimal()
-                - decision.current_exposure.initial_margin.as_decimal()
-            ),
-        )
-        if (
-            reserved_margin + requested_margin
-            > decision.current_exposure.available_margin.as_decimal()
-        ):
-            raise PortfolioRiskAuthorizationError(
-                "reservation would overspend available margin"
-            )
         reservation_id = PortfolioReservationId(
             hashlib.sha256(
                 f"reservation:{approval.approval_id}".encode()
@@ -248,6 +243,7 @@ class PortfolioRiskCoordinator:
             state=PortfolioRiskReservationState.ACTIVE,
             created_at_ns=now_ns,
             valid_until_ns=valid_until_ns,
+            resource_claims=approval.resource_claims,
         )
         self._persist(
             PortfolioRiskJournalEntry(
@@ -262,6 +258,7 @@ class PortfolioRiskCoordinator:
         )
         self._append_generation_change(
             at_ns=now_ns,
+            trigger=RiskInvalidationTrigger.RESERVATION_CHANGE,
             reason="Portfolio approval reservation created",
         )
         self._approvals[approval.approval_id] = approval
@@ -295,6 +292,7 @@ class PortfolioRiskCoordinator:
             state=PortfolioRiskReservationState.ATTACHED_TO_GROUP,
             created_at_ns=reservation.created_at_ns,
             valid_until_ns=reservation.valid_until_ns,
+            resource_claims=reservation.resource_claims,
             group_id=group_id,
         )
         self._persist_reservation_change(changed, now_ns=now_ns)
@@ -476,10 +474,15 @@ class PortfolioRiskCoordinator:
         self,
         *,
         now_ns: UnixNanos,
+        trigger: RiskInvalidationTrigger,
         reason: str,
     ) -> int:
         self._assert_mutation_allowed()
-        self._append_generation_change(at_ns=now_ns, reason=reason)
+        self._append_generation_change(
+            at_ns=now_ns,
+            trigger=trigger,
+            reason=reason,
+        )
         return self._generation
 
     def persist_directive(self, directive: PortfolioRiskDirective) -> None:
@@ -506,6 +509,7 @@ class PortfolioRiskCoordinator:
         if directive.kind is not PortfolioRiskDirectiveKind.CLEAR:
             self._append_generation_change(
                 at_ns=directive.issued_at_ns,
+                trigger=RiskInvalidationTrigger.RISK_DIRECTIVE,
                 reason=f"Risk directive: {directive.kind.value}",
             )
 
@@ -602,6 +606,7 @@ class PortfolioRiskCoordinator:
         basket: BasketTargetIntent,
         position_views: tuple[AccountPositionRiskView, ...],
         risk_snapshot_id: DecisionSnapshotId,
+        match_policy: TargetMatchPolicy,
         confirmed_at_ns: UnixNanos,
     ) -> PortfolioTargetConfirmation:
         """Confirm economic target facts without creating application state."""
@@ -638,8 +643,13 @@ class PortfolioRiskCoordinator:
             for position in account.positions
         }
         if any(
-            actual.get((leg.account_id, leg.instrument_id), Decimal(0))
-            != leg.target_quantity.as_decimal()
+            abs(
+                actual.get((leg.account_id, leg.instrument_id), Decimal(0))
+                - leg.target_quantity.as_decimal()
+            )
+            > match_policy.quantity_tolerance_for(
+                leg.instrument_id
+            ).as_decimal()
             for leg in basket.legs
         ):
             raise PortfolioRiskAuthorizationError(
@@ -660,12 +670,14 @@ class PortfolioRiskCoordinator:
             raise PortfolioRiskAuthorizationError(
                 "conflicting reservation blocks target confirmation"
             )
+        match_policy_checksum = _target_match_policy_checksum(match_policy)
         confirmation_id = PortfolioConfirmationId(
             hashlib.sha256(
                 (
                     f"{group.order_group_id}:{group.revision}:"
                     f"{basket.intent_id}:{risk_snapshot_id}:"
-                    f"{confirmed_at_ns}"
+                    f"{confirmed_at_ns}:{match_policy.version}:"
+                    f"{match_policy_checksum}"
                 ).encode()
             ).hexdigest()
         )
@@ -677,6 +689,8 @@ class PortfolioRiskCoordinator:
             risk_snapshot_id=risk_snapshot_id,
             confirmed_at_ns=confirmed_at_ns,
             risk_policy_version=self._risk_policy_version,
+            target_match_policy_version=match_policy.version,
+            target_match_policy_checksum=match_policy_checksum,
         )
         existing_confirmation = self._confirmations.get(confirmation_id)
         if existing_confirmation is not None:
@@ -727,6 +741,7 @@ class PortfolioRiskCoordinator:
             state=state,
             created_at_ns=reservation.created_at_ns,
             valid_until_ns=reservation.valid_until_ns,
+            resource_claims=reservation.resource_claims,
         )
         self._persist_reservation_change(
             changed,
@@ -758,6 +773,7 @@ class PortfolioRiskCoordinator:
         )
         self._append_generation_change(
             at_ns=now_ns,
+            trigger=RiskInvalidationTrigger.RESERVATION_CHANGE,
             reason=reason,
         )
         self._reservations[changed.approval_id] = changed
@@ -766,8 +782,11 @@ class PortfolioRiskCoordinator:
         self,
         *,
         at_ns: UnixNanos,
+        trigger: RiskInvalidationTrigger,
         reason: str,
     ) -> None:
+        if not isinstance(trigger, RiskInvalidationTrigger):
+            raise TypeError("generation change trigger must be typed")
         if not reason or reason != reason.strip():
             raise ValueError("generation change reason must be non-empty and trimmed")
         generation = self._generation + 1
@@ -777,7 +796,11 @@ class PortfolioRiskCoordinator:
                     PortfolioRiskJournalEntryKind.AUTHORIZATION_GENERATION_CHANGED
                 ),
                 at_ns=at_ns,
-                payload={"generation": generation, "reason": reason},
+                payload={
+                    "generation": generation,
+                    "reason": reason,
+                    "trigger": trigger.value,
+                },
             )
         )
         self._generation = generation
@@ -816,6 +839,7 @@ class PortfolioRiskCoordinator:
                 ),
                 created_at_ns=current.created_at_ns,
                 valid_until_ns=current.valid_until_ns,
+                resource_claims=current.resource_claims,
                 group_id=group_id,
             )
         elif entry.kind is PortfolioRiskJournalEntryKind.PERMIT_ISSUED:
@@ -843,6 +867,12 @@ class PortfolioRiskCoordinator:
             is PortfolioRiskJournalEntryKind.AUTHORIZATION_GENERATION_CHANGED
         ):
             generation = _integer(payload, "generation")
+            _string(payload, "reason")
+            trigger_raw = payload.get("trigger")
+            if trigger_raw is not None:
+                RiskInvalidationTrigger(
+                    _required_string_value(trigger_raw, "trigger")
+                )
             if generation != self._generation + 1:
                 raise ValueError("authorization generation is not contiguous")
             self._generation = generation
@@ -926,11 +956,69 @@ def _approval_reservation_payload(
         "reservation_id": str(reservation.reservation_id),
         "risk_policy_version": approval.risk_policy_version,
         "risk_snapshot_id": str(approval.risk_snapshot_id),
+        "risk_snapshot_generated_at_ns": int(
+            approval.risk_snapshot_metadata.generated_at_ns
+        ),
+        "risk_snapshot_market_data_as_of_ns": int(
+            approval.risk_snapshot_metadata.market_data_as_of_ns
+        ),
+        "risk_snapshot_portfolio_state_as_of_ns": int(
+            approval.risk_snapshot_metadata.portfolio_state_as_of_ns
+        ),
+        "risk_snapshot_valid_until_ns": int(
+            approval.risk_snapshot_metadata.valid_until_ns
+        ),
+        "resource_claims": _encode_resource_claims(approval.resource_claims),
         "reserved_initial_margin": format(reserved_initial_margin, "f"),
         "strategy_id": str(reservation.strategy_id),
         "approval_valid_until_ns": int(approval.valid_until_ns),
         "reservation_valid_until_ns": int(reservation.valid_until_ns),
     }
+
+
+def _validate_resource_claims(
+    incoming: tuple[RiskResourceClaim, ...],
+    *,
+    active_reservations: tuple[PortfolioRiskReservationView, ...],
+) -> None:
+    active_by_key: dict[str, list[RiskResourceClaim]] = {}
+    for reservation in active_reservations:
+        for claim in reservation.resource_claims:
+            active_by_key.setdefault(claim.key.canonical, []).append(claim)
+    for claim in incoming:
+        existing = active_by_key.get(claim.key.canonical, [])
+        if claim.mode is RiskResourceReservationMode.EXCLUSIVE:
+            if existing:
+                raise PortfolioRiskAuthorizationError(
+                    f"active reservation conflicts with exclusive Risk resource: "
+                    f"{claim.key.canonical}"
+                )
+            continue
+        if any(
+            item.mode is RiskResourceReservationMode.EXCLUSIVE
+            for item in existing
+        ):
+            raise PortfolioRiskAuthorizationError(
+                f"Risk resource reservation mode conflicts: {claim.key.canonical}"
+            )
+        capacities = [
+            item.capacity.as_decimal()
+            for item in existing
+            if item.capacity is not None
+        ]
+        if claim.capacity is None or len(capacities) != len(existing):
+            raise PortfolioRiskAuthorizationError(
+                f"Risk capacity evidence is incomplete: {claim.key.canonical}"
+            )
+        capacity = min([claim.capacity.as_decimal(), *capacities])
+        reserved = sum(
+            (item.amount.as_decimal() for item in existing),
+            Decimal(0),
+        )
+        if reserved + claim.amount.as_decimal() > capacity:
+            raise PortfolioRiskAuthorizationError(
+                f"Risk resource capacity exceeded: {claim.key.canonical}"
+            )
 
 
 def _decode_approval_reservation(
@@ -941,19 +1029,56 @@ def _decode_approval_reservation(
     Decimal,
 ]:
     basket = _decode_basket(_string(payload, "basket"))
+    policy_version = _integer(payload, "risk_policy_version")
+    snapshot_id = DecisionSnapshotId(_string(payload, "risk_snapshot_id"))
+    approved_at_ns = UnixNanos(_integer(payload, "approved_at_ns"))
+    approval_valid_until_ns = UnixNanos(
+        _integer(payload, "approval_valid_until_ns")
+    )
+    snapshot_metadata = RiskSnapshotMetadata(
+        snapshot_id=snapshot_id,
+        generated_at_ns=UnixNanos(
+            _optional_integer(
+                payload,
+                "risk_snapshot_generated_at_ns",
+                default=int(approved_at_ns),
+            )
+        ),
+        market_data_as_of_ns=UnixNanos(
+            _optional_integer(
+                payload,
+                "risk_snapshot_market_data_as_of_ns",
+                default=0,
+            )
+        ),
+        portfolio_state_as_of_ns=UnixNanos(
+            _optional_integer(
+                payload,
+                "risk_snapshot_portfolio_state_as_of_ns",
+                default=0,
+            )
+        ),
+        valid_until_ns=UnixNanos(
+            _optional_integer(
+                payload,
+                "risk_snapshot_valid_until_ns",
+                default=int(approval_valid_until_ns),
+            )
+        ),
+        risk_policy_version=policy_version,
+    )
+    claims = _decode_resource_claims(payload.get("resource_claims"), basket)
     approval = PortfolioApprovalEvidence(
         approval_id=PortfolioApprovalId(_string(payload, "approval_id")),
         basket_intent_id=basket.intent_id,
         basket_checksum=_string(payload, "basket_checksum"),
-        risk_snapshot_id=DecisionSnapshotId(
-            _string(payload, "risk_snapshot_id")
-        ),
+        risk_snapshot_id=snapshot_id,
+        risk_snapshot_metadata=snapshot_metadata,
         assessment_checksum=_string(payload, "assessment_checksum"),
-        approved_at_ns=UnixNanos(_integer(payload, "approved_at_ns")),
-        valid_until_ns=UnixNanos(
-            _integer(payload, "approval_valid_until_ns")
-        ),
-        risk_policy_version=_integer(payload, "risk_policy_version"),
+        approved_at_ns=approved_at_ns,
+        valid_until_ns=approval_valid_until_ns,
+        risk_policy_version=policy_version,
+        resource_claims=claims,
     )
     if _string(payload, "basket_intent_id") != str(basket.intent_id):
         raise ValueError("journal Basket intent identity mismatch")
@@ -969,6 +1094,7 @@ def _decode_approval_reservation(
         valid_until_ns=UnixNanos(
             _integer(payload, "reservation_valid_until_ns")
         ),
+        resource_claims=claims,
     )
     if _string(payload, "strategy_id") != str(basket.strategy_id):
         raise ValueError("journal Basket strategy identity mismatch")
@@ -989,6 +1115,110 @@ def _decode_basket(encoded: str) -> BasketTargetIntent:
     except (ValueError, binascii.Error):
         raise ValueError("journal Basket is not valid base64") from None
     return decode_basket_target_intent(raw)
+
+
+def _encode_resource_claims(claims: tuple[RiskResourceClaim, ...]) -> str:
+    return json.dumps(
+        [
+            {
+                "amount_raw": item.amount.raw,
+                "amount_scale": item.amount.scale,
+                "capacity_raw": (
+                    None if item.capacity is None else item.capacity.raw
+                ),
+                "capacity_scale": (
+                    None if item.capacity is None else item.capacity.scale
+                ),
+                "kind": item.key.kind.value,
+                "mode": item.mode.value,
+                "resource_id": item.key.resource_id,
+            }
+            for item in claims
+        ],
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def _decode_resource_claims(
+    encoded: object,
+    basket: BasketTargetIntent,
+) -> tuple[RiskResourceClaim, ...]:
+    if encoded is None:
+        return tuple(
+            sorted(
+                (
+                    RiskResourceClaim(
+                        key=RiskResourceKey(
+                            kind=RiskResourceKind.POSITION_TARGET,
+                            resource_id=f"{leg.account_id}:{leg.instrument_id}",
+                        ),
+                        mode=RiskResourceReservationMode.EXCLUSIVE,
+                        amount=FixedPoint.from_str("1"),
+                        capacity=None,
+                    )
+                    for leg in basket.legs
+                ),
+                key=lambda item: item.key.canonical,
+            )
+        )
+    if not isinstance(encoded, str):
+        raise ValueError("journal resource_claims must be encoded text")
+    try:
+        raw_items = json.loads(encoded)
+    except (TypeError, ValueError):
+        raise ValueError("journal resource_claims are invalid JSON") from None
+    if not isinstance(raw_items, list) or len(raw_items) > 16_384:
+        raise ValueError("journal resource_claims exceed bounds")
+    claims: list[RiskResourceClaim] = []
+    for raw in raw_items:
+        if not isinstance(raw, dict):
+            raise ValueError("journal resource claim must be an object")
+        capacity_raw = raw.get("capacity_raw")
+        capacity_scale = raw.get("capacity_scale")
+        capacity: FixedPoint | None
+        if capacity_raw is None and capacity_scale is None:
+            capacity = None
+        elif (
+            isinstance(capacity_raw, int)
+            and not isinstance(capacity_raw, bool)
+            and isinstance(capacity_scale, int)
+            and not isinstance(capacity_scale, bool)
+        ):
+            capacity = FixedPoint(raw=capacity_raw, scale=capacity_scale)
+        else:
+            raise ValueError("journal resource claim capacity is invalid")
+        amount_raw = raw.get("amount_raw")
+        amount_scale = raw.get("amount_scale")
+        if (
+            not isinstance(amount_raw, int)
+            or isinstance(amount_raw, bool)
+            or not isinstance(amount_scale, int)
+            or isinstance(amount_scale, bool)
+        ):
+            raise ValueError("journal resource claim amount is invalid")
+        claims.append(
+            RiskResourceClaim(
+                key=RiskResourceKey(
+                    kind=RiskResourceKind(
+                        _required_string_value(raw.get("kind"), "resource kind")
+                    ),
+                    resource_id=_required_string_value(
+                        raw.get("resource_id"),
+                        "resource_id",
+                    ),
+                ),
+                mode=RiskResourceReservationMode(
+                    _required_string_value(raw.get("mode"), "resource mode")
+                ),
+                amount=FixedPoint(raw=amount_raw, scale=amount_scale),
+                capacity=capacity,
+            )
+        )
+    result = tuple(sorted(claims, key=lambda item: item.key.canonical))
+    if result != tuple(claims):
+        raise ValueError("journal resource claims are not canonical")
+    return result
 
 
 def _decode_permit(encoded: str) -> ExecutionActionPermit:
@@ -1068,6 +1298,8 @@ def _confirmation_payload(
         "group_revision": evidence.expected_group_revision,
         "risk_policy_version": evidence.risk_policy_version,
         "risk_snapshot_id": str(evidence.risk_snapshot_id),
+        "target_match_policy_checksum": evidence.target_match_policy_checksum,
+        "target_match_policy_version": evidence.target_match_policy_version,
     }
 
 
@@ -1086,7 +1318,42 @@ def _decode_confirmation(
         ),
         confirmed_at_ns=UnixNanos(_integer(payload, "confirmed_at_ns")),
         risk_policy_version=_integer(payload, "risk_policy_version"),
+        target_match_policy_version=_optional_integer(
+            payload,
+            "target_match_policy_version",
+            default=1,
+        ),
+        target_match_policy_checksum=(
+            hashlib.sha256(b"legacy-exact-target-match-policy:v1").hexdigest()
+            if payload.get("target_match_policy_checksum") is None
+            else _string(payload, "target_match_policy_checksum")
+        ),
     )
+
+
+def _target_match_policy_checksum(policy: TargetMatchPolicy) -> str:
+    content = {
+        "default": {
+            "raw": policy.default_absolute_quantity_tolerance.raw,
+            "scale": policy.default_absolute_quantity_tolerance.scale,
+        },
+        "instruments": [
+            {
+                "instrument_id": str(item.instrument_id),
+                "raw": item.absolute_quantity_tolerance.raw,
+                "scale": item.absolute_quantity_tolerance.scale,
+            }
+            for item in policy.instrument_tolerances
+        ],
+        "version": policy.version,
+    }
+    return hashlib.sha256(
+        json.dumps(
+            content,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
 
 
 def _string(
@@ -1110,6 +1377,17 @@ def _integer(
     if not isinstance(value, int) or isinstance(value, bool) or value < 0:
         raise ValueError(f"journal {key} must be a non-negative integer")
     return value
+
+
+def _optional_integer(
+    payload: dict[str, bool | int | str | None],
+    key: str,
+    *,
+    default: int,
+) -> int:
+    if key not in payload or payload[key] is None:
+        return default
+    return _integer(payload, key)
 
 
 __all__ = [
