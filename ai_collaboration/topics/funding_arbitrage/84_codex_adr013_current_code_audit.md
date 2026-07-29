@@ -2,18 +2,25 @@
 id: AI-20260728-014
 title: ADR-013 Current-Code Audit
 origin: codex
-status: READY_FOR_REVIEW
+status: REFERENCE
 created: 2026-07-28
 code_baseline: fa0df9e2a015db258457d226c7ed9fa5c689b8eb
 supersedes: none
 related:
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - 83_codex_adr012_proposal_handoff.md
+  - ../financial_ledger/20_codex_architecture_response.md
 external_share: allowed
 sensitivity: public-project
 ---
 
 # ADR-013 Current-Code Audit
+
+## Status Notice
+
+This audit is retained as historical evidence for its recorded code baseline.
+The current ADR-013 review entry is
+`../financial_ledger/20_codex_architecture_response.md`.
 
 ## Audit Result
 

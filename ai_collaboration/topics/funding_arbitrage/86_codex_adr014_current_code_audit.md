@@ -2,18 +2,26 @@
 id: AI-20260728-016
 title: ADR-014 Current-Code Audit
 origin: codex
-status: READY_FOR_REVIEW
+status: REFERENCE
 created: 2026-07-28
 code_baseline: fa0df9e2a015db258457d226c7ed9fa5c689b8eb
 supersedes: none
 related:
   - ../../../adr/ADR-014-carry-application-boundary.md
   - 85_codex_adr013_proposal_handoff.md
+  - ../carry_application/20_codex_architecture_response.md
 external_share: allowed
 sensitivity: public-project
 ---
 
 # ADR-014 Current-Code Audit
+
+## Status Notice
+
+This audit is retained as historical evidence for its recorded code baseline.
+The current ADR-014 draft is
+`../carry_application/20_codex_architecture_response.md` and waits for
+ADR-013 scope alignment before formal review.
 
 ## Audit Result
 

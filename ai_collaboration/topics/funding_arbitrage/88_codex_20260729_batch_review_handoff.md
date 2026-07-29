@@ -2,7 +2,7 @@
 id: AI-20260728-018
 title: ADR-012 to ADR-014 Batch Review Handoff
 origin: codex
-status: READY_FOR_REVIEW
+status: SUPERSEDED
 created: 2026-07-28
 code_baseline: fa0df9e2a015db258457d226c7ed9fa5c689b8eb
 supersedes: none
@@ -10,11 +10,19 @@ related:
   - 83_codex_adr012_proposal_handoff.md
   - 85_codex_adr013_proposal_handoff.md
   - 87_codex_adr014_proposal_handoff.md
+  - 96_web_gpt_adr012_formal_closure.md
+  - ../financial_ledger/20_codex_architecture_response.md
 external_share: allowed
 sensitivity: public-project
 ---
 
 # Codex Handoff: 2026-07-29 Architecture Review Batch
+
+## Supersession Notice
+
+This batch entry is closed. ADR-012 acceptance is formally complete, and the
+current next review entry is
+`../financial_ledger/20_codex_architecture_response.md`.
 
 ## Purpose
 

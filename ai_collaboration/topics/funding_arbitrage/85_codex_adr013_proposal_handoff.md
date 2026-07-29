@@ -2,18 +2,25 @@
 id: AI-20260728-015
 title: ADR-013 Proposed Handoff
 origin: codex
-status: READY_FOR_REVIEW
+status: SUPERSEDED
 created: 2026-07-28
 code_baseline: fa0df9e2a015db258457d226c7ed9fa5c689b8eb
 supersedes: none
 related:
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - 84_codex_adr013_current_code_audit.md
+  - ../financial_ledger/20_codex_architecture_response.md
 external_share: allowed
 sensitivity: public-project
 ---
 
 # Codex Handoff: ADR-013 Proposed
+
+## Supersession Notice
+
+This original handoff records the 2026-07-28 proposal baseline and its then
+current ADR-012 status. It is superseded as a review entry by
+`../financial_ledger/20_codex_architecture_response.md`.
 
 ## Review Request
 

@@ -9,6 +9,7 @@ supersedes: none
 related:
   - 93_codex_adr012_remediation_response.md
   - 94_web_gpt_adr012_final_acceptance.md
+  - 96_web_gpt_adr012_formal_closure.md
   - ../../../adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md
   - ../carry_application/10_web_gpt_input.md
 external_share: allowed
@@ -115,7 +116,11 @@ Committee result: accepted.
 
 ## Transition Decision
 
-Proceed to ADR-014 Carry Application Boundary design.
+Proceed to the ADR-013/ADR-014 application-enablement design phase.
+
+The later formal closure record `96_web_gpt_adr012_formal_closure.md`
+clarifies the gate order: align ADR-013 Accounting scope first, then perform
+ADR-014 formal review.
 
 Do not implement Funding Arbitrage execution until both:
 

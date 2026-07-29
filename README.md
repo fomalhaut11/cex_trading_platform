@@ -15,9 +15,9 @@ contracts, single-writer state and a deterministic hot path.
   Risk authorization, durable reservations/permits and recovery evidence.
   Web GPT accepted and closed all conditional implementation findings.
   ADR-013 Financial Ledger and ADR-014 Carry Application Boundary remain
-  Proposed; Carry architecture review now has a separate collaboration topic.
-  Grouped external execution remains blocked pending a separate explicit
-  Testnet authorization.
+  Proposed. ADR-013 has a dedicated review-ready collaboration topic; the
+  ADR-014 draft waits for its Accounting scope alignment. Grouped external
+  execution remains blocked pending a separate explicit Testnet authorization.
 
 ## Development
 

@@ -102,14 +102,16 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   Web GPT accepted and closed the conditional implementation findings after
   typed freshness, invalidation, resource, tolerance and failure contracts;
   the implementation is now Accepted.
-- ADR-013 Financial Ledger and PnL Attribution is Proposed for the same review
-  batch. It covers canonical fill/account financial facts, a balanced
-  per-asset ledger, source/balance reconciliation, ownership allocation and
-  derived PnL. **No implementation task is authorized yet.**
+- ADR-013 Financial Ledger and PnL Attribution is Proposed with a dedicated
+  review-ready `financial_ledger` topic. It covers canonical fill/account
+  financial facts, a balanced per-asset ledger, source/balance reconciliation,
+  generic ownership allocation and derived PnL. **No implementation task is
+  authorized yet.**
 - ADR-014 Carry Application Boundary is Proposed for the same review batch. It
   places economic lifecycle, hedge assessment and ownership evidence in
   `applications.carry` while preserving generic platform authority.
-  A separate Carry architecture-review topic is active. **No application
+  Its draft is retained, but formal review waits for ADR-013
+  ownership/allocation/read-port scope alignment. **No application
   implementation is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline

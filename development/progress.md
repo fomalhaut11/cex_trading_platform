@@ -220,20 +220,22 @@ target-host performance and authenticated Testnet gates.
   `b082af0618e180f98441af5dc6d49c906994a012` provides explicit freshness,
   typed invalidation, resource claims, target tolerance and failure statuses;
   Feature-owned Greeks and durable permit-consume-before-I/O remain unchanged.
-  ADR-012 implementation is now Accepted without reopening the ADR.
+  ADR-012 implementation is now Accepted and its acceptance process is
+  formally closed without reopening the ADR.
 
 ## In Progress
 
-- ADR-013 Financial Ledger and PnL Attribution is Proposed and ready for the
-  same review batch. It separates fill/account financial facts, a balanced
-  per-asset immutable ledger, source/balance reconciliation, allocation and
+- ADR-013 Financial Ledger and PnL Attribution is Proposed with a dedicated
+  review entry at
+  `ai_collaboration/topics/financial_ledger/20_codex_architecture_response.md`.
+  It freezes fill/account facts, a balanced per-asset ledger,
+  source/balance reconciliation, generic `EconomicOwnerRef`, allocation and
   derived PnL. No Accounting source package has been implemented.
-- ADR-014 Carry Application Boundary is Proposed and ready for the same review
-  batch. It keeps economic lifecycle, hedge assessment and ownership in
-  `applications.carry` while preserving generic Risk/OMS/Accounting
-  authority. Its separate design-review topic is active at
-  `ai_collaboration/topics/carry_application/20_codex_architecture_response.md`.
-  No Carry/Funding application code has been implemented.
+- ADR-014 Carry Application Boundary remains Proposed. Its draft keeps
+  economic lifecycle, hedge assessment and ownership in
+  `applications.carry`, but formal review waits for ADR-013
+  ownership/allocation/read-port scope alignment. No Carry/Funding
+  application code has been implemented.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -253,11 +255,11 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review and accept or revise ADR-013 before assigning Accounting
-   implementation tasks.
-2. Review ADR-014 Carry Application Boundary through the separate
-   `carry_application` lifecycle; do not treat design review as implementation
-   authorization.
+1. Review and accept or revise ADR-013 through the `financial_ledger` topic
+   before assigning Accounting implementation tasks.
+2. Align ADR-014 with the accepted ADR-013 ownership/allocation/read ports,
+   then perform its formal review; do not treat the existing draft as
+   implementation authorization.
 3. Keep grouped external submission blocked until a later explicit Testnet
    authorization; offline ADR-012 completion alone is insufficient.
 4. Configure protected-branch checks after agreeing the direct-push policy.

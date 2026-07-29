@@ -20,6 +20,10 @@ related:
   - 86_codex_adr014_current_code_audit.md
   - 87_codex_adr014_proposal_handoff.md
   - 88_codex_20260729_batch_review_handoff.md
+  - 94_web_gpt_adr012_final_acceptance.md
+  - 95_web_gpt_adr012_final_committee_review.md
+  - 96_web_gpt_adr012_formal_closure.md
+  - ../financial_ledger/10_web_gpt_input.md
   - ../../../development/multi_leg_portfolio_trading_plan.md
   - ../../../adr/ADR-009-portfolio-decision-snapshot.md
 external_share: allowed
@@ -656,3 +660,32 @@ ADR-014  Carry Application Boundary
 记录引用的文件。Carry 议题入口为：
 
 `../carry_application/10_web_gpt_input.md`
+
+## 22. ADR-012 Formal Closure and Next-Gate Order
+
+Web GPT 随后对 `94` 和 `95` 两份最终记录完成复核，并正式关闭 ADR-012
+验收流程：
+
+```text
+Design                  ACCEPTED
+Implementation          ACCEPTED
+Remediation             CLOSED
+Grouped external        BLOCKED
+Testnet / Production    NOT AUTHORIZED
+```
+
+正式关闭记录：
+
+`96_web_gpt_adr012_formal_closure.md`
+
+委员会明确下一阶段顺序：
+
+```text
+ADR-013 Financial Ledger/PnL design and scope alignment
+  -> ADR-014 Carry Application formal review
+  -> only after both acceptance: bounded implementation planning
+```
+
+现有 ADR-014 草案作为设计输入保留，但正式评审等待 ADR-013 的
+ownership/allocation/read-port 范围对齐。此顺序不授权 Funding 执行、grouped
+external、Testnet 或生产。

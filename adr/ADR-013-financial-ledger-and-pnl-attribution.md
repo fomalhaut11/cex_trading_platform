@@ -17,6 +17,10 @@ ADR-013 remains independently reviewable because its source-fact and ledger
 ownership decisions are inspectable without enabling grouped execution.
 ADR-014 implementation remains dependent on accepted ADR-009 through ADR-013.
 
+The final ADR-012 committee decision formally selected ADR-013 scope
+alignment as the next architecture gate. This proposal still authorizes no
+source implementation.
+
 ## Context
 
 An order fill is not a strategy profit record.
@@ -241,7 +245,8 @@ applications -> immutable accounting/attribution views only
 
 ## 3. Identities
 
-Add strong cross-domain identities after acceptance:
+Add strong cross-domain identities and generic owner references after
+acceptance:
 
 ```python
 FinancialFactId
@@ -251,6 +256,8 @@ LedgerPostingId
 LedgerAccountId
 FinancialReconciliationId
 AttributionAllocationId
+EconomicOwnerTypeRef
+EconomicOwnerRef
 ```
 
 `CashFlowId` from the planning document is refined to
@@ -272,6 +279,38 @@ Identity rules:
 - ledger transaction/posting IDs are deterministic from complete canonical
   content;
 - IDs are causation/integrity references, not authentication tokens.
+
+### Generic economic-owner reference
+
+Accounting requires a stable allocation target without importing any
+application implementation:
+
+```python
+@dataclass(frozen=True, slots=True, kw_only=True)
+class EconomicOwnerTypeRef:
+    name: str
+    version: int
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class EconomicOwnerRef:
+    owner_type: EconomicOwnerTypeRef
+    owner_id: str
+```
+
+Rules:
+
+- owner types are bounded, versioned metadata registrations;
+- Accounting treats `owner_id` as an opaque canonical identifier;
+- Carry may map an `ApplicationPositionId` to
+  `application.position@1`, but Accounting never imports
+  `applications.carry`;
+- other applications may register their own owner type without changing the
+  ledger;
+- a display name or Strategy class name is not an owner identity;
+- `UNALLOCATED` is an explicit remainder, not a synthetic owner;
+- owner references support attribution and audit only and confer no execution
+  or Risk authority.
 
 ## 4. Canonical Financial Source Facts
 

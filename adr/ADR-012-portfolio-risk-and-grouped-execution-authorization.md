@@ -23,6 +23,11 @@ required. Risk-decision explainability, Risk-model versioning and
 audit-oriented Risk evidence remain non-blocking future improvements.
 The remediation and final acceptance add no external-execution authority.
 
+The final committee decision on 2026-07-29 formally closed the ADR-012
+acceptance process. The next architecture gate is ADR-013 Financial Ledger
+and PnL Attribution scope alignment, followed by ADR-014 Carry Application
+Boundary review.
+
 Grouped external execution remains hard-blocked by
 `GroupedExecutionBlockedError`. Removing that block requires completed
 offline acceptance and a later explicit Testnet authorization.

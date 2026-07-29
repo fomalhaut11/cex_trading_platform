@@ -109,10 +109,11 @@ typed invalidation triggers, resource-key reservation capacity, versioned
 target tolerance, unchanged Feature-owned Greeks and consume-before-I/O, and
 typed failure statuses. The focused review accepted and closed every finding;
 final result:
-`ai_collaboration/topics/funding_arbitrage/94_web_gpt_adr012_final_acceptance.md`.
+`ai_collaboration/topics/funding_arbitrage/96_web_gpt_adr012_formal_closure.md`.
 
 ADR-013 Financial Ledger and PnL Attribution and ADR-014 Carry Application
 Boundary remain Proposed. Funding Arbitrage, Accounting implementation,
-Testnet and production multi-leg execution remain unauthorized. Carry design
-review entry:
-`ai_collaboration/topics/carry_application/20_codex_architecture_response.md`.
+Testnet and production multi-leg execution remain unauthorized. Current
+ADR-013 review entry:
+`ai_collaboration/topics/financial_ledger/20_codex_architecture_response.md`.
+ADR-014 formal review follows ADR-013 scope alignment.

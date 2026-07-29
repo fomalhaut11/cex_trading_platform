@@ -2,7 +2,7 @@
 id: AI-20260729-009
 title: Carry Application Resolution
 origin: joint
-status: PENDING_REVIEW
+status: PENDING_SCOPE_ALIGNMENT
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -10,6 +10,7 @@ related:
   - 10_web_gpt_input.md
   - 20_codex_architecture_response.md
   - 30_web_gpt_review.md
+  - ../financial_ledger/90_resolution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
 sensitivity: public-project
@@ -19,11 +20,11 @@ sensitivity: public-project
 
 ## Current Status
 
-`PENDING_REVIEW`
+`PENDING_SCOPE_ALIGNMENT`
 
-The topic has an input and a Codex architecture response. Web GPT has not yet
-returned the ADR-014 review, so no acceptance or implementation authority is
-recorded here.
+The topic has an input and a Codex architecture response. Formal ADR-014
+review waits for ADR-013 ownership, allocation and attribution read-port scope
+alignment. No acceptance or implementation authority is recorded here.
 
 ## Frozen Baseline Facts
 
@@ -33,7 +34,8 @@ recorded here.
 - Grouped external execution remains blocked.
 - ADR-013 is Financial Ledger and PnL Attribution and remains Proposed.
 - ADR-014 is Carry Application Boundary and remains Proposed.
-- Carry design review may proceed.
+- the ADR-014 design draft is complete, but formal review waits for ADR-013
+  scope alignment.
 - Carry/Funding source implementation is not yet authorized.
 
 ## Numbering Resolution

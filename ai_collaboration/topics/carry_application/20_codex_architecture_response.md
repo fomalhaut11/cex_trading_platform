@@ -2,12 +2,13 @@
 id: AI-20260729-007
 title: Codex Carry Application Architecture Response
 origin: codex
-status: READY_FOR_REVIEW
+status: WAITING_FOR_ADR013_SCOPE_ALIGNMENT
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
 related:
   - 10_web_gpt_input.md
+  - ../financial_ledger/20_codex_architecture_response.md
   - ../funding_arbitrage/86_codex_adr014_current_code_audit.md
   - ../funding_arbitrage/87_codex_adr014_proposal_handoff.md
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
@@ -39,10 +40,11 @@ immutable platform facts
 Carry belongs in `cex_quant.applications.carry`, with Funding-specific policy
 under `cex_quant.applications.carry.funding_arbitrage`.
 
-Design review may begin now under ADR-014. Application implementation must not
-begin until ADR-013 Accounting is Accepted and the required Accounting
-capability is implemented and accepted. Grouped external execution remains a
-separate closed gate.
+The ADR-014 draft is complete. Formal review now waits for ADR-013 ownership,
+allocation and attribution read-port scope alignment. Application
+implementation must not begin until ADR-013 Accounting is Accepted and the
+required Accounting capability is implemented and accepted. Grouped external
+execution remains a separate closed gate.
 
 ## 1. Current-Code Audit
 
@@ -332,16 +334,17 @@ ADR-013 is not a cosmetic reporting dependency. It supplies:
 - application ownership allocation;
 - provisional versus reconciled PnL attribution.
 
-ADR-014 can be reviewed now because its domain boundary is independently
-inspectable. Carry code must remain blocked until the accepted ADR-013 public
-read contracts exist and pass offline acceptance.
+ADR-014 remains independently inspectable as a draft, but its formal review
+follows ADR-013 ownership/allocation/read-port scope alignment. Carry code
+must remain blocked until the accepted ADR-013 public read contracts exist
+and pass offline acceptance.
 
 Recommended promotion sequence:
 
 ```text
 1. ADR-012 implementation final acceptance        COMPLETE
 2. ADR-013 Accounting review and correction       NEXT PLATFORM GATE
-3. ADR-014 Carry boundary review and correction   MAY RUN AS DESIGN REVIEW
+3. ADR-014 Carry boundary review and correction   AFTER SCOPE ALIGNMENT
 4. ADR-013 implementation and acceptance
 5. ADR-014 bounded offline implementation
 6. Funding Carry offline scenario acceptance

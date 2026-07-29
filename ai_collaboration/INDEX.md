@@ -6,8 +6,9 @@
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
 |---|---|---|---|---|---|---|
-| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011/012 PROMOTED; ADR-012 implementation ACCEPTED; ADR-013/014 READY_FOR_REVIEW | `b082af0618e180f98441af5dc6d49c906994a012` | [Web GPT final committee review](topics/funding_arbitrage/95_web_gpt_adr012_final_committee_review.md) | [Funding topic resolution](topics/funding_arbitrage/90_resolution.md) |
-| AI-20260729-006 | Carry Application Architecture | Web GPT / Codex | ADR-014 DESIGN_READY_FOR_REVIEW; IMPLEMENTATION_BLOCKED | `b082af0618e180f98441af5dc6d49c906994a012` | [Carry architecture input](topics/carry_application/10_web_gpt_input.md) | [Codex architecture response](topics/carry_application/20_codex_architecture_response.md) |
+| AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011/012 PROMOTED; ADR-012 acceptance CLOSED; ADR-013/014 DESIGN_PHASE | `b082af0618e180f98441af5dc6d49c906994a012` | [ADR-012 formal closure](topics/funding_arbitrage/96_web_gpt_adr012_formal_closure.md) | [Funding topic resolution](topics/funding_arbitrage/90_resolution.md) |
+| AI-20260729-012 | Financial Ledger and PnL Attribution | Web GPT / Codex | ADR-013 READY_FOR_REVIEW; IMPLEMENTATION_BLOCKED | `b082af0618e180f98441af5dc6d49c906994a012` | [Financial Ledger input](topics/financial_ledger/10_web_gpt_input.md) | [Codex Accounting response](topics/financial_ledger/20_codex_architecture_response.md) |
+| AI-20260729-006 | Carry Application Architecture | Web GPT / Codex | ADR-014 WAITING_FOR_ADR013_SCOPE_ALIGNMENT; IMPLEMENTATION_BLOCKED | `b082af0618e180f98441af5dc6d49c906994a012` | [Carry architecture input](topics/carry_application/10_web_gpt_input.md) | [Codex architecture response](topics/carry_application/20_codex_architecture_response.md) |
 
 ## Completed and Reference Exchanges
 
