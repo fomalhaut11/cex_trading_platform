@@ -284,7 +284,8 @@ target-host performance and authenticated Testnet gates.
   remediation head `df2fd83` passed all three jobs in run `30351998834`;
   ADR-012 proposal baseline `fa0df9e` passed all three jobs in run
   `30354281030`; ADR-012 implementation/documentation head `1a86b84` passed
-  all three jobs in run `30431970845`.
+  all three jobs in run `30431970845`; ADR-012 conditional-remediation head
+  `345791e` passed all three jobs in run `30439995029`.
 - Release archive extraction and isolated regression: 218 passed.
 - `websockets==16.1.1` import and transport construction: passed on Python 3.14.
 - Binance public WebSocket handshake and receive: passed.

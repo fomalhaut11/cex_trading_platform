@@ -124,3 +124,10 @@ ADR-012 Portfolio Risk implementation commit
 `30431970845`: quality/coverage and regression on Python 3.11 and 3.14 all
 succeeded. Local evidence is 462 tests, 141 subtests, 39 isolated acceptance
 tests, strict MyPy across 100 source files and 85.12% branch coverage.
+
+ADR-012 conditional-review remediation commit
+`b082af0618e180f98441af5dc6d49c906994a012` and documentation head
+`345791e9af181a255676f0b0b9751bcabb4b3acf` passed remote run
+`30439995029`: quality/coverage and regression on Python 3.11 and 3.14 all
+succeeded. Local evidence is 467 tests, 141 subtests, 39 isolated acceptance
+tests, strict MyPy across 100 source files and 85.11% branch coverage.

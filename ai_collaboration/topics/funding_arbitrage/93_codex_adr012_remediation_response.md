@@ -144,6 +144,8 @@ unready evidence is `INSUFFICIENT_DATA`; unresolved recovery state is
 - Ruff passed;
 - strict MyPy passed for 100 source files;
 - compileall and high-confidence secret scanning passed.
+- documentation head `345791e9af181a255676f0b0b9751bcabb4b3acf`
+  passed every remote job in GitHub Actions run `30439995029`.
 
 ## Committee Request
 
