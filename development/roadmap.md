@@ -92,11 +92,13 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 - ADR-011 Parent Order Group and Multi-leg Execution Model is accepted after
   the second Web GPT review. T029-T031/A014 bounded offline foundation work
   and the post-implementation safety remediation are complete; external
-  exposure-changing group submission remains blocked by ADR-012.
-- ADR-012 Portfolio Risk and Grouped Execution Authorization is Proposed for
-  review. It covers execution-consistent positions, normalized margin facts,
-  whole-Basket reservations, exact per-action permits, continuous supervision
-  and recovery evidence. **No implementation task is authorized yet.**
+  exposure-changing group submission remains blocked.
+- ADR-012 Portfolio Risk and Grouped Execution Authorization is accepted.
+  T032-T035/A015 implement execution-consistent positions, normalized margin
+  facts, whole-Basket reservations, exact per-action permits, continuous
+  supervision, recovery evidence and the shared immediate guard. **Offline
+  acceptance is complete; the grouped external route remains blocked until a
+  separate Testnet authorization.**
 - ADR-013 Financial Ledger and PnL Attribution is Proposed for the same review
   batch. It covers canonical fill/account financial facts, a balanced
   per-asset ledger, source/balance reconciliation, ownership allocation and
@@ -107,10 +109,11 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   **No application implementation is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
-  foundation complete as T029-T031/A014; external group submission blocked by
-  ADR-012.**
+  foundation complete as T029-T031/A014 and Risk authority complete as
+  T032-T035/A015; external group submission remains blocked.**
 - Add normalized margin/collateral state and an idempotent Financial Ledger.
-  **Proposed under ADR-012/013; implementation requires acceptance.**
+  **Margin/collateral input is complete under ADR-012; Financial Ledger
+  remains Proposed under ADR-013.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding
   Arbitrage is the first validating application. **Proposed under ADR-014;
   implementation requires accepted/implemented dependencies.**
@@ -121,5 +124,6 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 Detailed topology, interface drafts, compatibility rules and acceptance gates
 are maintained in `multi_leg_portfolio_trading_plan.md`.
 
-Entry gate: ADR-009 through ADR-014 are reviewed in dependency order. Planning
-does not authorize implementation, Testnet or production trading.
+Entry gate: ADR-009 through ADR-012 are accepted and implemented through their
+offline gates. ADR-013 and ADR-014 remain review-gated. No completed offline
+gate authorizes Testnet or production trading.

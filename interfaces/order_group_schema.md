@@ -20,8 +20,8 @@ BasketTargetIntent
 
 `OrderGroupAdmission` permits group creation only.
 `ExecutionActionPermit` is finite evidence for one exact action at one group
-revision; it is not general order permission. Real permit issuance belongs to
-ADR-012 and is not implemented.
+revision; it is not general order permission. Accepted ADR-012 implements
+durable permit issuance and liveness outside OMS.
 
 ## Public Contracts
 
@@ -42,7 +42,8 @@ ADR-012 and is not implemented.
 
 - `OrderGroupRuntime` for caller-driven durable orchestration;
 - `DurableExecutionHandoff` for shared single-order submission safety;
-- `GroupedExecutionBlockedError`, which is the mandatory pre-ADR-012
+- `PortfolioRiskExecutionGuard` for the future exact pre-I/O Risk boundary;
+- `GroupedExecutionBlockedError`, which remains the mandatory pre-Testnet
   external-execution boundary.
 
 ## Identities and Binding
@@ -91,7 +92,7 @@ and no unresolved child.
 
 OMS does not expose `HEDGED` or `PARTIALLY_HEDGED`. It exposes exact signed
 cumulative fills, signed working quantity and unresolved action IDs per
-Basket leg. ADR-012 will interpret those facts economically.
+Basket leg. Portfolio Risk interprets those facts economically.
 
 ## Bounds and Persistence
 
@@ -122,5 +123,6 @@ permit, child mapping and control changes replay deterministically.
 
 Offline tests may construct synthetic permits and durably prepare child
 attempts. `OrderGroupRuntime.submit_prepared_child` always raises before any
-Execution adapter can be called. ADR-012 acceptance is required before this
-boundary may be replaced with real Portfolio Risk authorization and routing.
+Execution adapter can be called. ADR-012 now supplies real offline Portfolio
+Risk authorization, but routing remains disabled until a separate explicit
+Testnet promotion.

@@ -587,11 +587,11 @@ runtime -> all required domain ports
 | 检查 | 结果 |
 |---|---|
 | 源码编译 | 通过 |
-| 完整回归 | 430 passed，另有 133 subtests |
-| Acceptance 场景 | 36 passed |
+| 完整回归 | 462 passed，另有 141 subtests |
+| Acceptance 场景 | 39 passed |
 | Ruff | 通过 |
-| strict MyPy | 93 个源码文件通过 |
-| Branch coverage | 86.25%，高于 85% CI 门禁 |
+| strict MyPy | 100 个源码文件通过 |
+| Branch coverage | 85.12%，高于 85% CI 门禁 |
 | Python | 3.11 和 3.14 通过 |
 | 高置信度秘密扫描 | 通过 |
 
@@ -703,9 +703,20 @@ runtime/execution_handoff.py
 runtime/order_group_runtime.py
 ```
 
-后续 ADR 仍计划新增 `risk/portfolio.py`、`accounting/` 和
-`applications/carry/`。当前 grouped external submit 在 Runtime 中硬阻断，
-不会到达 Execution adapter。
+ADR-012 已新增：
+
+```text
+portfolio/risk_inputs.py
+portfolio/exposure_state.py
+risk/portfolio_model.py
+risk/portfolio_engine.py
+risk/portfolio_journal.py
+risk/portfolio_coordinator.py
+runtime/portfolio_risk_guard.py
+```
+
+后续 ADR 仍计划新增 `accounting/` 和 `applications/carry/`。当前 grouped
+external submit 在 Runtime 中继续硬阻断，不会到达 Execution adapter。
 
 ADR 状态：
 
@@ -713,13 +724,13 @@ ADR 状态：
 |---|---|---|
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
-| ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成，外部组合提交仍受 ADR-012 阻断 |
-| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
+| ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成 |
+| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现，外部组合提交等待独立 Testnet 授权 |
 | ADR-013 | Financial Ledger and PnL Attribution | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
 | ADR-014 | Carry Application Boundary | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
 
-在 ADR 被接受、任务编号和兼容性测试建立前，不修改现有公开契约。
-现有单品种管线会持续作为回归基线。
+ADR-013/014 在被接受、任务编号和兼容性测试建立前不进入实现。现有单品种
+管线会持续作为回归基线。
 
 ## 16. 文档权威层级
 
@@ -748,9 +759,9 @@ Operations 文档后，才会改变工程基线。
 它仍处于 **Phase 4：Production readiness and external acceptance**。
 外部 Testnet、目标主机性能和真实部署控制尚未验收，因此不能称为生产上线完成。
 
-多腿组合交易的事实层、目标层和离线执行控制层已经分别由 ADR-009、
-ADR-010 和 ADR-011 建立。ADR-012 组合风险与逐 action 授权已形成
-Proposed 文档，但尚未接受和实现；其后仍有
-ADR-013 财务账本和 ADR-014 Carry 应用层也已形成 Proposed 文档，三份提案
-计划在 2026-07-29 统一审核，但均未接受或实现。外部组合提交保持硬阻断，
-因此本阶段完成不代表 Testnet 或生产多腿交易已获授权。
+多腿组合交易的事实层、目标层、离线执行控制层和组合风险授权层已经分别由
+ADR-009、ADR-010、ADR-011 和 ADR-012 建立。ADR-012 的
+execution-consistent 持仓、N-leg 风险投影、reservation、逐 action permit、
+恢复证据和 pre-I/O guard 已通过 A015 离线验收。ADR-013 财务账本和
+ADR-014 Carry 应用层仍为 Proposed。外部组合提交保持硬阻断，因此本阶段
+完成不代表 Testnet 或生产多腿交易已获授权。

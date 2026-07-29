@@ -104,7 +104,8 @@ T029-T031 must add deterministic offline tests for:
 A014 must also prove a negative boundary: no exposure-changing Order Group
 child reaches an Execution adapter. Synthetic permits may test durable
 preparation, state and recovery only. Real action-permit issuance and group
-submission remain blocked until ADR-012.
+submission were outside A014; real offline permit issuance is now covered by
+A015, while external submission remains blocked pending Testnet promotion.
 
 Evidence:
 
@@ -119,13 +120,13 @@ The tests exercise the immutable 8-attempt/64-child hard bounds and lower
 deployment limits, one unresolved action, one same-identity technical
 retransmission, `RECOVERY_REQUIRED`, exact fill vectors and
 `TARGET_CONFIRMED` evidence. External grouped execution remains deliberately
-unreachable, so this completion is not ADR-012 Risk acceptance.
+unreachable. ADR-012 Risk acceptance is recorded separately as A015.
 
-## ADR-012 Proposed Acceptance Scope
+## A015 Portfolio Risk Acceptance
 
-Status: Proposed; no implementation or acceptance task ID is assigned.
+Status: Complete on 2026-07-29 for the T032-T035 offline boundary.
 
-If ADR-012 is accepted, its offline acceptance must cover:
+A015 covers:
 
 - reconciled account baseline plus post-watermark OMS fill overlay, including
   exact no-double-count behavior;
@@ -151,6 +152,17 @@ If ADR-012 is accepted, its offline acceptance must cover:
 
 External grouped execution must remain unreachable during this acceptance.
 Passing offline tests does not authorize Testnet.
+
+Primary evidence:
+
+- `tests/test_portfolio_risk_inputs.py`;
+- `tests/test_portfolio_risk_contracts.py`;
+- `tests/test_portfolio_risk_engine.py`;
+- `tests/test_portfolio_risk_coordinator.py`;
+- `tests/test_portfolio_risk_guard.py`;
+- `tests/acceptance/test_adr012_portfolio_risk.py`;
+- implementation commit
+  `69297d52e764822a1bdd60a23a9b7fca8446a520`.
 
 ## ADR-013 Proposed Acceptance Scope
 

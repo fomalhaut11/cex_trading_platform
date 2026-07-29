@@ -59,16 +59,17 @@ BasketTargetIntent
   -> OrderGroupAdmission
   -> Order Group + ExecutionPlanRef
   -> exact ExecutionAction
-  -> synthetic ExecutionActionPermit
+  -> durable Portfolio Risk ExecutionActionPermit
   -> durable child OrderRequest / OrderStateMachine
 ```
 
 OMS owns group control, child facts, journal replay and recovery. It does not
 own Delta, basis, margin, hedge assessment or Carry semantics. The runtime
-hard-blocks grouped external submission. Proposed ADR-012 defines the review
-candidate for execution-consistent position truth, whole-Basket approval,
-durable Risk reservations, current per-action authorization and continuous
-supervision. No real permit issuer or grouped external route exists yet.
+hard-blocks grouped external submission. Accepted ADR-012 implements
+execution-consistent position truth, whole-Basket approval, durable Risk
+reservations, current per-action authorization and continuous supervision.
+The real offline permit issuer exists; the grouped external route remains
+disabled pending separate Testnet authorization.
 
 Proposed ADR-013 adds a separate Accounting flow:
 

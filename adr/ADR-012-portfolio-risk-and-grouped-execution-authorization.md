@@ -2,16 +2,19 @@
 
 ## Status
 
-Proposed — 2026-07-28.
+Accepted — 2026-07-29.
 
-This ADR is ready for Web GPT and project-owner review. It changes no source
-contract and grants no implementation, Testnet or production authorization.
+Web GPT confirmed that ADR-012 Proposal work could start while grouped
+external execution remained closed. The project owner agreed. The apparent
+ADR-011 blockers in that review were checked against the current branch and
+were already closed by the accepted ADR-011 remediation evidence.
+
+Acceptance authorizes T032-T035 and A015 offline work only. It does not
+authorize Funding Arbitrage, Testnet or production execution.
 
 Grouped external execution remains hard-blocked by
-`GroupedExecutionBlockedError`. Accepting this ADR would authorize only the
-separately assigned implementation and offline acceptance work. Removing the
-external-execution block requires completed implementation, offline
-acceptance and a later explicit Testnet authorization.
+`GroupedExecutionBlockedError`. Removing that block requires completed
+offline acceptance and a later explicit Testnet authorization.
 
 Reviewed baseline:
 
@@ -1371,11 +1374,10 @@ permit. Immediate generation validation is required.
 
 ## 24. Implementation and Promotion Gate
 
-This Proposed ADR authorizes no code.
+Web GPT review and explicit project-owner acceptance were recorded on
+2026-07-29. They authorized:
 
-After Web GPT review and explicit project-owner acceptance:
-
-1. assign implementation and acceptance task IDs;
+1. T032-T035 and A015 task assignment;
 2. implement Portfolio exposure-coverage and margin facts;
 3. implement immutable Risk contracts and the pure projection engine;
 4. implement durable reservations, journal, supervision and recovery evidence;

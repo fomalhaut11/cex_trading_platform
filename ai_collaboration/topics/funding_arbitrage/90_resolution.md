@@ -152,7 +152,7 @@ applications/
 | 1 | ADR-009 Portfolio Snapshot Model | 多 scope 状态所有权、时间、quality、skew、组装和读取 | 契约、所有权图、stale/skew 失败场景 | ACCEPTED_2026_07_28 |
 | 2 | ADR-010 Basket Intent Architecture | Generic bounded N-leg objective、identity、limits、版本与整篮子预检 | schema、边界、单腿 intent 兼容策略 | ACCEPTED_IMPLEMENTED_2026_07_28 |
 | 3 | ADR-011 Parent Order Group and Multi-leg Execution Model | Generic Order Group lifecycle、Execution Plan/Action、per-action permission、durable handoff、bounded children、partial、unknown 和恢复 | 状态机、identity、journal/replay、单腿兼容与故障矩阵 | ACCEPTED_2026_07_28_T029_T031_A014_AUTHORIZED |
-| 4 | ADR-012 Portfolio Risk and Grouped Execution Authorization | execution-consistent position、basket projection、delta、basis、margin、liquidation、reservation、逐 action permit、持续监督 | 风险上下文、拒绝原因、durability、recovery 和 fail-closed 场景 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
+| 4 | ADR-012 Portfolio Risk and Grouped Execution Authorization | execution-consistent position、basket projection、delta、basis、margin、liquidation、reservation、逐 action permit、持续监督 | 风险上下文、拒绝原因、durability、recovery 和 fail-closed 场景 | ACCEPTED_2026_07_29_T032_T035_A015_COMPLETE_OFFLINE |
 | 5 | ADR-013 Financial Ledger and PnL Attribution | fill/account facts、balanced per-asset ledger、reconciliation、allocation、valuation 和 attribution | source schema、ledger invariant、reconciliation、PnL 恒等式 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
 | 6 | ADR-014 Carry Application Boundary | applications/carry 所有权、正交状态、ownership、依赖和 runtime assembly | 模块拓扑、公开 API、禁止依赖规则 | PROPOSED_READY_FOR_REVIEW_2026_07_28 |
 
@@ -437,7 +437,7 @@ ADR-010 BasketTargetIntent
   -> ExecutionAction
   -> synthetic ExecutionActionPermit
   -> durable Child Order Attempt
-  -X-> grouped external Execution (blocked until ADR-012)
+  -X-> grouped external Execution (historical ADR-011 gate)
 ```
 
 OMS 新增通用 N-leg 执行控制、精确 action/permit/revision/expiry 校验、
@@ -495,10 +495,7 @@ Runtime
 避免已反映成交被重复计算。若 execution coverage 不可证明，普通组合 action
 必须 fail closed。
 
-ADR-012 当前状态是 `Proposed`，不是 `Accepted`。尚未分配 T032 或 A015，
-没有实现 Portfolio Risk、真实 permit issuer 或 grouped external route。
-`GroupedExecutionBlockedError` 继续生效，Funding Arbitrage、Testnet 和生产
-多腿执行仍未授权。
+该段最初记录的是 2026-07-28 Proposal 状态；现已由第 19 节取代。
 
 ## 16. ADR-013 Proposal
 
@@ -567,3 +564,35 @@ ADR-012 Portfolio Risk
 三份 ADR 均需独立返回 `ACCEPT`、`ACCEPT WITH REQUIRED CORRECTIONS` 或
 `REVISE`。审核意见按“当前 ADR 设计错误 / 其他 ADR 或实现问题 / 长期优化”
 分类。该审核包不授权代码实现、Testnet、生产或真实组合外部提交。
+
+## 19. ADR-012 Acceptance and Offline Implementation
+
+2026-07-29，Web GPT 确认 ADR-012 Proposal 可以开始，但 grouped external
+execution 不得开放；项目所有者同意。审核中重复出现的 ADR-011
+A-01/A-03/A-06 属于整改前状态，当前分支已由
+`81_codex_adr011_remediation_acceptance.md` 和 CI 证据关闭，因此没有重开
+ADR-011。
+
+ADR-012 升级为 `Accepted`，并授权 T032-T035/A015 有界离线范围。实现提交：
+
+`69297d52e764822a1bdd60a23a9b7fca8446a520`
+
+已完成：
+
+- execution-consistent baseline + post-watermark fill overlay；
+- normalized margin/liquidation inputs；
+- exact unit-labelled N-leg Risk projection；
+- whole-Basket approval and durable reservation；
+- per-action permit and authorization generation；
+- continuous directive、restart invalidation、recovery authorization 和
+  target confirmation；
+- shared pre-I/O Portfolio Risk guard；
+- BTC Spot/Perpetual 两腿与 Option spread + Delta hedge 三腿 A015 场景。
+
+`OrderGroupRuntime.submit_prepared_child()` 继续硬阻断。A015 完成不授权
+Funding Arbitrage、ADR-013 Accounting、Testnet、生产或真实 grouped
+external execution。
+
+当前 Web GPT 审核入口：
+
+`91_codex_adr012_implementation_acceptance.md`

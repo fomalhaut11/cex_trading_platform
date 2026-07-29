@@ -49,7 +49,7 @@ BasketTargetIntent
   -> OrderGroupAdmission
   -> OMS Order Group + ExecutionPlanRef
   -> ExecutionAction
-  -> ExecutionActionPermit        # issuance remains ADR-012
+  -> ExecutionActionPermit        # issued durably by Portfolio Risk
   -> durable Child Order Attempt
   -> existing OrderRequest
   -> existing Execution adapter
@@ -71,11 +71,24 @@ external I/O and returns every immediate result or typed unknown/not-sent
 failure to OMS. The Order Group runtime enforces single-writer mutation,
 bounded strategy/account activation, durable capacity suspension and global
 child identity ownership. It can durably prepare synthetic child attempts,
-but its external submission method always fails closed. ADR-012 is Proposed
-for architecture review; no exposure-changing group child can reach an
-Execution adapter until that ADR is accepted, implemented and accepted
-offline. The current single-leg Pipeline remains the production regression
-path.
+but its external submission method always fails closed. The current
+single-leg Pipeline remains the production regression path.
+
+Accepted ADR-012 adds:
+
+```text
+portfolio.risk_inputs
+  -> portfolio.exposure_state
+  -> risk.portfolio_model
+  -> risk.portfolio_engine
+  -> risk.portfolio_coordinator / risk.portfolio_journal
+  -> runtime.portfolio_risk_guard
+  -> shared durable handoff
+  -X-> grouped external Execution
+```
+
+T032-T035/A015 are complete offline. The final arrow remains hard-blocked
+pending a separate explicit Testnet promotion.
 
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
@@ -108,12 +121,12 @@ listener. Concrete TLS termination remains a deployment boundary.
     authority; only Runtime may coordinate the accepted boundaries.
 17. OMS group state owns group control, child mappings and execution facts;
     it cannot compute Delta, basis, margin, `HEDGED` or application meaning.
-18. `ExecutionActionPermit` is an immutable ADR-012-facing evidence contract;
-    OMS validates exact binding but does not issue real permits.
-19. Proposed ADR-012 keeps execution-consistent positions and normalized
+18. `ExecutionActionPermit` is immutable evidence issued by Portfolio Risk;
+    OMS validates exact binding but never issues it.
+19. Accepted ADR-012 keeps execution-consistent positions and normalized
     margin facts in Portfolio, exposure/approval/permit authority in Risk,
-    group/action/child facts in OMS and ordered coordination in Runtime. This
-    proposal is not yet an accepted dependency change.
+    group/action/child facts in OMS and ordered coordination in Runtime.
+    Risk directives never mutate OMS or call Execution.
 20. Proposed ADR-013 adds an independent Accounting domain for immutable
     financial facts, balanced per-asset postings, reconciliation, allocation
     and derived PnL. Accounting cannot mutate OMS/Portfolio or import an

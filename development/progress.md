@@ -198,15 +198,27 @@ target-host performance and authenticated Testnet gates.
   single-writer enforcement. Fault injection covers the newly identified
   halt, append, recovery and ownership boundaries without adding ADR-012 Risk
   logic or enabling grouped external execution.
+- ADR-012 Portfolio Risk and Grouped Execution Authorization accepted for
+  bounded offline implementation after the current branch confirmed that the
+  repeated ADR-011 blockers were already remediated.
+- T032 execution-consistent Portfolio position truth with explicit OMS
+  coverage, cumulative-fill increments, exact replay, no-double-count
+  rebaselining and normalized margin/liquidation inputs.
+- T033 immutable unit-labelled Risk contracts and a pure generic N-leg engine
+  for current/projected/conservative exposure, whole-Basket decisions,
+  options Greeks, spreads, margin and exact action permits.
+- T034 checksummed durable Risk journal and single-writer coordinator for
+  reservations, authorization generations, permit liveness, directives,
+  restart invalidation, recovery authorization and target confirmation.
+- T035 `PortfolioRiskExecutionGuard` composes platform/operator checks with
+  durable exact permit consumption at the shared pre-I/O boundary.
+- A015 offline acceptance covers two-leg Spot/Perpetual, three-leg option
+  spread plus Delta hedge, position coverage, reservation races, journal
+  failures, action residuals and restart. Grouped external submission remains
+  hard-blocked pending separate Testnet authorization.
 
 ## In Progress
 
-- ADR-012 Portfolio Risk and Grouped Execution Authorization is Proposed and
-  ready for Web GPT/project-owner review. The proposal defines a reconciled
-  account baseline plus post-watermark OMS fill overlay, normalized
-  margin/collateral facts, whole-Basket admission reservations, exact current
-  action permits, continuous supervision and recovery evidence. No Portfolio
-  Risk source or real permit issuer has been implemented.
 - ADR-013 Financial Ledger and PnL Attribution is Proposed and ready for the
   same review batch. It separates fill/account financial facts, a balanced
   per-asset immutable ledger, source/balance reconciliation, allocation and
@@ -215,8 +227,8 @@ target-host performance and authenticated Testnet gates.
   batch. It keeps economic lifecycle, hedge assessment and ownership in
   `applications.carry` while preserving generic Risk/OMS/Accounting
   authority. No Carry/Funding application code has been implemented.
-- The self-contained 2026-07-29 review entry point is
-  `ai_collaboration/topics/funding_arbitrage/88_codex_20260729_batch_review_handoff.md`.
+- The current ADR-012 implementation review entry point is
+  `ai_collaboration/topics/funding_arbitrage/91_codex_adr012_implementation_acceptance.md`.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -236,13 +248,13 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Review ADR-012, ADR-013 and ADR-014 in dependency order using the
-   2026-07-29 batch handoff; classify findings per ADR as design errors,
-   other-ADR/implementation concerns or long-term optimizations.
-2. Accept or revise each ADR independently before assigning any new
-   implementation or offline acceptance task IDs.
-3. Keep grouped external submission blocked until ADR-012 is accepted,
-   implemented, accepted offline and separately authorized for Testnet.
+1. Review the ADR-012 T032-T035/A015 implementation handoff and classify
+   findings as ADR-012 implementation errors, ADR-013/014 concerns or
+   long-term optimizations.
+2. Review and accept or revise ADR-013 before assigning Accounting
+   implementation tasks.
+3. Keep grouped external submission blocked until a later explicit Testnet
+   authorization; offline ADR-012 completion alone is insufficient.
 4. Configure protected-branch checks after agreeing the direct-push policy.
 5. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
@@ -256,12 +268,12 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -q`: 430 passed.
-- `python -m unittest discover -s tests/acceptance -q`: 37 passed.
+- `python -m unittest discover -s tests -q`: 462 passed.
+- `python -m unittest discover -s tests/acceptance -q`: 39 passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy`: passed with MyPy 2.3.0 for 93 source files.
-- Pytest branch coverage: 86.25%; the 85% CI gate passes locally with 430
-  tests and 133 subtests.
+- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 100 source files.
+- Pytest branch coverage: 85.12%; the 85% CI gate passes locally with 462
+  tests and 141 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
   remediation head `df2fd83` passed all three jobs in run `30351998834`;

@@ -34,6 +34,10 @@
 | T029 | Order Group, Execution Plan/Action/Permit identifiers and immutable contracts | Complete | ADR-011 |
 | T030 | Bounded Order Group state, mixed-version OMS journal, replay and recovery model | Complete | T029, T016 |
 | T031 | Shared durable submit handoff and fail-closed group runtime boundary | Complete | T030, T015-T016 |
+| T032 | Execution-consistent Portfolio baseline/overlay and normalized margin/liquidation inputs | Complete | ADR-012, T016, T025 |
+| T033 | Immutable Portfolio Risk contracts, pure N-leg projection and whole-Basket/action decisions | Complete | T032, T027, T029 |
+| T034 | Durable Portfolio Risk reservations, permit generations, directives and recovery evidence | Complete | T033, T030 |
+| T035 | Immediate pre-I/O Portfolio Risk guard with grouped external route still blocked | Complete | T031, T034 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -50,6 +54,7 @@
 | A012 | Offline decision-snapshot contract, coherence, replay and restart acceptance | Complete | T025-T026 |
 | A013 | Offline Basket contract, replay, compatibility and two-/three-leg acceptance | Complete | T027-T028 |
 | A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Complete | T029-T031 |
+| A015 | Offline Portfolio position coverage, N-leg Risk, reservation, permit, recovery and blocked-route acceptance | Complete | T032-T035 |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -57,8 +62,9 @@ its implementation evidence. Commit
 gaps: immediate pre-I/O authority recheck, capacity suspension and
 strategy/account active-group limits, child identity collision protection,
 runtime single-writer enforcement and the missing fault/race cases. A014 is
-therefore `Complete` after remediation; grouped external submission remains
-blocked by ADR-012.
+therefore `Complete` after remediation. ADR-012 offline implementation is now
+also complete, but grouped external submission remains blocked pending a
+separate explicit Testnet promotion.
 
 ## Current Acceptance Baseline
 
@@ -84,19 +90,19 @@ ADR-011 Parent Order Group and Multi-leg Execution Model was accepted on
 Execution Intent/Plan/Action/Child distinction. T029, T030, T031 and A014 are
 complete.
 
-The implemented scope is offline and bounded. T031 fails closed before any
-exposure-changing Order Group child reaches an Execution adapter. Real
-Portfolio action-permit issuance and external group submission remain blocked
-until ADR-012 is accepted. Funding Arbitrage, Testnet and production
-multi-leg execution remain unauthorized.
+ADR-012 Portfolio Risk and Grouped Execution Authorization was accepted on
+2026-07-29 for bounded offline implementation after the current branch
+confirmed that the referenced ADR-011 remediation blockers were already
+closed. T032-T035 and A015 are complete at implementation commit
+`69297d52e764822a1bdd60a23a9b7fca8446a520`.
 
-ADR-012 Portfolio Risk and Grouped Execution Authorization, ADR-013 Financial
-Ledger and PnL Attribution, and ADR-014 Carry Application Boundary are now
-Proposed for the 2026-07-29 batch review. No T032-or-later implementation task
-and no A015-or-later acceptance item is assigned before Web GPT review and
-explicit project-owner acceptance.
+The implementation provides execution-consistent effective positions,
+normalized margin/liquidation inputs, generic N-leg exposure projection,
+whole-Basket reservations, exact action permits, generation invalidation,
+directives, recovery/confirmation evidence and the immediate pre-I/O Risk
+guard. `OrderGroupRuntime.submit_prepared_child()` remains hard-blocked.
 
-The proposals do not change the completed status of T029-T031/A014, implement
-Portfolio Risk/Accounting/Carry, or remove the grouped external execution
-block. Review entry:
-`ai_collaboration/topics/funding_arbitrage/88_codex_20260729_batch_review_handoff.md`.
+ADR-013 Financial Ledger and PnL Attribution and ADR-014 Carry Application
+Boundary remain Proposed. Funding Arbitrage, Accounting implementation,
+Testnet and production multi-leg execution remain unauthorized. Review entry:
+`ai_collaboration/topics/funding_arbitrage/91_codex_adr012_implementation_acceptance.md`.

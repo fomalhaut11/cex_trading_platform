@@ -1,7 +1,7 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: In progress — ADR-009/010/011 accepted; ADR-012/013/014 Proposed for
-the 2026-07-29 batch review; application implementation remains blocked
+Status: In progress — ADR-009 through ADR-012 accepted and implemented
+offline; ADR-013/014 Proposed; application implementation remains blocked
 
 Created: 2026-07-27
 
@@ -16,11 +16,11 @@ tasks T025/T026 and acceptance A012 are complete. ADR-010 was accepted after
 current-code compatibility review; T027/T028/A013 are complete. ADR-011 was
 accepted after incorporating the second Web GPT review; T029-T031/A014 are
 complete for bounded offline implementation, including post-review execution
-safety remediation. ADR-012 now has a current-code audit and Proposed
-architecture; ADR-013 Financial Ledger and ADR-014 Carry Application Boundary
-now also have current-code audits and Proposed architectures. None of these
-three ADRs has been accepted or implemented, and external exposure-changing
-group submission is not authorized.
+safety remediation. ADR-012 was accepted on 2026-07-29; T032-T035/A015 are
+complete at `69297d52e764822a1bdd60a23a9b7fca8446a520`. ADR-013 Financial
+Ledger and ADR-014 Carry Application Boundary retain current-code audits and
+Proposed architectures. Neither is accepted or implemented, and external
+exposure-changing group submission is not authorized.
 
 ## 1. Purpose
 
@@ -822,6 +822,8 @@ Depends on ADR-011 and M2.
 
 ### Workstream M4 — Portfolio Risk
 
+Status: Complete offline as T032-T035/A015.
+
 - projected portfolio;
 - net/gross exposure;
 - product Delta;
@@ -988,15 +990,11 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-T029, T030, T031 and A014 are complete after the ADR-011 post-implementation
-safety remediation. ADR-012, ADR-013 and ADR-014 now each have a current-code
-audit, formal Proposed ADR and self-contained Web GPT handoff. The next gate
-is the 2026-07-29 Web GPT/project-owner batch review; each decision must be
-accepted or revised independently before task IDs are assigned. External
-group submission remains blocked through implementation, offline acceptance
-and separate Testnet authorization.
+T029-T035 and A014/A015 are complete after ADR-011 remediation and ADR-012
+offline implementation. The next architecture gate is ADR-012 implementation
+review followed by the independent ADR-013 decision. External group
+submission remains blocked pending separate Testnet authorization.
 
-Do not create Funding Arbitrage application code. Basket decision contracts
-and the bounded offline OMS Order Group foundation are complete. Portfolio
-Risk, Financial Ledger and Carry implementation remain blocked by their
-owning ADRs.
+Do not create Funding Arbitrage application code. Basket, bounded OMS Order
+Group and Portfolio Risk foundations are complete offline. Financial Ledger
+and Carry implementation remain blocked by ADR-013/014.
