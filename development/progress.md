@@ -251,7 +251,8 @@ target-host performance and authenticated Testnet gates.
   durable Carry lifecycle/replay, Portfolio-derived hedge assessment,
   Accounting-derived financial finality and recovery proposals.
   `CarryApplicationRuntime` records generic Basket evidence and stops before
-  Portfolio Risk, OMS and Execution.
+  Portfolio Risk, OMS and Execution. Implementation commit:
+  `40d10125318ebafc6c9979dc6ee3447c10739657`.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit

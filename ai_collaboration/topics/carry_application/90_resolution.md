@@ -2,9 +2,9 @@
 id: AI-20260729-009
 title: Carry Application Resolution
 origin: joint
-status: READY_FOR_REVIEW
+status: ACCEPTED_OFFLINE_IMPLEMENTATION_COMPLETE
 created: 2026-07-29
-code_baseline: b082af0618e180f98441af5dc6d49c906994a012
+code_baseline: 40d10125318ebafc6c9979dc6ee3447c10739657
 supersedes: none
 related:
   - 10_web_gpt_input.md
@@ -12,6 +12,7 @@ related:
   - 30_web_gpt_review.md
   - 40_codex_adr014_scope_alignment.md
   - 50_codex_adr014_review_handoff.md
+  - 60_codex_adr014_offline_implementation_handoff.md
   - ../financial_ledger/90_resolution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
@@ -22,12 +23,12 @@ sensitivity: public-project
 
 ## Current Status
 
-`READY_FOR_REVIEW`
+`ACCEPTED_OFFLINE_IMPLEMENTATION_COMPLETE`
 
-The topic has an input, architecture response and current-code scope-alignment
-record. ADR-013 Accounting public contracts are compatible with the proposal.
-ADR-014 is ready for formal review. No acceptance or implementation authority
-is recorded here.
+Web GPT accepted ADR-014, approved its scope and authorized T040-T044/A017
+credential-free offline implementation. That implementation and A017 are now
+complete. ADR-013 Accounting public contracts are compatible with the
+accepted boundary.
 
 ## Frozen Baseline Facts
 
@@ -37,27 +38,23 @@ is recorded here.
 - Grouped external execution remains blocked.
 - ADR-013 is approved in principle; T036-T039/A016 are complete under
   project-owner offline authority, with final Web GPT acceptance pending.
-- ADR-014 is Carry Application Boundary and remains Proposed.
+- ADR-014 Carry Application Boundary is Accepted.
 - ADR-014 design and ADR-013 interface scope alignment are complete.
-- Carry/Funding source implementation is not yet authorized.
+- T040-T044/A017 offline implementation is complete and pending external
+  architecture review.
+- Funding execution, grouped external submission, Testnet and production
+  remain blocked.
 
 ## Numbering Resolution
 
 The phrase “ADR-013 Carry” in the incoming review is normalized to the
 repository's stable identifier ADR-014. Existing ADRs are not renumbered.
 
-## Pending Decision
+## Review Resolution
 
-After Web GPT review, record:
-
-1. accepted ADR-014 boundary;
-2. required A-class corrections, if any;
-3. ADR-013 dependencies;
-4. non-blocking long-term items;
-5. explicit implementation authorization or continued block;
-6. exact promoted files and commit.
-
-Until then, this file must not be interpreted as ADR acceptance.
+No A-class architecture correction was requested. The accepted implementation
+must make lifecycle transitions, the economics/Risk separation and recovery
+proposal semantics explicit and testable.
 
 ## Scope Alignment Result
 
@@ -68,4 +65,21 @@ Until then, this file must not be interpreted as ADR acceptance.
 - a durable public Accounting allocation/query coordinator remains a
   dependency;
 - the first MVP retains dedicated/exclusive account ownership;
-- T040-T044/A017 are planned but unauthorized.
+- T040-T044/A017 are complete offline.
+
+## Implementation Resolution
+
+- T040 publishes a bounded authoritative latest `FundingView`.
+- T041 provides immutable Carry IDs, pair, lifecycle and ownership contracts.
+- T042 assembles exact typed decision Snapshots and emits only generic
+  `BasketTargetIntent` through pure economic policy.
+- T043 persists application facts before publishing Carry state, replays the
+  journal and keeps recovery proposals distinct from OMS recovery and Risk
+  permits.
+- T044 composes Snapshot plus Strategy only. Its public result is permanently
+  `external_execution_blocked=True`.
+- A017 validates two-leg open/close, UNKNOWN restart recovery, independent
+  physical/financial finality and generic three-leg compatibility.
+
+No source module enables Funding execution, grouped external submission,
+Testnet or production.
