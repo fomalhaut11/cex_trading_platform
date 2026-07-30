@@ -77,7 +77,8 @@ versioned position-target tolerance and distinct stale/insufficient/recovery
 decision statuses. Greeks remain supplied Feature evidence, and permit
 consumption remains durable before any future external side effect.
 
-Proposed ADR-013 adds a separate Accounting flow:
+The project-owner-authorized ADR-013 offline implementation adds a separate
+Accounting flow:
 
 ```text
 authenticated fill/account financial facts
@@ -86,12 +87,15 @@ authenticated fill/account financial facts
   -> derived valuation/PnL views
 ```
 
-Proposed ADR-014 places Funding Carry in
+Accepted ADR-014 places Funding Carry in
 `applications.carry.funding_arbitrage`. The application owns economic
 lifecycle and hedge interpretation, consumes immutable Platform views and
 emits only generic Basket targets. It cannot issue Risk permits, mutate OMS,
-write ledger transactions or call Execution. Both proposals await review and
-authorize no implementation.
+write ledger transactions or call Execution. T040-T044/A017 are complete
+offline. `CarryApplicationRuntime` composes coherent Snapshot publication and
+pure policy only, records Basket evidence and stops before Portfolio Risk,
+OMS and Execution. ADR-013 final review and every external authorization
+remain separate gates.
 
 ## Design Principles
 

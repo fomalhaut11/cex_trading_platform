@@ -2,11 +2,12 @@
 
 ## Status
 
-Proposed, scope-aligned - 2026-07-30.
+Accepted - 2026-07-30.
 
-This ADR has been rechecked against the project-owner-authorized ADR-013
-offline implementation. It changes no source contract and grants no Funding
-Arbitrage, grouped execution, Testnet or production authorization.
+Web GPT architecture review accepted the design, approved its scope and
+authorized credential-free offline implementation of T040-T044/A017. This
+does not authorize Funding execution, grouped external submission, Testnet or
+production.
 
 Reviewed baseline:
 
@@ -15,10 +16,8 @@ Reviewed baseline:
 ADR-012 is Accepted and implemented through its bounded offline gate.
 ADR-013 is approved in principle and T036-T039/A016 are complete under
 separate project-owner offline authority. Its public Accounting contracts have
-now been checked for ADR-014 compatibility. Web GPT final ADR-013 acceptance
-and ADR-014 review remain pending. Carry application code starts only after an
-explicit ADR-014 implementation authorization; external exposure remains a
-later independent gate.
+been checked for ADR-014 compatibility. ADR-014 offline implementation is
+authorized; external exposure remains a later independent gate.
 
 ## Context
 
@@ -1324,10 +1323,8 @@ orthogonal states, offline failure tests and explicit promotion gates.
 
 ## 25. Implementation and Promotion Gate
 
-This Proposed ADR authorizes no code.
-
-Proposed implementation sequence after Web GPT review and explicit
-project-owner authorization:
+The architecture review authorized, and this change completes, the following
+credential-free offline implementation sequence:
 
 1. T040: authoritative latest Funding market-state view;
 2. T041: application/Carry IDs, pair and ownership contracts;

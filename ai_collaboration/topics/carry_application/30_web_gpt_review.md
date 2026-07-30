@@ -2,13 +2,15 @@
 id: AI-20260729-008
 title: Web GPT Carry Application Review
 origin: web-gpt
-status: READY_FOR_WEB_GPT_REVIEW
+status: ACCEPTED
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
 related:
   - 10_web_gpt_input.md
   - 20_codex_architecture_response.md
+  - 40_codex_adr014_scope_alignment.md
+  - 50_codex_adr014_review_handoff.md
   - ../financial_ledger/30_web_gpt_review.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
@@ -17,37 +19,39 @@ sensitivity: public-project
 
 # Web GPT Review: Carry Application
 
-## Status
+## Architecture Review Decision
 
-ADR-013 ownership/allocation/read-port scope alignment is complete at
-`40_codex_adr014_scope_alignment.md`. This file is ready for Web GPT review.
+```text
+ADR-014 Design:             ACCEPTED
+Scope:                      APPROVED
+Offline implementation:     AUTHORIZED
+External execution:         BLOCKED
+```
 
-No review result has been inferred or pre-filled by Codex.
+Approved boundaries:
 
-The latest committee message accepted ADR-012 and authorized the start of
-ADR-014 design. It did not review `20_codex_architecture_response.md`, so that
-transition message is preserved as input rather than recorded here as an
-ADR-014 decision.
+- Carry belongs in `cex_quant.applications.carry`.
+- Carry owns economic lifecycle and policy.
+- Carry does not own Market State, Portfolio, Risk, OMS, Accounting or Venue
+  I/O.
+- Carry produces generic `BasketTargetIntent`.
+- ADR-012 remains the Risk authorization boundary.
+- ADR-011 remains the execution-control boundary.
+- ADR-013 remains Accounting truth.
 
-The generic Accounting boundary required by Carry is now implemented offline
-and documented. No review result is inferred by Codex.
+Approved offline tasks:
 
-## Review Material
+- T040 Funding market-state view;
+- T041 Carry contracts;
+- T042 pure economic policy;
+- T043 Carry aggregation and recovery;
+- T044 Runtime composition without external execution;
+- A017 offline acceptance.
 
-Primary handoff:
+Non-blocking implementation clarifications:
 
-`50_codex_adr014_review_handoff.md`
+- Carry lifecycle states;
+- Carry economics versus Risk separation;
+- recovery proposal semantics.
 
-Authoritative proposal:
-
-`../../../adr/ADR-014-carry-application-boundary.md`
-
-## Requested Classification
-
-- A. ADR-014 design error;
-- B. ADR-013 or implementation dependency;
-- C. long-term optimization.
-
-## Web GPT Review
-
-Paste the returned review below this line without rewriting its conclusions.
+No Funding execution, Testnet or production authorization is granted.

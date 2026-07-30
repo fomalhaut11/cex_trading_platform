@@ -27,6 +27,8 @@ from .normalization import (
     RawMarketMessage,
 )
 from .state import (
+    FundingRateState,
+    FundingView,
     InstrumentMismatchError,
     L1State,
     L1View,
@@ -53,7 +55,9 @@ __all__ = [
     "AggressorSide",
     "BestBidAsk",
     "BookLevel",
+    "FundingRateState",
     "FundingRateUpdate",
+    "FundingView",
     "IndexPriceUpdate",
     "InstrumentMismatchError",
     "KlineUpdate",

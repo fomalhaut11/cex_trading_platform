@@ -245,11 +245,13 @@ target-host performance and authenticated Testnet gates.
   implementation T036-T039/A016 is complete and recorded in
   `ai_collaboration/topics/financial_ledger/50_codex_adr013_offline_implementation_handoff.md`.
   This does not authorize authenticated source activation or external trading.
-- ADR-014 Carry Application Boundary remains Proposed. Its draft keeps
-  economic lifecycle, hedge assessment and ownership in
-  `applications.carry`. Scope alignment against implemented ADR-013 public
-  contracts is complete and ADR-014 is ready for review. T040-T044/A017 are
-  planned but unauthorized; no Carry/Funding application code exists.
+- ADR-014 Carry Application Boundary is Accepted. T040-T044/A017 are complete
+  offline: authoritative Funding state, immutable Carry contracts, typed
+  decision Snapshots, registered economic Features, pure open/close policy,
+  durable Carry lifecycle/replay, Portfolio-derived hedge assessment,
+  Accounting-derived financial finality and recovery proposals.
+  `CarryApplicationRuntime` records generic Basket evidence and stops before
+  Portfolio Risk, OMS and Execution.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -269,12 +271,10 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Complete ADR-013 final review using the clarification response and offline
+1. Submit the ADR-014 offline implementation handoff for Web GPT review; do
+   not infer external authorization from offline completion.
+2. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-2. Submit the scope-aligned ADR-014 handoff for review; begin no application
-   source until explicitly authorized.
-   then perform its formal review; do not treat the existing draft as
-   implementation authorization.
 3. Keep grouped external submission blocked until a later explicit Testnet
    authorization; offline ADR-012 completion alone is insufficient.
 4. Configure protected-branch checks after agreeing the direct-push policy.
@@ -290,12 +290,12 @@ target-host performance and authenticated Testnet gates.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -q`: 467 passed.
-- `python -m unittest discover -s tests/acceptance -q`: 39 passed.
+- `python -m unittest discover -s tests -p "test*.py"`: 544 passed.
+- ADR-014 A017: 5 acceptance scenarios passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 100 source files.
-- Pytest branch coverage: 85.11%; the 85% CI gate passes locally with 467
-  tests and 141 subtests.
+- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 136 source files.
+- Pytest branch coverage: 85.13%; the 85% CI gate passes locally with 544
+  tests and 188 subtests.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
   remediation head `df2fd83` passed all three jobs in run `30351998834`;

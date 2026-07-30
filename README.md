@@ -14,11 +14,13 @@ contracts, single-writer state and a deterministic hot path.
   accepted ADR-012 adds execution-consistent Portfolio inputs, generic N-leg
   Risk authorization, durable reservations/permits and recovery evidence.
   Web GPT accepted and closed all conditional implementation findings.
-  ADR-013 Financial Ledger and ADR-014 Carry Application Boundary remain
-  Proposed. ADR-013 is approved in principle; its requested time and
-  multi-currency clarifications await final review. The ADR-014 draft waits
-  for final Accounting scope alignment. Grouped external execution remains
-  blocked pending a separate explicit Testnet authorization.
+  ADR-013 is approved in principle and its project-owner-authorized offline
+  Financial Ledger implementation is complete, pending final review.
+  ADR-014 Carry Application Boundary is Accepted and T040-T044/A017 are
+  implemented offline: authoritative Funding state, pure Carry policy,
+  durable application lifecycle/recovery and blocked Runtime composition.
+  Grouped external execution remains blocked pending a separate explicit
+  Testnet authorization.
 
 ## Development
 

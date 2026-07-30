@@ -2,7 +2,7 @@
 
 文档状态：当前实现说明
 
-基线日期：2026-07-28
+基线日期：2026-07-30
 
 适用代码：`src/cex_quant/`
 
@@ -298,8 +298,9 @@ RiskEngine, RiskContext, RiskLimits
 RiskDecision, RiskDecisionStatus, RiskRejectReason
 ```
 
-当前实现是单品种交易前风控。组合级 Delta、basis、legging、margin 和
-liquidation 风险属于后续多腿扩展，尚未实现。
+原有单品种交易前风控保持兼容。ADR-012 已增加组合级 N-leg 风险投影、
+whole-Basket reservation、Delta/Greeks 证据消费、margin/liquidation 输入、
+逐 action permit 和 pre-I/O guard。组合外部提交仍被独立闸门硬阻断。
 
 ### 6.7 `oms`
 
@@ -457,10 +458,39 @@ BinanceEnvironmentConfig, BinanceClockProbeService
 OperatorController, OperatorRiskGate
 AuthenticatedOperatorCommandService, OperatorCommandEndpoint
 RuntimeHealthService
+CarryApplicationRuntime, CarryRuntimeResult
 ```
 
 运维 endpoint 是协议无关的边界，本身不拥有公网 listener。实际 TLS/mTLS
 终止、受保护身份转发和远程审计保留仍属于目标部署环境。
+
+### 6.14 `accounting`
+
+职责：
+
+- 接收认证后的不可变 financial facts；
+- 维护按资产平衡、追加式、可重放的账本；
+- 区分经济时间、观察时间与入账时间；
+- 提供来源/余额 reconciliation、归属分配、估值和 PnL 只读视图。
+
+Accounting 不从 Funding rate 推测现金流，不以 OMS 状态替代账本事实，也不
+导入 Carry 应用。当前离线实现完成，最终 Web GPT 验收仍待进行。
+
+### 6.15 `applications.carry`
+
+职责：
+
+- 拥有 Carry 经济仓位身份、生命周期和政策；
+- 组合 Spot、Perpetual、Funding、Portfolio、Feature 等不可变视图；
+- 从 Portfolio 真值解释 `UNHEDGED/PARTIALLY_HEDGED/HEDGED`；
+- 从 Accounting 证据解释 `NOT_READY/PROVISIONAL/RECONCILED`；
+- 产生通用 `BasketTargetIntent` 和无执行权的 recovery proposal；
+- 追加 Carry application facts 并在重启后确定性重放。
+
+主要公开接口由 `applications/carry/__init__.py` 和
+`applications/carry/funding_arbitrage/__init__.py` 显式导出。可变 journal
+与 `CarryPositionBook` 不作为跨领域顶层接口导出。Carry 不拥有 Market、
+Portfolio、Risk、OMS、Accounting 或 Venue I/O。
 
 ## 7. 模块依赖规则
 
@@ -475,6 +505,8 @@ risk -> strategy intent + portfolio/feature views + core
 oms -> approved canonical intent + instruments + core
 execution -> OMS public contracts + instruments + core
 portfolio -> instruments + core
+accounting -> immutable financial/ownership contracts + core
+applications.carry -> immutable domain views + strategy/snapshot contracts
 runtime -> all required domain ports
 ```
 
@@ -497,9 +529,11 @@ runtime -> all required domain ports
 | Market State | 对应 Market State Engine | Features、Strategy、Recorder |
 | Feature State | Online Feature Engine | Strategy、Monitoring |
 | Strategy State | 对应 Strategy 实例 | Strategy Runtime |
-| Risk State | Risk Engine | Operations、Monitoring |
+| Risk reservations/permits/recovery state | Portfolio Risk Coordinator | Runtime、OMS evidence、Operations |
 | Order State | OMS | Risk、Portfolio、Operations |
 | Account/Position State | Portfolio/Account Engine | Risk、Strategy |
+| Financial Ledger/Attribution State | Accounting owners | Applications、Reporting、Operations |
+| Carry Economic Position State | CarryPositionBook | Carry policy、Runtime、Operations |
 | Connector Health | 对应 Connector | Runtime、Monitoring |
 | Operator Authority | Operator Controller + durable journal | Risk gate、Operations |
 
@@ -715,8 +749,31 @@ risk/portfolio_coordinator.py
 runtime/portfolio_risk_guard.py
 ```
 
-后续 ADR 仍计划新增 `accounting/` 和 `applications/carry/`。当前 grouped
-external submit 在 Runtime 中继续硬阻断，不会到达 Execution adapter。
+ADR-013 离线实现已新增：
+
+```text
+accounting/facts.py
+accounting/ledger.py
+accounting/journal.py
+accounting/reconciliation.py
+accounting/allocation.py
+accounting/valuation.py
+accounting/attribution.py
+runtime/financial_fact_handoff.py
+```
+
+ADR-014 离线实现已新增：
+
+```text
+market_data/state/funding.py
+applications/carry/
+applications/carry/funding_arbitrage/
+runtime/carry_application.py
+```
+
+Carry Runtime 只组合 Snapshot 和纯经济策略，产出通用
+`BasketTargetIntent` 离线证据后停止。当前 grouped external submit 在
+Runtime 中继续硬阻断，不会到达 Risk、OMS 或 Execution adapter。
 
 ADR 状态：
 
@@ -725,12 +782,12 @@ ADR 状态：
 | ADR-009 | Portfolio Decision Snapshot | Accepted；T025/T026/A012 已完成离线实现 |
 | ADR-010 | Basket Intent | Accepted；T027/T028/A013 已完成离线实现 |
 | ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成 |
-| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现；条件验收 A-01 至 A-07 已整改/确认并等待复审；外部组合提交等待独立 Testnet 授权 |
-| ADR-013 | Financial Ledger and PnL Attribution | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
-| ADR-014 | Carry Application Boundary | Proposed；已完成当前代码审计与 Web GPT 自包含交接，尚未接受或实现 |
+| ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现；A-01 至 A-07 已关闭；外部组合提交等待独立 Testnet 授权 |
+| ADR-013 | Financial Ledger and PnL Attribution | 原则批准；T036-T039/A016 已在项目所有者离线授权下完成，等待 Web GPT 最终验收 |
+| ADR-014 | Carry Application Boundary | Accepted；T040-T044/A017 已完成离线实现；外部执行未授权 |
 
-ADR-013/014 在被接受、任务编号和兼容性测试建立前不进入实现。现有单品种
-管线会持续作为回归基线。
+现有单品种管线持续作为回归基线。ADR-014 离线完成不开放 Funding
+execution、grouped execution、Testnet 或 production。
 
 ## 16. 文档权威层级
 
@@ -752,8 +809,9 @@ Operations 文档后，才会改变工程基线。
 
 ## 17. 当前结论
 
-当前项目已经完成一个具备规范行情、状态、特征、单品种策略意图、强制风控、
-单订单 OMS、Binance 执行适配、账户状态、记录重放、恢复和操作控制的
+当前项目已经完成一个具备规范行情、状态、特征、单品种策略意图、组合目标、
+强制单品种/组合风控、单订单与离线 Order Group 控制、Binance 执行适配、
+账户状态、财务账本、Carry 应用离线决策、记录重放、恢复和操作控制的
 确定性交易基础。
 
 它仍处于 **Phase 4：Production readiness and external acceptance**。
@@ -762,6 +820,7 @@ Operations 文档后，才会改变工程基线。
 多腿组合交易的事实层、目标层、离线执行控制层和组合风险授权层已经分别由
 ADR-009、ADR-010、ADR-011 和 ADR-012 建立。ADR-012 的
 execution-consistent 持仓、N-leg 风险投影、reservation、逐 action permit、
-恢复证据和 pre-I/O guard 已通过 A015 离线验收。ADR-013 财务账本和
-ADR-014 Carry 应用层仍为 Proposed。外部组合提交保持硬阻断，因此本阶段
-完成不代表 Testnet 或生产多腿交易已获授权。
+恢复证据和 pre-I/O guard 已通过 A015 离线验收。ADR-013 财务账本已完成
+项目所有者授权的离线实现并等待最终审查；ADR-014 Carry 应用层已 Accepted，
+T040-T044/A017 已完成离线实现。外部组合提交保持硬阻断，因此本阶段完成
+不代表 Testnet 或生产多腿交易已获授权。

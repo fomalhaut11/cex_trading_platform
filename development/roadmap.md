@@ -109,12 +109,11 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   source/balance reconciliation, generic ownership allocation and derived
   PnL. **Project-owner-authorized offline T036-T039/A016 implementation is
   complete; final Web GPT acceptance and external activation remain pending.**
-- ADR-014 Carry Application Boundary is Proposed for the same review batch. It
-  places economic lifecycle, hedge assessment and ownership evidence in
-  `applications.carry` while preserving generic platform authority.
-  Its scope is now aligned against the implemented ADR-013 public contracts
-  and is ready for formal review. **T040-T044/A017 are planned; no application
-  implementation is authorized yet.**
+- ADR-014 Carry Application Boundary is Accepted. It places economic
+  lifecycle, hedge assessment and ownership evidence in `applications.carry`
+  while preserving generic platform authority. **T040-T044/A017 are complete
+  offline; the Runtime records generic Basket evidence and stops before Risk,
+  OMS and Execution.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
   foundation complete as T029-T031/A014 and Risk authority complete as
@@ -123,8 +122,9 @@ Status: In progress at the ADR-gated architecture-foundation layer.
   **Margin/collateral input is complete under ADR-012; the offline Financial
   Ledger foundation is complete under ADR-013 project-owner authority.**
 - Add `applications/` as the concrete portfolio-strategy layer; Funding
-  Arbitrage is the first validating application. **Proposed under ADR-014;
-  implementation requires accepted/implemented dependencies.**
+  Arbitrage is the first validating application. **The credential-free
+  offline application foundation is complete under ADR-014; Funding execution
+  remains unauthorized.**
 - The ADR-010 decision layer is validated with a Funding-shaped two-leg
   target and a synthetic option-spread-plus-Delta-hedge three-leg target.
   This is contract acceptance, not application or execution acceptance.
@@ -132,7 +132,7 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 Detailed topology, interface drafts, compatibility rules and acceptance gates
 are maintained in `multi_leg_portfolio_trading_plan.md`.
 
-Entry gate: ADR-009 through ADR-012 are accepted and implemented through their
-offline gates. ADR-013 offline implementation is complete but final review is
-pending. ADR-014 is scope-aligned and review-gated. No completed offline gate
-authorizes Testnet or production trading.
+Entry gate: ADR-009 through ADR-012 and ADR-014 are accepted and implemented
+through their offline gates. ADR-013 offline implementation is complete but
+final review is pending. No completed offline gate authorizes grouped
+execution, Testnet or production trading.

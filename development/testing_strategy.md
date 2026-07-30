@@ -201,12 +201,11 @@ If ADR-013 is accepted, its offline acceptance must cover:
 Passing offline tests does not authorize authenticated financial ingestion,
 Funding application code, Testnet or production.
 
-## ADR-014 Proposed Acceptance Scope
+## ADR-014 Offline Acceptance
 
-Status: Proposed; no implementation or acceptance task ID is assigned.
+Status: A017 complete under accepted ADR-014 offline authority.
 
-If ADR-014 is accepted and its dependencies are implemented, offline
-acceptance must cover:
+Offline acceptance covers:
 
 - deterministic Carry pair/application-position identities and product
   relationship validation;
@@ -231,3 +230,6 @@ acceptance must cover:
   the same generic N-leg core.
 
 Read-only observation and offline simulation precede any Testnet request.
+The full regression passes 544 tests plus 188 subtests at 85.13% branch
+coverage. Ruff and strict MyPy over 136 source files pass. No grouped external
+submission, Testnet or production route was enabled.

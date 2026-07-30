@@ -1,10 +1,9 @@
 # Multi-Leg Portfolio Trading Development Plan
 
-Status: In progress — ADR-009 through ADR-012 accepted and implemented
-offline; ADR-012 implementation findings are accepted and closed; ADR-013/014
-Proposed; ADR-013 is approved in principle with two clarifications ready for
-final review, ADR-014 formal review waits for Accounting scope alignment and
-application implementation remains blocked
+Status: In progress — ADR-009 through ADR-012 and ADR-014 accepted and
+implemented offline; ADR-012 findings are accepted and closed; ADR-013 is
+approved in principle and implemented offline under project-owner authority,
+with final review pending; every grouped external route remains blocked
 
 Created: 2026-07-27
 
@@ -21,11 +20,11 @@ accepted after incorporating the second Web GPT review; T029-T031/A014 are
 complete for bounded offline implementation, including post-review execution
 safety remediation. ADR-012 was accepted on 2026-07-29; T032-T035/A015 are
 complete at `69297d52e764822a1bdd60a23a9b7fca8446a520`. ADR-013 Financial
-Ledger and ADR-014 Carry Application Boundary retain current-code audits and
-Proposed architectures. The ADR-012 remediation at
-`b082af0618e180f98441af5dc6d49c906994a012` is finally accepted. Neither
-ADR-013 nor ADR-014 is accepted or implemented, and external exposure-changing
-group submission is not authorized.
+Ledger is implemented offline under project-owner authority with final Web
+GPT acceptance pending. ADR-014 Carry Application Boundary is Accepted and
+T040-T044/A017 are complete offline. The ADR-012 remediation at
+`b082af0618e180f98441af5dc6d49c906994a012` is finally accepted. External
+exposure-changing group submission is not authorized.
 
 ## 1. Purpose
 
@@ -794,6 +793,8 @@ Task IDs will be assigned only after the relevant ADR is accepted.
 
 ### Workstream M1 — Snapshot and source state
 
+Status: Complete offline for Funding Carry.
+
 - Funding state owner;
 - mark/index/executable-price views;
 - Binance account and margin normalization;
@@ -841,6 +842,8 @@ Depends on ADR-012, M1 and M2.
 
 ### Workstream M5 — Financial Ledger
 
+Status: Complete offline as T036-T039/A016; final Web GPT review pending.
+
 - canonical fill and account cash-flow facts;
 - Binance funding/commission/account sources;
 - balanced per-asset immutable ledger;
@@ -850,6 +853,8 @@ Depends on ADR-012, M1 and M2.
 Depends on ADR-013 and M1.
 
 ### Workstream M6 — Carry application
+
+Status: Complete offline as T040-T044/A017.
 
 - CarryPair metadata;
 - registered basis and expected-carry features;
@@ -995,15 +1000,10 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-T029-T039 and A014-A016 are complete through the project-owner-authorized
-offline gates. ADR-013 final Web GPT acceptance remains pending, but its
-implemented ownership/allocation/read interfaces have been inspected against
-ADR-014.
+T029-T044 and A014-A017 are complete through their respective bounded offline
+authorities. ADR-013 final Web GPT acceptance and ADR-014 implementation
+review remain pending.
 
-ADR-014 is now scope-aligned and ready for review. Proposed T040-T044/A017
-cover the Funding market-state view, Carry contracts, typed Snapshots/pure
-policy, aggregate/journal/recovery and offline Runtime composition.
-
-Do not create Funding Arbitrage application code until ADR-014 review and
-explicit implementation authorization. External grouped submission, Testnet
-and production remain separately blocked.
+Prepare the ADR-014 offline implementation handoff. Do not connect the Carry
+Runtime to Portfolio Risk, OMS, grouped submission or a venue. External
+grouped submission, Testnet and production remain separately blocked.

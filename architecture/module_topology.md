@@ -113,6 +113,27 @@ The ADR-012 conditional-review remediation adds typed freshness,
 non-economic failure statuses inside the same ownership boundaries. It does
 not add an OMS, Execution or application dependency to Risk.
 
+Accepted ADR-014 adds the offline application path:
+
+```text
+market_data.state.FundingRateState
+  + immutable Spot/Perpetual/Portfolio/Feature views
+  -> applications.carry.funding_arbitrage typed Snapshot assembler
+  -> pure Funding Carry Strategy
+  -> generic BasketTargetIntent
+  -> runtime.CarryApplicationRuntime
+  -X-> Portfolio Risk / OMS / Execution
+
+applications.carry immutable facts
+  -> checksummed Carry journal
+  -> single-writer CarryPositionBook / replay
+  -> pure hedge, financial-finality and recovery assessments
+```
+
+The Runtime records only offline Basket evidence and exposes a permanent
+`external_execution_blocked` result. It has no Risk, OMS, permit or Execution
+dependency. T040-T044/A017 are complete; this is not execution authorization.
+
 `runtime.operator_endpoint` is the protocol-neutral `operations_api` adapter.
 It accepts identity only after external mTLS validation and owns no public
 listener. Concrete TLS termination remains a deployment boundary.
@@ -154,12 +175,13 @@ listener. Concrete TLS termination remains a deployment boundary.
     financial facts, balanced per-asset postings, reconciliation, allocation
     and derived PnL. Accounting cannot mutate OMS/Portfolio or import an
     application implementation. Final Web GPT acceptance is pending.
-21. Proposed ADR-014 places Carry economic state in
+21. Accepted ADR-014 places Carry economic state in
     `applications.carry`; applications consume immutable public views and emit
     Basket targets, but cannot issue permits, create child orders, write the
     ledger or call Execution. Its scope is aligned with ADR-013
     `EconomicOwnerRef`, `PnlAttributionView` and reconciliation/valuation
-    views, but it remains unaccepted and unimplemented.
+    views. T040-T044/A017 implement this boundary offline while external
+    execution remains blocked.
 
 ## Process Boundaries
 
