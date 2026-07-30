@@ -47,6 +47,10 @@
 | T042 | Funding Carry typed Snapshot, Features, Objectives and pure decision policy | Complete | T040-T041, T007A, T026-T028 |
 | T043 | Carry aggregate, application fact journal, replay and recovery proposals | Complete | T041-T042, T016 |
 | T044 | Runtime Carry read-port composition with grouped external execution blocked | Complete | T035, T039-T043 |
+| T045 | Grouped execution composition audit and offline promotion runtime | Planned | ADR-009-014, T031, T035, T039, T044 |
+| T046 | Deterministic grouped closed-loop and fault-injection harness | Planned | T045 |
+| T047 | Minimal Strategy/Application SDK based on proven shared protocols | Planned | T046 |
+| T048 | Replay and Paper Trading foundation with explicit simulated evidence | Planned | T047 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -66,6 +70,8 @@
 | A015 | Offline Portfolio position coverage, N-leg Risk, reservation, permit, recovery and blocked-route acceptance | Complete | T032-T035 |
 | A016 | Offline Accounting facts, balance, replay, reconciliation, allocation, valuation and failure acceptance | Complete | T036-T039 |
 | A017 | Offline Carry decision, lifecycle, hedge, restart and Accounting-boundary acceptance | Complete | T040-T044 |
+| A018 | Offline grouped Execution Promotion acceptance | Planned | T045-T046 |
+| A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | A018, explicit project-owner authorization |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -122,14 +128,13 @@ typed failure statuses. The focused review accepted and closed every finding;
 final result:
 `ai_collaboration/topics/funding_arbitrage/96_web_gpt_adr012_formal_closure.md`.
 
-ADR-013 Financial Ledger and PnL Attribution and ADR-014 Carry Application
-Boundary remain Proposed. Funding Arbitrage, Accounting implementation,
+ADR-013 Financial Ledger and PnL Attribution remains approved in principle;
+its offline implementation is complete under project-owner authority and
+awaits final Web GPT acceptance. ADR-014 Carry Application Boundary design and
+offline implementation are accepted and closed. Funding execution, grouped
 Testnet and production multi-leg execution remain unauthorized. Current
 ADR-013 clarification/final-review entry:
 `ai_collaboration/topics/financial_ledger/40_codex_clarification_response.md`.
-Web GPT has approved the design in principle; this is not source
-implementation authorization.
-ADR-014 formal review follows ADR-013 scope alignment.
 
 Network conditions delayed final Web GPT review. The project owner authorized
 bounded credential-free offline T036-T039/A016 engineering in
@@ -154,3 +159,9 @@ contracts and Snapshots, pure economic policy, a durable application aggregate,
 recovery proposals and an offline Runtime that stops before Risk/OMS.
 Funding execution, grouped external submission, Testnet and production remain
 blocked.
+
+Web GPT accepted and closed the ADR-014 offline implementation after reviewing
+the handoff, interface and ADR. No redesign was requested. Planned T045-T048,
+A018/A019 move the project toward Execution Promotion, a minimal
+Strategy/Application SDK and Replay/Paper Trading. Only T045-T046/A018 are
+credential-free offline work; A019 remains explicitly unauthorized.

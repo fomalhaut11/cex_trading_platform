@@ -2,7 +2,7 @@
 id: AI-20260729-009
 title: Carry Application Resolution
 origin: joint
-status: ACCEPTED_OFFLINE_IMPLEMENTATION_COMPLETE
+status: ACCEPTED_OFFLINE_IMPLEMENTATION_CLOSED
 created: 2026-07-29
 code_baseline: 40d10125318ebafc6c9979dc6ee3447c10739657
 supersedes: none
@@ -13,6 +13,7 @@ related:
   - 40_codex_adr014_scope_alignment.md
   - 50_codex_adr014_review_handoff.md
   - 60_codex_adr014_offline_implementation_handoff.md
+  - 70_web_gpt_adr014_final_acceptance.md
   - ../financial_ledger/90_resolution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
@@ -23,12 +24,16 @@ sensitivity: public-project
 
 ## Current Status
 
-`ACCEPTED_OFFLINE_IMPLEMENTATION_COMPLETE`
+`ACCEPTED_OFFLINE_IMPLEMENTATION_CLOSED`
 
 Web GPT accepted ADR-014, approved its scope and authorized T040-T044/A017
 credential-free offline implementation. That implementation and A017 are now
 complete. ADR-013 Accounting public contracts are compatible with the
 accepted boundary.
+
+Web GPT completed the final implementation review without requesting an
+architecture redesign or reopening ADR-014. T040-T044/A017 are accepted and
+closed.
 
 ## Frozen Baseline Facts
 
@@ -40,8 +45,7 @@ accepted boundary.
   project-owner offline authority, with final Web GPT acceptance pending.
 - ADR-014 Carry Application Boundary is Accepted.
 - ADR-014 design and ADR-013 interface scope alignment are complete.
-- T040-T044/A017 offline implementation is complete and pending external
-  architecture review.
+- T040-T044/A017 offline implementation is accepted and closed.
 - Funding execution, grouped external submission, Testnet and production
   remain blocked.
 
@@ -83,3 +87,15 @@ proposal semantics explicit and testable.
 
 No source module enables Funding execution, grouped external submission,
 Testnet or production.
+
+## Long-Term Guidance
+
+- do not create one universal application journal or state machine;
+- do not make Carry lifecycle mandatory for CTA or Market Making;
+- share stable application protocols, not family-specific mutable state;
+- prioritize the first complete execution/runtime loop before speculative
+  kernel expansion.
+
+The next planned sequence is Execution Promotion, a minimal
+Strategy/Application SDK and Replay/Paper Trading. Testnet remains a separate
+explicit authorization gate.

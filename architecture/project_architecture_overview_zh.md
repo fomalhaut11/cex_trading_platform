@@ -784,7 +784,7 @@ ADR 状态：
 | ADR-011 | Parent Order Group and Multi-leg Execution | Accepted；T029-T031/A014 及实施后安全整改已完成 |
 | ADR-012 | Portfolio Risk and Grouped Execution Authorization | Accepted；T032-T035/A015 已完成离线实现；A-01 至 A-07 已关闭；外部组合提交等待独立 Testnet 授权 |
 | ADR-013 | Financial Ledger and PnL Attribution | 原则批准；T036-T039/A016 已在项目所有者离线授权下完成，等待 Web GPT 最终验收 |
-| ADR-014 | Carry Application Boundary | Accepted；T040-T044/A017 已完成离线实现；外部执行未授权 |
+| ADR-014 | Carry Application Boundary | Accepted；T040-T044/A017 离线实现已完成最终验收；外部执行未授权 |
 
 现有单品种管线持续作为回归基线。ADR-014 离线完成不开放 Funding
 execution、grouped execution、Testnet 或 production。
@@ -821,6 +821,6 @@ Operations 文档后，才会改变工程基线。
 ADR-009、ADR-010、ADR-011 和 ADR-012 建立。ADR-012 的
 execution-consistent 持仓、N-leg 风险投影、reservation、逐 action permit、
 恢复证据和 pre-I/O guard 已通过 A015 离线验收。ADR-013 财务账本已完成
-项目所有者授权的离线实现并等待最终审查；ADR-014 Carry 应用层已 Accepted，
-T040-T044/A017 已完成离线实现。外部组合提交保持硬阻断，因此本阶段完成
-不代表 Testnet 或生产多腿交易已获授权。
+项目所有者授权的离线实现并等待最终审查；ADR-014 Carry 应用层设计和
+T040-T044/A017 离线实现均已完成最终验收。外部组合提交保持硬阻断，因此
+本阶段完成不代表 Testnet 或生产多腿交易已获授权。

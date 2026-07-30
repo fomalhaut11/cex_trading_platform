@@ -689,3 +689,25 @@ ADR-013 Financial Ledger/PnL design and scope alignment
 现有 ADR-014 草案作为设计输入保留，但正式评审等待 ADR-013 的
 ownership/allocation/read-port 范围对齐。此顺序不授权 Funding 执行、grouped
 external、Testnet 或生产。
+
+## 23. ADR-014 Final Offline Acceptance
+
+2026-07-30，ADR-013 公共接口对齐完成后，Web GPT 接受 ADR-014 设计并授权
+T040-T044/A017 credential-free 离线实现。随后对实现交接、公共接口和 ADR
+完成最终复核：
+
+```text
+ADR-014 Design                  ACCEPTED
+ADR-014 Offline Implementation ACCEPTED
+T040-T044 / A017               CLOSED
+Grouped external               BLOCKED
+Testnet / Production           NOT AUTHORIZED
+```
+
+最终记录：
+
+`../carry_application/70_web_gpt_adr014_final_acceptance.md`
+
+下一主线调整为 Execution Promotion、最小 Strategy/Application SDK 和
+Replay/Paper Trading，不继续进行推测性的基础设施扩张。Carry journal 和
+lifecycle 不得泛化为所有应用必须继承的统一状态。

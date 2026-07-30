@@ -17,8 +17,9 @@ contracts, single-writer state and a deterministic hot path.
   ADR-013 is approved in principle and its project-owner-authorized offline
   Financial Ledger implementation is complete, pending final review.
   ADR-014 Carry Application Boundary is Accepted and T040-T044/A017 are
-  implemented offline: authoritative Funding state, pure Carry policy,
-  durable application lifecycle/recovery and blocked Runtime composition.
+  implemented and accepted offline: authoritative Funding state, pure Carry
+  policy, durable application lifecycle/recovery and blocked Runtime
+  composition.
   Grouped external execution remains blocked pending a separate explicit
   Testnet authorization.
 

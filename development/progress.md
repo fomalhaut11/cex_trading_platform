@@ -253,6 +253,12 @@ target-host performance and authenticated Testnet gates.
   `CarryApplicationRuntime` records generic Basket evidence and stops before
   Portfolio Risk, OMS and Execution. Implementation commit:
   `40d10125318ebafc6c9979dc6ee3447c10739657`.
+- Web GPT accepted and closed the ADR-014 offline implementation after
+  reviewing the handoff, public interface and ADR. No A-class correction or
+  redesign was requested. Long-term guidance keeps Carry, CTA and Market
+  Making state family-specific.
+- Execution Promotion T045-T046/A018 is the next credential-free planning
+  scope. Authenticated grouped Testnet A019 remains unauthorized.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -272,12 +278,13 @@ target-host performance and authenticated Testnet gates.
 
 ## Next
 
-1. Submit the ADR-014 offline implementation handoff for Web GPT review; do
-   not infer external authorization from offline completion.
+1. Complete the T045 grouped-execution composition audit and define A018's
+   deterministic closed-loop/fault matrix without enabling external I/O.
 2. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-3. Keep grouped external submission blocked until a later explicit Testnet
-   authorization; offline ADR-012 completion alone is insufficient.
+3. Produce an explicit Testnet go/no-go artifact only after A018 passes;
+   grouped external submission remains blocked until project-owner
+   authorization.
 4. Configure protected-branch checks after agreeing the direct-push policy.
 5. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
@@ -299,6 +306,8 @@ target-host performance and authenticated Testnet gates.
   tests and 188 subtests.
 - ADR-014 remote GitHub Actions run `30510254523` passed for handoff commit
   `ba32dce7ce468b14307088ef13e649c52f6fb74e`.
+- Final ADR-014 evidence-only head `2835ee2523642f8650d3ecd2388fc6db694c52b0`
+  passed GitHub Actions run `30510324704`.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
   remediation head `df2fd83` passed all three jobs in run `30351998834`;

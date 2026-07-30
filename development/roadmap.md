@@ -112,8 +112,9 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 - ADR-014 Carry Application Boundary is Accepted. It places economic
   lifecycle, hedge assessment and ownership evidence in `applications.carry`
   while preserving generic platform authority. **T040-T044/A017 are complete
-  offline; the Runtime records generic Basket evidence and stops before Risk,
-  OMS and Execution.**
+  and Web GPT accepted the offline implementation without reopening the ADR;
+  the Runtime records generic Basket evidence and stops before Risk, OMS and
+  Execution.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
   foundation complete as T029-T031/A014 and Risk authority complete as
@@ -136,3 +137,20 @@ Entry gate: ADR-009 through ADR-012 and ADR-014 are accepted and implemented
 through their offline gates. ADR-013 offline implementation is complete but
 final review is pending. No completed offline gate authorizes grouped
 execution, Testnet or production trading.
+
+## Next Delivery Sprints
+
+The kernel architecture is now considered stable enough to shift from
+speculative foundation expansion to runtime closure:
+
+1. **Execution Promotion** — T045/T046/A018 compose the existing Basket, Risk,
+   OMS, durable handoff, Portfolio and Accounting boundaries in a deterministic
+   offline closed loop. A019 is the later, separately authorized Testnet gate.
+2. **Strategy/Application SDK** — T047 extracts only interfaces proven common
+   by the first full application loop. It must not impose Carry lifecycle or a
+   universal application state.
+3. **Replay and Paper Trading** — T048 reuses canonical inputs and labels
+   simulated fills/Funding/fees explicitly.
+
+The detailed promotion and gate plan is maintained in
+`development/execution_promotion_plan.md`.

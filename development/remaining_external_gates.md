@@ -96,6 +96,26 @@ The Testnet gate must cover:
 
 No real-money endpoint is authorized by this runbook.
 
+## Grouped Execution Promotion
+
+ADR-014 design and offline implementation acceptance do not unblock grouped
+external submission. Before the first Funding Carry Testnet loop:
+
+1. T045/T046/A018 must prove the complete grouped path with a deterministic,
+   fault-injectable in-memory gateway;
+2. ADR-013 final implementation acceptance must be recorded;
+3. the project owner must explicitly authorize A019 grouped Testnet execution;
+4. the exact Testnet account, Spot/perpetual instruments, quantity and
+   notional/loss bounds must be approved;
+5. Testnet credentials must enter only through `BinanceCredentialProvider`;
+6. persistent host/venue clock health, operator halt and restart procedures
+   must be ready;
+7. no production endpoint or credential may be present.
+
+The detailed plan is `development/execution_promotion_plan.md`. An offline
+success, Web GPT recommendation or available credential is not by itself an
+execution authorization.
+
 ## Target-Host Performance
 
 The 100,000-event offline baseline checks determinism, bounded retained memory

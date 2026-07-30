@@ -1001,9 +1001,12 @@ The generic multi-leg core is complete only when:
 ## 18. Immediate Next Step
 
 T029-T044 and A014-A017 are complete through their respective bounded offline
-authorities. ADR-013 final Web GPT acceptance and ADR-014 implementation
-review remain pending.
+authorities. ADR-013 final Web GPT acceptance remains pending. Web GPT
+accepted and closed ADR-014 design and offline implementation without
+reopening the ADR.
 
-Prepare the ADR-014 offline implementation handoff. Do not connect the Carry
-Runtime to Portfolio Risk, OMS, grouped submission or a venue. External
-grouped submission, Testnet and production remain separately blocked.
+Proceed with the credential-free T045/T046/A018 Execution Promotion audit and
+deterministic closed-loop harness described in
+`development/execution_promotion_plan.md`. Do not connect the Carry Runtime to
+a venue or remove the grouped-execution block. A019 Testnet and production
+remain separately unauthorized.

@@ -2,7 +2,7 @@
 id: AI-20260730-001
 title: Codex ADR-014 Offline Implementation Handoff
 origin: codex
-status: READY_FOR_IMPLEMENTATION_REVIEW
+status: ACCEPTED
 created: 2026-07-30
 code_baseline: 40d10125318ebafc6c9979dc6ee3447c10739657
 supersedes: none
@@ -30,6 +30,10 @@ Implementation commit:
 
 This handoff requests implementation review. It does not infer external
 execution, Testnet or production authorization.
+
+Web GPT completed that review in
+`70_web_gpt_adr014_final_acceptance.md`; the offline implementation was
+accepted without reopening ADR-014.
 
 ## Result
 

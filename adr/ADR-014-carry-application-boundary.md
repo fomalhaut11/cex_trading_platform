@@ -2,12 +2,17 @@
 
 ## Status
 
-Accepted - 2026-07-30.
+Accepted; offline implementation accepted - 2026-07-30.
 
 Web GPT architecture review accepted the design, approved its scope and
 authorized credential-free offline implementation of T040-T044/A017. This
 does not authorize Funding execution, grouped external submission, Testnet or
 production.
+
+Web GPT subsequently reviewed the implementation handoff, public interface and
+this ADR. T040-T044/A017 are accepted and closed with no redesign or A-class
+correction. The non-blocking guidance is to keep application journals and
+state family-specific rather than turning Carry into a universal template.
 
 Reviewed baseline:
 
