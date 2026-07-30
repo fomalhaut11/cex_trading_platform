@@ -14,6 +14,7 @@ related:
   - 50_codex_adr014_review_handoff.md
   - 60_codex_adr014_offline_implementation_handoff.md
   - 70_web_gpt_adr014_final_acceptance.md
+  - 80_project_owner_fast_track_decision.md
   - ../financial_ledger/90_resolution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
 external_share: allowed
@@ -96,7 +97,9 @@ Testnet or production.
 - prioritize the first complete execution/runtime loop before speculative
   kernel expansion.
 
-The next planned sequence is T045/T046/A018 Execution Promotion, separately
-authorized A019 Testnet, T047 Application Runtime / SDK Lite, T048 historical
-Replay and T049 Paper Exchange. Testnet remains a separate explicit
-authorization gate.
+The project owner subsequently narrowed the sole active product objective to a
+Binance single-account BTC Funding Carry Fast-Track MVP. The active sequence
+is T045/T046/A018 Execution Promotion, separately authorized A019 Testnet,
+T050 Operations/Shadow, A020 live readiness and separately authorized A021
+controlled micro-live. T047 Application Runtime, T048 Replay and T049 Paper
+are retained but deferred Post-MVP.

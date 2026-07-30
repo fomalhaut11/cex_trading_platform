@@ -1,6 +1,6 @@
 # Platform Delivery Plan
 
-Status: approved development sequence; implementation not started.
+Status: retained but deferred until after the Funding Carry Fast-Track MVP.
 
 Effective date: 2026-07-30.
 
@@ -9,6 +9,14 @@ Planning baseline: `d1e24c0c89e8cf0a2addaf6e843b969c230da5e2`.
 Production authorization: none.
 
 Testnet grouped execution authorization: none.
+
+Current active plan:
+
+`development/funding_carry_fast_track_plan.md`
+
+The Application Runtime, general Replay, Paper Exchange and additional
+strategy work described here remain valid long-term directions, but they are
+not in the current delivery queue.
 
 ## Mission Shift
 

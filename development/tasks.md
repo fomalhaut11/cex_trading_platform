@@ -49,9 +49,10 @@
 | T044 | Runtime Carry read-port composition with grouped external execution blocked | Complete | T035, T039-T043 |
 | T045 | Grouped execution current-code composition audit | Planned | ADR-009-014, T031, T035, T039, T044 |
 | T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | T045 |
-| T047 | Application Runtime / SDK Lite based on first closed-loop evidence | Planned | A019 |
-| T048 | Historical event Replay foundation | Planned | T047 |
-| T049 | Paper Exchange and Fill Model with explicit simulated evidence | Planned | T048 |
+| T047 | Application Runtime / SDK Lite based on first closed-loop evidence | Deferred, Post-MVP | A021 |
+| T048 | Historical event Replay foundation | Deferred, Post-MVP | T047 |
+| T049 | Paper Exchange and Fill Model with explicit simulated evidence | Deferred, Post-MVP | T048 |
+| T050 | Funding Carry Live Operations Lite and production Shadow mode | Planned | A019, T021-T024 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -73,6 +74,8 @@
 | A017 | Offline Carry decision, lifecycle, hedge, restart and Accounting-boundary acceptance | Complete | T040-T044 |
 | A018 | Offline grouped Execution Promotion acceptance | Planned | T045-T046 |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | A018, explicit project-owner authorization |
+| A020 | Funding Carry MVP Live Readiness acceptance | Planned, no trading authority | A019, T050 |
+| A021 | Controlled BTC Funding Carry micro-live acceptance | External, unauthorized | A020, explicit real-money authorization |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -162,7 +165,11 @@ Funding execution, grouped external submission, Testnet and production remain
 blocked.
 
 Web GPT accepted and closed the ADR-014 offline implementation after reviewing
-the handoff, interface and ADR. No redesign was requested. Planned T045-T049,
-A018/A019 move the project through Execution Promotion, Application Runtime,
-historical Replay and Paper Exchange. Only T045-T046/A018 are the next
-credential-free offline scope; A019 remains explicitly unauthorized.
+the handoff, interface and ADR. No redesign was requested.
+
+The project owner switched the active objective to the fastest bounded Binance
+single-account BTC Funding Carry live loop. T045-T046/A018 remain the immediate
+credential-free scope; A019 Testnet, T050 Operations/Shadow, A020 live
+readiness and A021 controlled micro-live form the active promotion sequence.
+A019 and A021 require separate explicit authorization. T047-T049 and all other
+strategy/platform expansion are retained but deferred until after the MVP.

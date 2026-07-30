@@ -9,7 +9,9 @@ Current self-contained handoff:
 ## Current Phase
 
 Primary delivery track: Kernel v1 compatibility freeze is active; T045
-Execution Promotion composition audit is next and has not started.
+Execution Promotion composition audit is next and has not started. The sole
+active product target is the Binance single-account BTC Funding Carry
+Fast-Track MVP.
 
 Parallel external track: Phase 4 production readiness and external acceptance
 continues. Neither track authorizes grouped Testnet or production trading.
@@ -263,10 +265,14 @@ continues. Neither track authorizes grouped Testnet or production trading.
   Making state family-specific.
 - Execution Promotion T045-T046/A018 is the next credential-free planning
   scope. Authenticated grouped Testnet A019 remains unauthorized.
-- Kernel v1 compatibility freeze and the Phase 0-5 platform sequence are
-  recorded in `architecture/kernel_v1_freeze.md` and
-  `development/platform_delivery_plan.md`. T047 is Application Runtime / SDK
-  Lite, T048 is historical Replay and T049 is Paper Exchange.
+- Kernel v1 compatibility freeze is recorded in
+  `architecture/kernel_v1_freeze.md`. The former Phase 0-5 platform sequence
+  remains in `development/platform_delivery_plan.md` as deferred direction.
+- The project owner retained but deferred T047 Application Runtime / SDK Lite,
+  T048 historical Replay, T049 Paper Exchange and all non-MVP strategy work.
+  The active plan is `development/funding_carry_fast_track_plan.md`:
+  T045/T046/A018, separately authorized A019 Testnet, T050 Operations/Shadow,
+  A020 live readiness and separately authorized A021 controlled micro-live.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -293,14 +299,17 @@ continues. Neither track authorizes grouped Testnet or production trading.
 3. Produce an explicit Testnet go/no-go artifact only after A018 passes;
    grouped external submission remains blocked until project-owner
    authorization.
-4. Configure protected-branch checks after agreeing the direct-push policy.
-5. Configure concrete TLS/mTLS termination, protected identity forwarding,
+4. After separately authorized A019, build only T050 Operations Lite and
+   Shadow evidence required by A020; do not resume general SDK/Replay/Paper.
+5. Require a separate real-money go/no-go before A021.
+6. Configure protected-branch checks after agreeing the direct-push policy.
+7. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-6. Configure a persistent approved host time source and collect clock
+8. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-7. Run A002C authenticated Binance Testnet acceptance.
-8. Run A002B target-host soak and latency-distribution acceptance.
-9. Exercise and approve the initial runbooks on the target host; add Binance
+9. Run A002C authenticated Binance Testnet acceptance.
+10. Run A002B target-host soak and latency-distribution acceptance.
+11. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification

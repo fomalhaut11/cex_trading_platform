@@ -40,9 +40,11 @@ $env:PYTHONPATH = "src"
 Read `architecture/module_topology.md`, `architecture/state_ownership.md` and
 the accepted ADRs before changing a public contract.
 
-The post-ADR delivery sequence is defined by
-`development/platform_delivery_plan.md`. Kernel compatibility and allowed
-change rules are defined by `architecture/kernel_v1_freeze.md`.
+The active delivery sequence is the single-account BTC Funding Carry
+Fast-Track MVP in `development/funding_carry_fast_track_plan.md`. The broader
+`development/platform_delivery_plan.md` is retained but deferred until after
+the MVP. Kernel compatibility and allowed change rules are defined by
+`architecture/kernel_v1_freeze.md`.
 
 For a self-contained Chinese overview of the current implementation, public
 module boundaries, acceptance evidence and planned multi-leg extension, read

@@ -1009,6 +1009,7 @@ Proceed with the credential-free T045/T046/A018 Execution Promotion audit and
 deterministic closed-loop harness described in
 `development/execution_promotion_plan.md`. Do not connect the Carry Runtime to
 a venue or remove the grouped-execution block. A019 Testnet and production
-remain separately unauthorized. After the first closed-loop evidence, follow
-the frozen platform sequence: T047 Application Runtime / SDK Lite, T048
-historical Replay and T049 Paper Exchange.
+remain separately unauthorized. The active follow-on is T050
+Operations/Shadow, A020 live readiness and separately authorized A021
+controlled micro-live. T047 Application Runtime, T048 Replay and T049 Paper
+are retained but deferred Post-MVP.

@@ -116,6 +116,30 @@ The detailed plan is `development/execution_promotion_plan.md`. An offline
 success, Web GPT recommendation or available credential is not by itself an
 execution authorization.
 
+## Controlled Micro-Live Promotion
+
+The active product plan is
+`development/funding_carry_fast_track_plan.md`.
+
+A019 Testnet success does not authorize a production endpoint. Before any
+real-money order:
+
+1. T050 Operations Lite and production Shadow evidence must be complete;
+2. A020 must record an exact account/instrument/quantity/notional/loss
+   envelope, healthy clock/account/market state, kill-switch exercise,
+   restart/recovery exercise and reconciled Ledger backup;
+3. the project owner must explicitly approve A021, including the exact
+   real-money amount, operator, operating window and abort criteria;
+4. production credentials must enter only through the approved credential
+   provider and must never reach source, logs, recorder or documentation;
+5. the first cycle must remain manually started, bounded and independently
+   stoppable;
+6. unexplained position, balance, Ledger or reconciliation differences are an
+   immediate no-go/halt.
+
+A020 is readiness evidence only. A021 is the controlled micro-live acceptance.
+Neither grants unattended automation or scaled production operation.
+
 ## Target-Host Performance
 
 The 100,000-event offline baseline checks determinism, bounded retained memory

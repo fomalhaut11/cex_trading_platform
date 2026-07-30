@@ -125,13 +125,16 @@ implementations.
 
 ## Exit
 
-The compatibility freeze remains active through:
+The compatibility freeze remains active through the fast-track live gates:
 
 - A018 offline Execution Promotion;
 - A019 separately authorized Testnet acceptance;
-- T047 Application Runtime/SDK Lite;
-- T048 event Replay;
-- T049 Paper Exchange.
+- T050 Live Operations/Shadow readiness;
+- A020 live-readiness acceptance;
+- A021 separately authorized controlled micro-live acceptance.
+
+T047 Application Runtime/SDK Lite, T048 Replay and T049 Paper Exchange remain
+inside the freeze policy but are deferred until after the MVP.
 
 Real integration evidence may produce narrowly scoped amendments. The freeze
 does not imply that production readiness or external execution is complete.

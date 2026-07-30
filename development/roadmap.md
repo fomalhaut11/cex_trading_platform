@@ -2,6 +2,10 @@
 
 Status legend: Complete, In progress, External, Planned.
 
+Current priority: the sole active product track is
+`development/funding_carry_fast_track_plan.md`. General Application Runtime,
+Replay, Paper and additional strategy work are retained but deferred Post-MVP.
+
 ## Phase 1 - Domain Foundation
 
 Status: Complete.
@@ -138,22 +142,23 @@ through their offline gates. ADR-013 offline implementation is complete but
 final review is pending. No completed offline gate authorizes grouped
 execution, Testnet or production trading.
 
-## Next Delivery Sprints
+## Active Funding Carry Fast-Track
 
-The kernel architecture is now considered stable enough to shift from
-speculative foundation expansion to runtime closure:
+The kernel is frozen and the scope is narrowed to Binance, one dedicated
+account, BTC Spot plus USD-M linear perpetual and fixed configured quantity:
 
 1. **Execution Promotion** — T045/T046/A018 compose the existing Basket, Risk,
    OMS, durable handoff, Portfolio and Accounting boundaries in a deterministic
    offline closed loop. A019 is the later, separately authorized Testnet gate.
-2. **Application Runtime / SDK Lite** — T047 extracts only interfaces proven
-   common by the first full application loop. It must not impose Carry
-   lifecycle or a universal application state.
-3. **Historical Replay** — T048 reconstructs deterministic State, Feature and
-   Snapshot streams from canonical evidence.
-4. **Paper Exchange** — T049 supplies explicitly simulated execution, latency,
-   slippage, partial-fill, fee and Funding evidence.
+2. **Live Operations/Shadow** — T050 reuses existing operator and health
+   controls to provide only the position, hedge, Risk, execution, Accounting
+   and health evidence needed by A020.
+3. **Live promotion** — A020 is a no-trade readiness gate; A021 is a separately
+   authorized controlled micro-live gate.
+4. **Post-MVP deferred** — T047 Application Runtime, T048 Replay, T049 Paper,
+   CTA, cross-venue, options execution and Market Making.
 
-The authoritative program sequence is
-`development/platform_delivery_plan.md`; detailed promotion gates are in
-`development/execution_promotion_plan.md`.
+The authoritative active sequence is
+`development/funding_carry_fast_track_plan.md`; detailed offline promotion
+gates are in `development/execution_promotion_plan.md`. The broader
+`development/platform_delivery_plan.md` is retained as deferred direction.

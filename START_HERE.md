@@ -16,7 +16,7 @@ its status claims.
 Repository:   fomalhaut11/cex_trading_platform
 Remote:       https://github.com/fomalhaut11/cex_trading_platform.git
 Branch:       main
-State base:   eb9ec0a309f20045b38ec4b21d48ccbd76162570
+State base:   0123b6322de80f9fb488b92942ef19b31cdd6512
 origin/main:  matched the state base when verified
 Worktree:     clean before this documentation-only handoff
 ```
@@ -34,41 +34,44 @@ freeze and delivery planning.
 Remote CI:
 
 ```text
-GitHub Actions run: 30512760567
+GitHub Actions run: 30519391352
 Result:             success
-Head:               eb9ec0a309f20045b38ec4b21d48ccbd76162570
+Head:               0123b6322de80f9fb488b92942ef19b31cdd6512
 ```
 
 ## 2. Current Mission
 
-The project began as an institution-oriented CEX trading kernel. That kernel
-is implemented through bounded offline acceptance. The current mission has
-changed to:
+The institution-oriented kernel is implemented through bounded offline
+acceptance. The project owner has now changed the sole active product mission
+to:
 
-> build a platform that lets a researcher move one application through
-> coherent research, deterministic execution rehearsal, Testnet protocol
-> validation and reconciled PnL.
+> close the first Binance single-account BTC Funding Carry loop with bounded
+> real capital as quickly as safety and evidence allow.
 
-Target effort allocation:
+Active effort allocation:
 
 ```text
-30%  kernel maintenance driven by real defects or measurements
-70%  platform runtime, applications, Replay and simulation
+70%  Execution Promotion and closed-loop reliability
+20%  minimal operations, monitoring, Shadow and runbooks
+10%  documentation and evidence synchronization
 ```
 
-Do not resume speculative kernel expansion.
+Keep existing platform capabilities, but defer general SDK, Replay, Paper and
+additional-strategy work until after the Fast-Track MVP. Do not resume
+speculative kernel expansion.
 
 ## 3. Current User Direction
 
-The project owner explicitly requested discussion and documentation before
-the next code phase.
+The project owner confirmed the Fast-Track objective and instructed the
+project to retain existing capabilities while shelving non-MVP plans.
 
 Current state:
 
-- the next development plan is documented;
+- `development/funding_carry_fast_track_plan.md` is the active plan;
 - no T045 implementation work has started;
-- do not start T045 code until the project owner explicitly says to proceed;
+- T045 is the only current next engineering task;
 - Testnet/grouped external execution is not authorized.
+- real-money micro-live execution is not authorized.
 
 ## 4. Kernel v1 Freeze
 
@@ -197,11 +200,18 @@ Not yet implemented:
 - T045 current-code grouped composition audit;
 - T046 mode-neutral offline execution runtime and fault harness;
 - A018 full offline grouped execution-loop acceptance;
+- T050 Funding Carry Live Operations Lite and Shadow mode;
+- A020 live-readiness acceptance;
+- A021 controlled micro-live acceptance;
+- CTA application;
+- real grouped Carry integration.
+
+Retained but deferred until after the MVP:
+
 - T047 researcher-facing Application Runtime / SDK Lite;
 - T048 historical event Replay platform;
 - T049 Paper Exchange and Fill Model;
-- CTA application;
-- real grouped Carry integration.
+- additional strategy families and general platform UI.
 
 Not authorized:
 
@@ -214,11 +224,11 @@ Not authorized:
 External prerequisites also remain for persistent host time, target-host soak,
 concrete TLS termination, remote audit retention and runbook exercises.
 
-## 8. Next Approved Planning Sequence
+## 8. Active Fast-Track Sequence
 
 Authoritative plan:
 
-`development/platform_delivery_plan.md`
+`development/funding_carry_fast_track_plan.md`
 
 Detailed execution-promotion plan:
 
@@ -232,10 +242,13 @@ T045     Execution Promotion composition audit NEXT, NOT STARTED
 T046     Mode-neutral offline runtime/harness  PLANNED
 A018     Offline Execution acceptance          PLANNED
 A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
-T047     Application Runtime / SDK Lite        PLANNED
-T048     Historical Event Replay               PLANNED
-T049     Paper Exchange and Fill Model         PLANNED
+T050     Live Operations Lite + Shadow         PLANNED
+A020     MVP Live Readiness                    PLANNED, NO TRADING AUTHORITY
+A021     Controlled Micro-Live                 EXTERNAL, UNAUTHORIZED
 ```
+
+The broader `development/platform_delivery_plan.md`, T047, T048 and T049 are
+retained Post-MVP plans and are not in the active queue.
 
 ## 9. Exact T045 Scope
 
@@ -262,9 +275,11 @@ T045 deliverables:
 T045 does not enable network I/O and should not modify frozen public
 interfaces without first showing a reproducible gap.
 
-## 10. Application Runtime Decisions Already Made
+## 10. Deferred Application Runtime Decisions
 
-The future user-facing name is `Application Runtime`, not only Strategy SDK.
+These decisions are retained for Post-MVP T047. They are not active
+implementation scope. The future user-facing name is `Application Runtime`,
+not only Strategy SDK.
 
 The same pure policy/intent code should be reusable across Replay, Paper,
 Testnet and future production through different adapters.
@@ -291,7 +306,9 @@ Snapshot. They cannot call OMS/Execution or bypass Snapshot causation.
 Do not create a Carry-derived `BaseApplication` or universal application
 state.
 
-## 11. Replay and Paper Separation
+## 11. Deferred Replay and Paper Separation
+
+T048/T049 are retained Post-MVP work.
 
 T048 Replay:
 
@@ -309,7 +326,7 @@ T049 Paper:
 
 Replay is not Paper, and neither is Testnet.
 
-## 12. Strategy Order
+## 12. Deferred Strategy Order
 
 1. Funding Carry is the first complete platform-loop application.
 2. CTA is the first new Application Runtime/Replay example.
@@ -333,7 +350,7 @@ compileall:         passed
 secret scan:        passed
 ```
 
-The verified state base passed GitHub Actions run `30512760567`.
+The verified state base passed GitHub Actions run `30519391352`.
 
 A local Windows pytest run may emit a `.pytest_cache` creation warning. It did
 not affect test results, and clean remote CI passed.
@@ -343,13 +360,14 @@ not affect test results, and clean remote CI passed.
 Read only what is needed, in this order:
 
 1. `START_HERE.md` — current status and next action;
-2. `architecture/kernel_v1_freeze.md` — allowed/prohibited changes;
-3. `development/platform_delivery_plan.md` — Phase 0–5 sequence;
+2. `development/funding_carry_fast_track_plan.md` — active MVP path;
+3. `architecture/kernel_v1_freeze.md` — allowed/prohibited changes;
 4. `development/execution_promotion_plan.md` — T045/A018 detail;
 5. `architecture/module_topology.md` — dependencies;
 6. `architecture/state_ownership.md` — single writers;
 7. `development/tasks.md` and `development/progress.md` — task/evidence status;
-8. specific accepted ADR/interface files only when changing that boundary.
+8. `development/platform_delivery_plan.md` only for deferred Post-MVP scope;
+9. specific accepted ADR/interface files only when changing that boundary.
 
 For ADR-014:
 

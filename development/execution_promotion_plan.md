@@ -6,7 +6,10 @@ Architecture basis: ADR-009 through ADR-014.
 
 External execution: blocked until separate project-owner authorization.
 
-Program sequence: `development/platform_delivery_plan.md`.
+Active program sequence: `development/funding_carry_fast_track_plan.md`.
+
+The broader `development/platform_delivery_plan.md` is retained as Post-MVP
+direction and is currently deferred.
 
 Kernel change policy: `architecture/kernel_v1_freeze.md`.
 
@@ -131,7 +134,13 @@ It must exercise submit, query, cancel, private-stream reconciliation,
 UNKNOWN recovery, ledger ingestion and restart. Production endpoints remain
 forbidden.
 
-## T047 - Application Runtime / SDK Lite
+## Deferred Post-MVP Reference
+
+The sections below are retained design direction, not active Execution
+Promotion work. After A019, the active Fast-Track continues through
+T050/A020/A021 in `development/funding_carry_fast_track_plan.md`.
+
+### T047 - Application Runtime / SDK Lite
 
 Build only after the first closed-loop integration identifies repeated
 interfaces.
@@ -162,14 +171,14 @@ QuoteSession / InventoryState
 No `BaseApplication` should require Carry-specific position, hedge, financial
 or recovery lifecycle fields.
 
-## T048 - Historical Event Replay
+### T048 - Historical Event Replay
 
 Replay must use recorded canonical evidence and the same deterministic
 Snapshot/Application contracts. It reconstructs State, Features and Snapshots
 from canonical evidence and produces deterministic decisions without a live
 gateway.
 
-## T049 - Paper Exchange
+### T049 - Paper Exchange
 
 Paper Trading emulates Execution outcomes through an explicit adapter and
 must never be presented as venue truth. Its first Fill Model supports market
@@ -196,8 +205,11 @@ authenticated production ledger.
 | T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | None |
 | A018 | Offline Execution Promotion acceptance | Planned | None |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | Testnet |
-| T047 | Application Runtime / SDK Lite after closed-loop evidence | Planned | None |
-| T048 | Historical event Replay foundation | Planned | None |
-| T049 | Paper Exchange and Fill Model | Planned | None |
+| T047 | Application Runtime / SDK Lite after closed-loop evidence | Deferred, Post-MVP | None |
+| T048 | Historical event Replay foundation | Deferred, Post-MVP | None |
+| T049 | Paper Exchange and Fill Model | Deferred, Post-MVP | None |
+| T050 | Funding Carry Live Operations Lite and Shadow | Planned after A019 | None |
+| A020 | Funding Carry MVP Live Readiness | Planned, no trading authority | None |
+| A021 | Controlled BTC Funding Carry micro-live | External, unauthorized | Real money |
 
 No item in this document changes the current external authorization state.
