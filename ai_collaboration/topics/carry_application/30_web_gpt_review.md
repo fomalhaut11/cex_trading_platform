@@ -2,7 +2,7 @@
 id: AI-20260729-008
 title: Web GPT Carry Application Review
 origin: web-gpt
-status: PENDING_SCOPE_ALIGNMENT
+status: READY_FOR_WEB_GPT_REVIEW
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -19,8 +19,8 @@ sensitivity: public-project
 
 ## Status
 
-Pending ADR-013 ownership/allocation/read-port scope alignment, then Web GPT
-review.
+ADR-013 ownership/allocation/read-port scope alignment is complete at
+`40_codex_adr014_scope_alignment.md`. This file is ready for Web GPT review.
 
 No review result has been inferred or pre-filled by Codex.
 
@@ -29,15 +29,14 @@ ADR-014 design. It did not review `20_codex_architecture_response.md`, so that
 transition message is preserved as input rather than recorded here as an
 ADR-014 decision.
 
-The final committee sequence starts ADR-013 design first. This file remains
-empty until the `financial_ledger` topic freezes the generic Accounting
-boundary required by Carry.
+The generic Accounting boundary required by Carry is now implemented offline
+and documented. No review result is inferred by Codex.
 
 ## Review Material
 
 Primary handoff:
 
-`20_codex_architecture_response.md`
+`50_codex_adr014_review_handoff.md`
 
 Authoritative proposal:
 

@@ -2,7 +2,7 @@
 id: AI-20260729-007
 title: Codex Carry Application Architecture Response
 origin: codex
-status: WAITING_FOR_ADR013_SCOPE_ALIGNMENT
+status: SCOPE_ALIGNED_SUPPLEMENTED
 created: 2026-07-29
 code_baseline: b082af0618e180f98441af5dc6d49c906994a012
 supersedes: none
@@ -13,6 +13,8 @@ related:
   - ../funding_arbitrage/87_codex_adr014_proposal_handoff.md
   - ../../../adr/ADR-013-financial-ledger-and-pnl-attribution.md
   - ../../../adr/ADR-014-carry-application-boundary.md
+  - 40_codex_adr014_scope_alignment.md
+  - 50_codex_adr014_review_handoff.md
 external_share: allowed
 sensitivity: public-project
 ---
@@ -40,11 +42,12 @@ immutable platform facts
 Carry belongs in `cex_quant.applications.carry`, with Funding-specific policy
 under `cex_quant.applications.carry.funding_arbitrage`.
 
-The ADR-014 draft is complete. Formal review now waits for ADR-013 ownership,
-allocation and attribution read-port scope alignment. Application
-implementation must not begin until ADR-013 Accounting is Accepted and the
-required Accounting capability is implemented and accepted. Grouped external
-execution remains a separate closed gate.
+The ADR-014 draft is complete. ADR-013 ownership, allocation and attribution
+read-port scope has since been aligned against implementation baseline
+`d522b87106c63cc9f5b61b7295746e1925fcc26c`; see
+`40_codex_adr014_scope_alignment.md`. Application implementation remains
+unauthorized pending review. Grouped external execution is a separate closed
+gate.
 
 ## 1. Current-Code Audit
 
@@ -61,8 +64,10 @@ execution remains a separate closed gate.
 | execution-consistent Portfolio state | authoritative effective positions and fill-coverage evidence |
 | Runtime composition | mandatory assembly of Snapshot, Strategy, Risk, OMS and Execution boundaries |
 
-No `cex_quant.applications` or `cex_quant.accounting` source package exists
-yet. No Carry-specific source contract is implemented.
+No `cex_quant.applications` source package exists and no Carry-specific source
+contract is implemented. ADR-013 has since added `cex_quant.accounting`; its
+exact reusable interfaces and remaining allocation-service dependency are
+recorded in `40_codex_adr014_scope_alignment.md`.
 
 ### Existing compatibility conclusions
 
@@ -237,14 +242,18 @@ class OrderGroupReadPort(Protocol):
 class PortfolioRiskReadPort(Protocol):
     def current_view(self, scope: AccountId) -> PortfolioRiskReadView: ...
 
-class AccountingAttributionReadPort(Protocol):
-    def get_attribution(
-        self, position_id: ApplicationPositionId
-    ) -> ApplicationAttributionView: ...
+class CarryAccountingReadPort(Protocol):
+    def pnl_attribution(
+        self,
+        owner: EconomicOwnerRef,
+        interval_start_ns: UnixNanos,
+        interval_end_ns: UnixNanos,
+    ) -> PnlAttributionView: ...
 ```
 
-These names are proposal-level interface shapes. Final symbols are frozen only
-after ADR-013 and ADR-014 acceptance.
+The Carry-specific Protocol names remain proposal-level. ADR-013 public symbols
+such as `EconomicOwnerRef` and `PnlAttributionView` are reused as implemented;
+ADR-014 does not invent a parallel Accounting model.
 
 The only trade-objective output remains:
 
@@ -294,7 +303,7 @@ unknown child or choose the next child action.
 venue/private financial facts
   -> ADR-013 canonical source facts and balanced ledger
   -> reconciliation and allocation
-  -> ApplicationAttributionView
+  -> PnlAttributionView plus reconciliation proofs
   -> Carry expected-versus-realized presentation
 ```
 
@@ -334,22 +343,22 @@ ADR-013 is not a cosmetic reporting dependency. It supplies:
 - application ownership allocation;
 - provisional versus reconciled PnL attribution.
 
-ADR-014 remains independently inspectable as a draft, but its formal review
-follows ADR-013 ownership/allocation/read-port scope alignment. Carry code
-must remain blocked until the accepted ADR-013 public read contracts exist
-and pass offline acceptance.
+ADR-013 ownership/allocation/read-port scope alignment and offline acceptance
+are now complete under project-owner authority. ADR-014 is ready for review.
+Carry code remains blocked until explicit ADR-014 implementation authority.
 
 Recommended promotion sequence:
 
 ```text
 1. ADR-012 implementation final acceptance        COMPLETE
-2. ADR-013 Accounting review and correction       NEXT PLATFORM GATE
-3. ADR-014 Carry boundary review and correction   AFTER SCOPE ALIGNMENT
-4. ADR-013 implementation and acceptance
-5. ADR-014 bounded offline implementation
-6. Funding Carry offline scenario acceptance
-7. separate authenticated Testnet authorization
-8. separate production authorization
+2. ADR-013 offline implementation and A016        COMPLETE
+3. ADR-013 final Web GPT acceptance                PENDING
+4. ADR-014 scope alignment                         COMPLETE
+5. ADR-014 boundary review and acceptance          NEXT DESIGN GATE
+6. ADR-014 bounded offline implementation          BLOCKED
+7. Funding Carry offline scenario acceptance       BLOCKED
+8. separate authenticated Testnet authorization    BLOCKED
+9. separate production authorization               BLOCKED
 ```
 
 ## 10. Expansion Safety

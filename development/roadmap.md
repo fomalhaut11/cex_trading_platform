@@ -112,8 +112,8 @@ Status: In progress at the ADR-gated architecture-foundation layer.
 - ADR-014 Carry Application Boundary is Proposed for the same review batch. It
   places economic lifecycle, hedge assessment and ownership evidence in
   `applications.carry` while preserving generic platform authority.
-  Its draft is retained, but formal review waits for ADR-013
-  ownership/allocation/read-port scope alignment. **No application
+  Its scope is now aligned against the implemented ADR-013 public contracts
+  and is ready for formal review. **T040-T044/A017 are planned; no application
   implementation is authorized yet.**
 - Extend OMS with durable Parent Order Groups and canonical child orders;
   existing Execution adapters remain child-order oriented. **Bounded offline
@@ -133,5 +133,6 @@ Detailed topology, interface drafts, compatibility rules and acceptance gates
 are maintained in `multi_leg_portfolio_trading_plan.md`.
 
 Entry gate: ADR-009 through ADR-012 are accepted and implemented through their
-offline gates. ADR-013 and ADR-014 remain review-gated. No completed offline
-gate authorizes Testnet or production trading.
+offline gates. ADR-013 offline implementation is complete but final review is
+pending. ADR-014 is scope-aligned and review-gated. No completed offline gate
+authorizes Testnet or production trading.

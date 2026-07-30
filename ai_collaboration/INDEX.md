@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|---|
 | AI-20260727-002 | Funding Arbitrage Engine Design | Web GPT / Codex | ADR-009/010/011/012 PROMOTED; ADR-012 acceptance CLOSED; ADR-013/014 DESIGN_PHASE | `b082af0618e180f98441af5dc6d49c906994a012` | [ADR-012 formal closure](topics/funding_arbitrage/96_web_gpt_adr012_formal_closure.md) | [Funding topic resolution](topics/funding_arbitrage/90_resolution.md) |
 | AI-20260729-012 | Financial Ledger and PnL Attribution | Web GPT / Codex / Project Owner | ADR-013 APPROVED_IN_PRINCIPLE; OFFLINE_T036_T039_A016_COMPLETE; FINAL_REVIEW_PENDING; EXTERNAL_BLOCKED | `1969fdd9c184c679da3c63a2d40ca3b642d70021` | [Project-owner continuation](topics/financial_ledger/41_project_owner_offline_continuation.md) | [Offline implementation handoff](topics/financial_ledger/50_codex_adr013_offline_implementation_handoff.md) |
-| AI-20260729-006 | Carry Application Architecture | Web GPT / Codex | ADR-014 WAITING_FOR_ADR013_SCOPE_ALIGNMENT; IMPLEMENTATION_BLOCKED | `b082af0618e180f98441af5dc6d49c906994a012` | [Carry architecture input](topics/carry_application/10_web_gpt_input.md) | [Codex architecture response](topics/carry_application/20_codex_architecture_response.md) |
+| AI-20260729-006 | Carry Application Architecture | Web GPT / Codex | ADR-014 SCOPE_ALIGNED; READY_FOR_REVIEW; IMPLEMENTATION_BLOCKED | `d522b87106c63cc9f5b61b7295746e1925fcc26c` | [Carry architecture input](topics/carry_application/10_web_gpt_input.md) | [Scope-aligned review handoff](topics/carry_application/50_codex_adr014_review_handoff.md) |
 
 ## Completed and Reference Exchanges
 

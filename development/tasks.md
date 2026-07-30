@@ -42,6 +42,11 @@
 | T037 | Balanced per-asset ledger, deterministic mapping, journal, replay and reversals | Complete | T036, T016 |
 | T038 | Financial reconciliation, ownership allocation, valuation and PnL views | Complete | T037, T032 |
 | T039 | Bounded durable financial-fact handoff and Accounting health boundary | Complete | T037, T021 |
+| T040 | Authoritative latest Funding market-state view and Snapshot source contract | Planned | ADR-014, T003-T005, T026 |
+| T041 | Carry identifiers, pair, position and ownership contracts | Planned | ADR-014, T027, T036 |
+| T042 | Funding Carry typed Snapshot, Features, Objectives and pure decision policy | Planned | T040-T041, T007A, T026-T028 |
+| T043 | Carry aggregate, application fact journal, replay and recovery proposals | Planned | T041-T042, T016 |
+| T044 | Runtime Carry read-port composition with grouped external execution blocked | Planned | T035, T039-T043 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -60,6 +65,7 @@
 | A014 | Offline Order Group identity, state, journal, retry, recovery and compatibility acceptance | Complete | T029-T031 |
 | A015 | Offline Portfolio position coverage, N-leg Risk, reservation, permit, recovery and blocked-route acceptance | Complete | T032-T035 |
 | A016 | Offline Accounting facts, balance, replay, reconciliation, allocation, valuation and failure acceptance | Complete | T036-T039 |
+| A017 | Offline Carry decision, lifecycle, hedge, restart and Accounting-boundary acceptance | Planned | T040-T044 |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -141,3 +147,9 @@ append-only ownership allocation, explicit conversion evidence, generic PnL
 views and a bounded fail-closed Accounting handoff. Full validation passes
 502 tests plus 188 subtests at 85.18% branch coverage. Web GPT final acceptance
 and every external execution gate remain pending.
+
+ADR-014 scope alignment is complete against the implemented ADR-013 public
+contracts at
+`ai_collaboration/topics/carry_application/40_codex_adr014_scope_alignment.md`.
+T040-T044/A017 are planned only; they remain unauthorized until ADR-014 review
+and explicit project-owner implementation approval.

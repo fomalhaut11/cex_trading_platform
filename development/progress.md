@@ -247,9 +247,9 @@ target-host performance and authenticated Testnet gates.
   This does not authorize authenticated source activation or external trading.
 - ADR-014 Carry Application Boundary remains Proposed. Its draft keeps
   economic lifecycle, hedge assessment and ownership in
-  `applications.carry`, but formal review waits for ADR-013
-  ownership/allocation/read-port scope alignment. No Carry/Funding
-  application code has been implemented.
+  `applications.carry`. Scope alignment against implemented ADR-013 public
+  contracts is complete and ADR-014 is ready for review. T040-T044/A017 are
+  planned but unauthorized; no Carry/Funding application code exists.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
@@ -271,7 +271,8 @@ target-host performance and authenticated Testnet gates.
 
 1. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-2. Align ADR-014 with the accepted ADR-013 ownership/allocation/read ports,
+2. Submit the scope-aligned ADR-014 handoff for review; begin no application
+   source until explicitly authorized.
    then perform its formal review; do not treat the existing draft as
    implementation authorization.
 3. Keep grouped external submission blocked until a later explicit Testnet

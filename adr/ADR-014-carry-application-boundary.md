@@ -2,23 +2,23 @@
 
 ## Status
 
-Proposed - 2026-07-28.
+Proposed, scope-aligned - 2026-07-30.
 
-This ADR is prepared for the 2026-07-29 batch architecture review. It changes
-no source contract and grants no Funding Arbitrage, Testnet or production
-authorization.
+This ADR has been rechecked against the project-owner-authorized ADR-013
+offline implementation. It changes no source contract and grants no Funding
+Arbitrage, grouped execution, Testnet or production authorization.
 
 Reviewed baseline:
 
-`fa0df9e2a015db258457d226c7ed9fa5c689b8eb`
+`d522b87106c63cc9f5b61b7295746e1925fcc26c`
 
 ADR-012 is Accepted and implemented through its bounded offline gate.
-The ADR-014 draft remains inspectable, but its formal review follows ADR-013
-ownership, allocation and attribution read-port scope alignment. It cannot be
-accepted as an implementation authorization until the final accepted
-Accounting contracts are compatible with this boundary. Carry application
-code starts only after ADR-009 through ADR-014 are Accepted and the required
-platform capabilities are implemented and accepted.
+ADR-013 is approved in principle and T036-T039/A016 are complete under
+separate project-owner offline authority. Its public Accounting contracts have
+now been checked for ADR-014 compatibility. Web GPT final ADR-013 acceptance
+and ADR-014 review remain pending. Carry application code starts only after an
+explicit ADR-014 implementation authorization; external exposure remains a
+later independent gate.
 
 ## Context
 
@@ -129,16 +129,58 @@ There is no `cex_quant.applications` package and no:
 
 The current external single-leg pipeline explicitly rejects Basket intents.
 ADR-011 grouped external submission remains blocked. ADR-012 is Accepted and
-implemented through its bounded offline gate. ADR-013 is Proposed and not
-implemented.
+implemented through its bounded offline gate. ADR-013 is approved in
+principle and its project-owner-authorized offline implementation is complete.
 
-The current system still lacks accepted implementations for:
+The current system still lacks:
 
 - a state owner that publishes the latest Funding market view;
-- financial settlement/fee ledger and allocation.
+- a Carry application domain;
+- a durable public Accounting allocation coordinator/read repository suitable
+  for application integration.
 
 ADR-014 design cannot turn those missing platform capabilities into
 application-owned substitutes.
+
+### ADR-013 implementation alignment
+
+The actual Accounting package provides the following immutable public
+contracts:
+
+| ADR-014 need | Current ADR-013 contract |
+|---|---|
+| opaque application owner | `EconomicOwnerRef` plus versioned `EconomicOwnerTypeRef` |
+| realized/marked performance | `PnlAttributionView` and `PnlComponent` |
+| attribution completeness | `AttributionCompleteness` |
+| source coverage | `SourceCompletenessProof` |
+| balance proof | `BalanceReconciliationProof` |
+| reporting valuation | `ValuationSnapshot` and `ConversionRateEvidence` |
+| ledger progress/health read | `AccountingLedgerView` |
+| immutable allocation evidence | `AttributionAllocation` |
+
+The Carry position maps to Accounting generically:
+
+```text
+ApplicationPositionId("carry-position-123")
+  -> EconomicOwnerRef(
+       owner_type=EconomicOwnerTypeRef(
+         name="application.position",
+         version=1,
+       ),
+       owner_id="carry-position-123",
+     )
+```
+
+Carry consumes immutable views only. It cannot import or mutate
+`AllocationBook`, call `create_allocation`, ingest financial facts or choose
+valuation rates.
+
+The offline Accounting implementation can rebuild an `AllocationBook` from
+immutable allocation records, but it does not yet expose a durable allocation
+coordinator/journal and application-facing query service. This is an
+implementation dependency, not permission to move allocation into Carry.
+Until that dependency is accepted, `CarryFinancialState.RECONCILED` cannot be
+promoted for an exposure-changing application.
 
 ## Decision Summary
 
@@ -418,7 +460,9 @@ FundingCarryDecisionSnapshot = (
 @dataclass(frozen=True, slots=True, kw_only=True)
 class FundingCarryPerformanceView:
     application_position: CarryPositionView
-    accounting: ApplicationAttributionView
+    accounting: PnlAttributionView
+    source_proofs: tuple[SourceCompletenessProof, ...]
+    balance_proofs: tuple[BalanceReconciliationProof, ...]
 ```
 
 Entry does not pretend that an application position already exists.
@@ -793,8 +837,11 @@ position's economic ownership declaration.
 
 ### 12.2 Accounting interaction
 
-The application emits immutable ownership evidence to an Accounting allocation
-port. It cannot write ledger transactions or force an allocation result.
+The application durably records immutable ownership declarations. Runtime
+projects the application position to an `EconomicOwnerRef` and offers the
+declaration to a generic Accounting allocation integration port. The pure
+strategy never calls that port. Carry cannot write ledger transactions,
+construct `AttributionAllocation` or force an allocation result.
 
 Accounting:
 
@@ -803,6 +850,38 @@ Accounting:
 - allocates account-level Funding only when ownership is complete;
 - retains `UNALLOCATED` when evidence is ambiguous;
 - publishes immutable attribution views back to the application.
+
+The application-facing read boundary is an immutable projection:
+
+```python
+class CarryAccountingReadPort(Protocol):
+    def pnl_attribution(
+        self,
+        owner: EconomicOwnerRef,
+        interval_start_ns: UnixNanos,
+        interval_end_ns: UnixNanos,
+    ) -> PnlAttributionView: ...
+
+    def reconciliation(
+        self,
+        owner: EconomicOwnerRef,
+    ) -> tuple[
+        tuple[SourceCompletenessProof, ...],
+        tuple[BalanceReconciliationProof, ...],
+    ]: ...
+```
+
+This Protocol belongs at the application/runtime composition edge. Accounting
+continues to own the underlying ledger, allocation and reconciliation
+implementations.
+
+`CarryFinancialState.RECONCILED` requires all of:
+
+- relevant source completeness is `MATCHED`;
+- relevant balance proof is `MATCHED`;
+- attribution is complete for the declared owner and interval;
+- allocation evidence is durably recoverable;
+- no Accounting health or identity conflict is active.
 
 ### 12.3 First-MVP account rule
 
@@ -1247,19 +1326,22 @@ orthogonal states, offline failure tests and explicit promotion gates.
 
 This Proposed ADR authorizes no code.
 
-After Web GPT review, dependency compatibility and explicit project-owner
-acceptance:
+Proposed implementation sequence after Web GPT review and explicit
+project-owner authorization:
 
-1. assign implementation and acceptance task IDs;
-2. implement IDs, Carry pair and typed Snapshot/Feature contracts;
-3. implement pure read-only decision observation;
-4. implement application journal, aggregate and ownership evidence;
-5. integrate only accepted ADR-012/013 read ports;
-6. add offline strategy, lifecycle, recovery and attribution tests;
+1. T040: authoritative latest Funding market-state view;
+2. T041: application/Carry IDs, pair and ownership contracts;
+3. T042: typed Snapshot, Features, Objective registrations and pure policy;
+4. T043: Carry aggregate, fact journal, replay and recovery proposals;
+5. T044: Runtime read-port composition with Basket output stopped before
+   external execution;
+6. A017: offline decision/lifecycle/restart/accounting-boundary acceptance;
 7. run full regression, static, branch-coverage and architecture-boundary
    gates;
 8. publish application interfaces and acceptance handoff;
-9. request separate authorization before authenticated Testnet.
+9. close the durable Accounting allocation/query dependency before any
+   `RECONCILED` production claim;
+10. request separate authorization before authenticated Testnet.
 
 Exposure-changing Funding Carry remains forbidden until:
 

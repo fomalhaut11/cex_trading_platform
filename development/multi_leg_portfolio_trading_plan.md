@@ -995,17 +995,15 @@ The generic multi-leg core is complete only when:
 
 ## 18. Immediate Next Step
 
-T029-T035 and A014/A015 are complete after ADR-011 remediation and ADR-012
-offline implementation. ADR-012 implementation review is complete. The next
-platform gate is the independent ADR-013 Accounting decision; ADR-014 Carry
-formal review follows ownership/allocation/read-port scope alignment in the
-separate `financial_ledger` topic. External group submission remains blocked
-pending separate Testnet authorization.
+T029-T039 and A014-A016 are complete through the project-owner-authorized
+offline gates. ADR-013 final Web GPT acceptance remains pending, but its
+implemented ownership/allocation/read interfaces have been inspected against
+ADR-014.
 
-Web GPT has approved ADR-013 in principle. Economic/observation/posting time
-semantics and the multi-currency valuation-policy boundary are documented and
-await final review before any Accounting implementation task is assigned.
+ADR-014 is now scope-aligned and ready for review. Proposed T040-T044/A017
+cover the Funding market-state view, Carry contracts, typed Snapshots/pure
+policy, aggregate/journal/recovery and offline Runtime composition.
 
-Do not create Funding Arbitrage application code. Basket, bounded OMS Order
-Group and Portfolio Risk foundations are complete offline. Financial Ledger
-and Carry implementation remain blocked by ADR-013/014.
+Do not create Funding Arbitrage application code until ADR-014 review and
+explicit implementation authorization. External grouped submission, Testnet
+and production remain separately blocked.

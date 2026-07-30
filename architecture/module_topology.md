@@ -157,8 +157,9 @@ listener. Concrete TLS termination remains a deployment boundary.
 21. Proposed ADR-014 places Carry economic state in
     `applications.carry`; applications consume immutable public views and emit
     Basket targets, but cannot issue permits, create child orders, write the
-    ledger or call Execution. These proposals are not yet accepted dependency
-    changes.
+    ledger or call Execution. Its scope is aligned with ADR-013
+    `EconomicOwnerRef`, `PnlAttributionView` and reconciliation/valuation
+    views, but it remains unaccepted and unimplemented.
 
 ## Process Boundaries
 
