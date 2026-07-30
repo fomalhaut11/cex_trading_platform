@@ -4,6 +4,9 @@ Production-oriented quantitative trading runtime for centralized exchanges.
 The system is Python-first, Rust-ready and built around immutable domain
 contracts, single-writer state and a deterministic hot path.
 
+For the current Git/CI baseline, ADR status, implemented modules, hard blocks
+and exact next task, start with [`START_HERE.md`](START_HERE.md).
+
 ## Current Scope
 
 - Canonical support for spot, perpetual, dated futures and option instruments.

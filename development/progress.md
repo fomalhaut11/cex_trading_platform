@@ -1,14 +1,18 @@
 # Project Progress
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
+
+Current self-contained handoff:
+
+`START_HERE.md`
 
 ## Current Phase
 
-Phase 4 - Production readiness and external acceptance.
+Primary delivery track: Kernel v1 compatibility freeze is active; T045
+Execution Promotion composition audit is next and has not started.
 
-The deterministic offline trading foundation is complete. This phase does not
-authorize production trading; it closes deployment, recovery, supervision,
-target-host performance and authenticated Testnet gates.
+Parallel external track: Phase 4 production readiness and external acceptance
+continues. Neither track authorizes grouped Testnet or production trading.
 
 ## Completed
 

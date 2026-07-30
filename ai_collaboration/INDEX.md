@@ -2,6 +2,10 @@
 
 此索引登记 AI 交换文档及其最终去向。状态必须与主题目录中的 resolution 一致。
 
+当前仓库状态、授权边界和下一任务的自包含入口：
+
+[`START_HERE.md`](../START_HERE.md)
+
 ## Active Topics
 
 | ID | Topic | Origin | Status | Code baseline | Input | Current response |
