@@ -297,6 +297,8 @@ target-host performance and authenticated Testnet gates.
 - `python -m mypy --strict src`: passed with MyPy 2.3.0 for 136 source files.
 - Pytest branch coverage: 85.13%; the 85% CI gate passes locally with 544
   tests and 188 subtests.
+- ADR-014 remote GitHub Actions run `30510254523` passed for handoff commit
+  `ba32dce7ce468b14307088ef13e649c52f6fb74e`.
 - GitHub Actions run `30345476372` passed quality/coverage and regression on
   Python 3.11 and 3.14 for the original ADR-011 head `9ccf0c5`; remote
   remediation head `df2fd83` passed all three jobs in run `30351998834`;

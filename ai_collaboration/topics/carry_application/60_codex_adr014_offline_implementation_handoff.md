@@ -223,6 +223,9 @@ compileall:         passed
 secret scan:        passed within full regression
 ```
 
+Remote GitHub Actions CI run `30510254523` passed for handoff commit
+`ba32dce7ce468b14307088ef13e649c52f6fb74e`.
+
 ## Frozen Boundary Audit
 
 - Carry owns economic lifecycle and policy only.
@@ -247,4 +250,3 @@ C. non-blocking long-term optimization.
 
 The accepted ADR-014 design should not be reopened unless the implementation
 violates its frozen boundary.
-
