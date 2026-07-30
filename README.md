@@ -46,6 +46,10 @@ Fast-Track MVP in `development/funding_carry_fast_track_plan.md`. The broader
 the MVP. Kernel compatibility and allowed change rules are defined by
 `architecture/kernel_v1_freeze.md`.
 
+The current Chinese AWS Lightsail provisioning and host-operations baseline
+is `operations/aws_lightsail_server_guide_zh.md`. It prepares offline,
+Testnet and Shadow infrastructure only and grants no trading authority.
+
 For a self-contained Chinese overview of the current implementation, public
 module boundaries, acceptance evidence and planned multi-leg extension, read
 `architecture/project_architecture_overview_zh.md`.

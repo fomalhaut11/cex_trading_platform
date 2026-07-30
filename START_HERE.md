@@ -366,8 +366,9 @@ Read only what is needed, in this order:
 5. `architecture/module_topology.md` — dependencies;
 6. `architecture/state_ownership.md` — single writers;
 7. `development/tasks.md` and `development/progress.md` — task/evidence status;
-8. `development/platform_delivery_plan.md` only for deferred Post-MVP scope;
-9. specific accepted ADR/interface files only when changing that boundary.
+8. `operations/aws_lightsail_server_guide_zh.md` when preparing the host;
+9. `development/platform_delivery_plan.md` only for deferred Post-MVP scope;
+10. specific accepted ADR/interface files only when changing that boundary.
 
 For ADR-014:
 
