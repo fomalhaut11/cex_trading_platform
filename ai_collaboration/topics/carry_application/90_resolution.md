@@ -96,6 +96,7 @@ Testnet or production.
 - prioritize the first complete execution/runtime loop before speculative
   kernel expansion.
 
-The next planned sequence is Execution Promotion, a minimal
-Strategy/Application SDK and Replay/Paper Trading. Testnet remains a separate
-explicit authorization gate.
+The next planned sequence is T045/T046/A018 Execution Promotion, separately
+authorized A019 Testnet, T047 Application Runtime / SDK Lite, T048 historical
+Replay and T049 Paper Exchange. Testnet remains a separate explicit
+authorization gate.

@@ -146,11 +146,14 @@ speculative foundation expansion to runtime closure:
 1. **Execution Promotion** — T045/T046/A018 compose the existing Basket, Risk,
    OMS, durable handoff, Portfolio and Accounting boundaries in a deterministic
    offline closed loop. A019 is the later, separately authorized Testnet gate.
-2. **Strategy/Application SDK** — T047 extracts only interfaces proven common
-   by the first full application loop. It must not impose Carry lifecycle or a
-   universal application state.
-3. **Replay and Paper Trading** — T048 reuses canonical inputs and labels
-   simulated fills/Funding/fees explicitly.
+2. **Application Runtime / SDK Lite** — T047 extracts only interfaces proven
+   common by the first full application loop. It must not impose Carry
+   lifecycle or a universal application state.
+3. **Historical Replay** — T048 reconstructs deterministic State, Feature and
+   Snapshot streams from canonical evidence.
+4. **Paper Exchange** — T049 supplies explicitly simulated execution, latency,
+   slippage, partial-fill, fee and Funding evidence.
 
-The detailed promotion and gate plan is maintained in
+The authoritative program sequence is
+`development/platform_delivery_plan.md`; detailed promotion gates are in
 `development/execution_promotion_plan.md`.

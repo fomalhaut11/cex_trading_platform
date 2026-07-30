@@ -259,6 +259,10 @@ target-host performance and authenticated Testnet gates.
   Making state family-specific.
 - Execution Promotion T045-T046/A018 is the next credential-free planning
   scope. Authenticated grouped Testnet A019 remains unauthorized.
+- Kernel v1 compatibility freeze and the Phase 0-5 platform sequence are
+  recorded in `architecture/kernel_v1_freeze.md` and
+  `development/platform_delivery_plan.md`. T047 is Application Runtime / SDK
+  Lite, T048 is historical Replay and T049 is Paper Exchange.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit

@@ -6,6 +6,10 @@ Architecture basis: ADR-009 through ADR-014.
 
 External execution: blocked until separate project-owner authorization.
 
+Program sequence: `development/platform_delivery_plan.md`.
+
+Kernel change policy: `architecture/kernel_v1_freeze.md`.
+
 ## Objective
 
 Close the first application runtime loop without changing domain ownership:
@@ -44,9 +48,10 @@ ADR-011, ADR-012 or ADR-014.
    payloads.
 10. Testnet promotion grants no production permission.
 
-## Sprint 2A - Offline Promotion Readiness
+## T045 - Execution Promotion Composition Audit
 
-This is the next credential-free development scope.
+This is the next credential-free development scope. T045 is an evidence-backed
+current-code audit and produces no external side effect.
 
 ### Composition audit
 
@@ -57,6 +62,27 @@ This is the next credential-free development scope.
 - prove there is one runtime coordination point and no alternate external
   route;
 - define read-only evidence returned to Carry.
+
+T045 must identify the single runtime writer, map every identity/causation
+edge and distinguish a real missing composition seam from a request to change
+the frozen kernel.
+
+Output:
+
+```text
+current-code call and dependency map
+identity/causation map
+state-writer ownership table
+failure sequence matrix
+bounded T046 implementation plan
+```
+
+## T046 - Mode-Neutral Offline Runtime and Fault Harness
+
+T046 implements only gaps demonstrated by T045. It must use ports that allow
+the deterministic execution adapter to be replaced by a separately authorized
+Binance Testnet adapter without changing application policy or grouped
+execution semantics.
 
 ### Closed-loop deterministic harness
 
@@ -74,7 +100,7 @@ to test:
 - financial facts arriving before/after Portfolio reconciliation;
 - normal close and funding-reversal close.
 
-### Promotion artifact
+### A018 promotion artifact
 
 Produce one self-contained readiness report containing:
 
@@ -85,9 +111,9 @@ Produce one self-contained readiness report containing:
 - remaining external prerequisites;
 - explicit go/no-go request for Testnet.
 
-Sprint 2A cannot remove the external block.
+T045/T046/A018 cannot remove the external block.
 
-## Sprint 2B - Explicit Testnet Promotion
+## A019 - Explicit Testnet Promotion
 
 This phase starts only after all of the following are recorded:
 
@@ -105,7 +131,7 @@ It must exercise submit, query, cancel, private-stream reconciliation,
 UNKNOWN recovery, ledger ingestion and restart. Production endpoints remain
 forbidden.
 
-## Sprint 3 - Strategy/Application SDK
+## T047 - Application Runtime / SDK Lite
 
 Build only after the first closed-loop integration identifies repeated
 interfaces.
@@ -136,11 +162,19 @@ QuoteSession / InventoryState
 No `BaseApplication` should require Carry-specific position, hedge, financial
 or recovery lifecycle fields.
 
-## Sprint 4 - Replay and Paper Trading
+## T048 - Historical Event Replay
 
 Replay must use recorded canonical evidence and the same deterministic
-Snapshot/Strategy contracts. Paper Trading must emulate Execution outcomes
-through an explicit adapter and must never be presented as venue truth.
+Snapshot/Application contracts. It reconstructs State, Features and Snapshots
+from canonical evidence and produces deterministic decisions without a live
+gateway.
+
+## T049 - Paper Exchange
+
+Paper Trading emulates Execution outcomes through an explicit adapter and
+must never be presented as venue truth. Its first Fill Model supports market
+and limit orders, latency, slippage, partial fill, rejection and
+timeout/UNKNOWN injection.
 
 Required separation:
 
@@ -158,12 +192,12 @@ authenticated production ledger.
 
 | ID | Work item | Status | External effect |
 |---|---|---|---|
-| T045 | Grouped execution composition audit and offline promotion runtime | Planned | None |
-| T046 | Deterministic grouped closed-loop/fault harness | Planned | None |
+| T045 | Grouped execution current-code composition audit | Planned | None |
+| T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | None |
 | A018 | Offline Execution Promotion acceptance | Planned | None |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | Testnet |
-| T047 | Minimal Strategy/Application SDK after integration feedback | Planned | None |
-| T048 | Replay and Paper Trading foundation | Planned | None |
+| T047 | Application Runtime / SDK Lite after closed-loop evidence | Planned | None |
+| T048 | Historical event Replay foundation | Planned | None |
+| T049 | Paper Exchange and Fill Model | Planned | None |
 
 No item in this document changes the current external authorization state.
-

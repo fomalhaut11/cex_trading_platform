@@ -797,8 +797,10 @@ execution、grouped execution、Testnet 或 production。
 |---|---|
 | 已接受架构决策 | `adr/` 中状态为 Accepted 的 ADR |
 | 当前模块依赖和状态所有权 | `architecture/` |
+| Kernel v1 冻结和变更治理 | `architecture/kernel_v1_freeze.md` |
 | 稳定数据结构和接口 | `interfaces/` 与包 `__init__.py` |
 | 当前进度和验证结果 | `development/progress.md` |
+| 平台交付阶段与任务顺序 | `development/platform_delivery_plan.md` |
 | 外部验收缺口 | `development/remaining_external_gates.md` |
 | 多腿开发计划 | `development/multi_leg_portfolio_trading_plan.md` |
 | 部署和事故操作 | `operations/` |

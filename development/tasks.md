@@ -47,10 +47,11 @@
 | T042 | Funding Carry typed Snapshot, Features, Objectives and pure decision policy | Complete | T040-T041, T007A, T026-T028 |
 | T043 | Carry aggregate, application fact journal, replay and recovery proposals | Complete | T041-T042, T016 |
 | T044 | Runtime Carry read-port composition with grouped external execution blocked | Complete | T035, T039-T043 |
-| T045 | Grouped execution composition audit and offline promotion runtime | Planned | ADR-009-014, T031, T035, T039, T044 |
-| T046 | Deterministic grouped closed-loop and fault-injection harness | Planned | T045 |
-| T047 | Minimal Strategy/Application SDK based on proven shared protocols | Planned | T046 |
-| T048 | Replay and Paper Trading foundation with explicit simulated evidence | Planned | T047 |
+| T045 | Grouped execution current-code composition audit | Planned | ADR-009-014, T031, T035, T039, T044 |
+| T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | T045 |
+| T047 | Application Runtime / SDK Lite based on first closed-loop evidence | Planned | A019 |
+| T048 | Historical event Replay foundation | Planned | T047 |
+| T049 | Paper Exchange and Fill Model with explicit simulated evidence | Planned | T048 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -161,7 +162,7 @@ Funding execution, grouped external submission, Testnet and production remain
 blocked.
 
 Web GPT accepted and closed the ADR-014 offline implementation after reviewing
-the handoff, interface and ADR. No redesign was requested. Planned T045-T048,
-A018/A019 move the project toward Execution Promotion, a minimal
-Strategy/Application SDK and Replay/Paper Trading. Only T045-T046/A018 are
-credential-free offline work; A019 remains explicitly unauthorized.
+the handoff, interface and ADR. No redesign was requested. Planned T045-T049,
+A018/A019 move the project through Execution Promotion, Application Runtime,
+historical Replay and Paper Exchange. Only T045-T046/A018 are the next
+credential-free offline scope; A019 remains explicitly unauthorized.

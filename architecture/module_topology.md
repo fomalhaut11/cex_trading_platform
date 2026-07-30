@@ -25,6 +25,12 @@ the mandatory Strategy -> Risk -> OMS -> Execution boundary.
 `runtime` assembles the flow. `recorder`, `monitoring`, `operations_api` and
 `storage` consume bounded side channels and cannot block the trading path.
 
+Public kernel semantics are compatibility-frozen under
+`architecture/kernel_v1_freeze.md`. New application/runtime work must prefer
+composition and adapters; application-specific fields cannot be added to
+generic Strategy, Risk, OMS, Portfolio or Accounting contracts without
+reproducible evidence and explicit change approval.
+
 ADR-010 adds the decision boundary below:
 
 ```text
