@@ -370,6 +370,15 @@ Read only what is needed, in this order:
 9. `development/platform_delivery_plan.md` only for deferred Post-MVP scope;
 10. specific accepted ADR/interface files only when changing that boundary.
 
+Optional code-navigation aid:
+
+- `development/graphify_code_graph.md` defines the local code-graph safety and
+  authority boundary;
+- `graphify-out/SNAPSHOT.md` records graph counts and the indexed-source
+  fingerprint;
+- `graphify-out/GRAPH_REPORT.md` is a generated overview, not architecture
+  authority.
+
 For ADR-014:
 
 - `adr/ADR-014-carry-application-boundary.md`;
