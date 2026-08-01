@@ -1,6 +1,6 @@
 # Grouped Execution Promotion Plan
 
-Status: T045 complete; T046/A018 planned; credential-free work only.
+Status: T045-T046 complete; A018 next; credential-free work only.
 
 Architecture basis: ADR-009 through ADR-014.
 
@@ -85,6 +85,9 @@ bounded T046 implementation plan
 
 ## T046 - Mode-Neutral Offline Runtime and Fault Harness
 
+Status: complete. Evidence:
+`development/t046_offline_execution_runtime.md`.
+
 T046 implements only gaps demonstrated by T045. It must use ports that allow
 the deterministic execution adapter to be replaced by a separately authorized
 Binance Testnet adapter without changing application policy or grouped
@@ -107,6 +110,8 @@ to test:
 - normal close and funding-reversal close.
 
 ### A018 promotion artifact
+
+Status: next; not yet accepted.
 
 Produce one self-contained readiness report containing:
 
@@ -205,8 +210,8 @@ authenticated production ledger.
 | ID | Work item | Status | External effect |
 |---|---|---|---|
 | T045 | Grouped execution current-code composition audit | Complete | None |
-| T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | None |
-| A018 | Offline Execution Promotion acceptance | Planned | None |
+| T046 | Mode-neutral offline execution runtime and deterministic fault harness | Complete | None |
+| A018 | Offline Execution Promotion acceptance | Next | None |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | Testnet |
 | T047 | Application Runtime / SDK Lite after closed-loop evidence | Deferred, Post-MVP | None |
 | T048 | Historical event Replay foundation | Deferred, Post-MVP | None |

@@ -132,7 +132,7 @@ A020  Funding Carry MVP Live Readiness
 A021  Controlled Micro-Live Acceptance
 ```
 
-T045 is complete. T046 is the next credential-free engineering task.
+T045 and T046 are complete. A018 is the next credential-free acceptance task.
 
 ## T045 - Composition Audit
 
@@ -165,6 +165,10 @@ Output:
 ## T046 and A018 - Offline Closed Loop
 
 T046 uses a deterministic, fault-injectable in-memory Execution port.
+
+T046 implementation is complete and recorded in
+`development/t046_offline_execution_runtime.md`. A018 remains next and must
+consolidate the complete restart/fault matrix and promotion handoff.
 
 Required scenarios:
 

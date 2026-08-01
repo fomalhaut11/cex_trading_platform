@@ -70,7 +70,9 @@ Current state:
 - `development/funding_carry_fast_track_plan.md` is the active plan;
 - T045 composition audit is complete and recorded in
   `development/t045_execution_promotion_composition_audit.md`;
-- T046 is the only current next engineering task;
+- T046 is complete and recorded in
+  `development/t046_offline_execution_runtime.md`;
+- A018 is the only current next acceptance task;
 - Testnet/grouped external execution is not authorized.
 - real-money micro-live execution is not authorized.
 
@@ -196,9 +198,8 @@ evidence. It does not yet compose the full Risk/OMS/Portfolio/Accounting loop.
 
 ## 7. What Is Not Implemented or Authorized
 
-Not yet implemented:
+Not yet implemented or accepted:
 
-- T046 mode-neutral offline execution runtime and fault harness;
 - A018 full offline grouped execution-loop acceptance;
 - T050 Funding Carry Live Operations Lite and Shadow mode;
 - A020 live-readiness acceptance;
@@ -239,8 +240,8 @@ Sequence:
 ```text
 Phase 0  Kernel v1 compatibility freeze        ACTIVE
 T045     Execution Promotion composition audit COMPLETE
-T046     Mode-neutral offline runtime/harness  NEXT
-A018     Offline Execution acceptance          PLANNED
+T046     Mode-neutral offline runtime/harness  COMPLETE
+A018     Offline Execution acceptance          NEXT
 A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
 T050     Live Operations Lite + Shadow         PLANNED
 A020     MVP Live Readiness                    PLANNED, NO TRADING AUTHORITY
@@ -273,9 +274,10 @@ T045 deliverables:
 - happy-path and failure sequence diagrams;
 - bounded T046 plan.
 
-The audit found no reason to modify frozen public interfaces. T046 will add
-only Runtime composition and internal adapters; it does not enable network
-I/O.
+The audit found no reason to modify frozen public interfaces. T046 subsequently
+added only Runtime composition and internal adapters; it did not enable
+network I/O. Its evidence is in
+`development/t046_offline_execution_runtime.md`.
 
 ## 10. Deferred Application Runtime Decisions
 

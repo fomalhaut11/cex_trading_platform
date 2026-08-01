@@ -9,9 +9,10 @@ Current self-contained handoff:
 ## Current Phase
 
 Primary delivery track: Kernel v1 compatibility freeze is active; T045
-Execution Promotion composition audit is complete and T046 mode-neutral
-offline runtime/fault-harness implementation is next. The sole active product
-target is the Binance single-account BTC Funding Carry Fast-Track MVP.
+Execution Promotion composition audit and T046 mode-neutral offline
+runtime/fault-harness implementation are complete. A018 offline promotion
+acceptance is next. The sole active product target is the Binance
+single-account BTC Funding Carry Fast-Track MVP.
 
 Parallel external track: Phase 4 production readiness and external acceptance
 continues. Neither track authorizes grouped Testnet or production trading.
@@ -247,6 +248,11 @@ continues. Neither track authorizes grouped Testnet or production trading.
   and dependency map, identity/causation map, state-writer table,
   happy/failure/restart matrix and bounded T046 plan. It found missing Runtime
   composition seams but no reason to change frozen Kernel v1 interfaces.
+- T046 mode-neutral offline runtime now composes whole-Basket Risk admission,
+  Order Group actions, exact permits, durable submit/cancel routing,
+  OMS-to-Portfolio effects, Carry read-side state and ordered restart gates.
+  Its deterministic adapter performs no network I/O. Evidence:
+  `development/t046_offline_execution_runtime.md`.
 
 ## In Progress
 
@@ -267,9 +273,9 @@ continues. Neither track authorizes grouped Testnet or production trading.
   reviewing the handoff, public interface and ADR. No A-class correction or
   redesign was requested. Long-term guidance keeps Carry, CTA and Market
   Making state family-specific.
-- Execution Promotion T045 is complete. T046 mode-neutral offline runtime and
-  the A018 fault matrix are the next credential-free scope. Authenticated
-  grouped Testnet A019 remains unauthorized.
+- Execution Promotion T045-T046 is complete. A018 fault/restart acceptance is
+  the next credential-free scope. Authenticated grouped Testnet A019 remains
+  unauthorized.
 - Kernel v1 compatibility freeze is recorded in
   `architecture/kernel_v1_freeze.md`. The former Phase 0-5 platform sequence
   remains in `development/platform_delivery_plan.md` as deferred direction.
@@ -297,9 +303,8 @@ continues. Neither track authorizes grouped Testnet or production trading.
 
 ## Next
 
-1. Implement only the T046 Runtime composition seams proven by T045 and build
-   A018's deterministic closed-loop/fault matrix without enabling external
-   I/O.
+1. Complete A018's deterministic restart/fault matrix, frozen-boundary audit
+   and self-contained Testnet readiness handoff without enabling external I/O.
 2. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
 3. Produce an explicit Testnet go/no-go artifact only after A018 passes;
@@ -321,13 +326,14 @@ continues. Neither track authorizes grouped Testnet or production trading.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -p "test*.py"`: 544 passed.
+- `python -m unittest discover -s tests -p "test*.py"`: 565 passed.
 - ADR-014 A017: 5 acceptance scenarios passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 136 source files.
+- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 140 source files.
 - T045 composition audit: complete; Kernel v1 public interfaces unchanged.
-- Pytest branch coverage: 85.13%; the 85% CI gate passes locally with 544
-  tests and 188 subtests.
+- T046 offline runtime/fault harness: complete; external I/O disabled.
+- Pytest branch coverage: 85.03%; the 85% CI gate passes locally with 565
+  tests and 216 subtests.
 - ADR-014 remote GitHub Actions run `30510254523` passed for handoff commit
   `ba32dce7ce468b14307088ef13e649c52f6fb74e`.
 - Final ADR-014 evidence-only head `2835ee2523642f8650d3ecd2388fc6db694c52b0`

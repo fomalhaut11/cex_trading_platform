@@ -108,7 +108,7 @@ Exit condition:
 
 ## Phase 1 - Execution Promotion
 
-Status: T045 complete; T046 is the next credential-free development task.
+Status: T045-T046 complete; A018 is the next credential-free acceptance task.
 
 ### T045 - Composition Audit
 
@@ -143,6 +143,9 @@ Deliverables:
 T045 does not modify kernel interfaces or enable external I/O.
 
 ### T046 - Mode-Neutral Offline Execution Runtime
+
+Status: complete. Evidence:
+`development/t046_offline_execution_runtime.md`.
 
 T046 implements only the composition proven necessary by T045.
 
@@ -179,6 +182,8 @@ The runtime must be mode-neutral so A019 can replace only the Execution and
 external evidence adapters. It must not contain a Funding branch.
 
 ### A018 - Offline Execution Acceptance
+
+Status: next; not yet accepted.
 
 A018 passes only when:
 

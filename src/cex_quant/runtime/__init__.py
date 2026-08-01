@@ -44,6 +44,12 @@ from .carry_application import (
     CarryRuntimeDisposition,
     CarryRuntimeResult,
 )
+from .carry_projection import (
+    CarryFinancialEvidence,
+    CarryReadSideProjection,
+    CarryReadSideProjectionError,
+    CarryReadSideProjector,
+)
 from .deployment import (
     OperatorControlDeploymentConfig,
     OperatorControlRuntime,
@@ -67,6 +73,29 @@ from .financial_fact_handoff import (
     FinancialFactOverflowError,
     FinancialFactSink,
     FinancialFactWorkerFailedError,
+)
+from .grouped_execution import (
+    GROUPED_BOOTSTRAP_ORDER,
+    GroupedAdmissionDisposition,
+    GroupedAdmissionResult,
+    GroupedBootstrapEvidence,
+    GroupedBootstrapStep,
+    GroupedCancelDisposition,
+    GroupedCancelResult,
+    GroupedExecutionRuntime,
+    GroupedExecutionRuntimeError,
+    GroupedExecutionRuntimeStateError,
+    GroupedExecutionRuntimeStatus,
+    GroupedExecutionStepDisposition,
+    GroupedExecutionStepResult,
+    GroupedExecutionWriterViolationError,
+    SynchronousExecutionCancelPort,
+)
+from .offline_execution import (
+    DeterministicOfflineExecutionPort,
+    OfflineExecutionDirective,
+    OfflineExecutionDirectiveKind,
+    OfflineExecutionScriptExhaustedError,
 )
 from .operations import (
     OperatorAction,
@@ -148,6 +177,10 @@ from .pipeline import (
     TradingPipeline,
     ValidationPort,
 )
+from .portfolio_projection import (
+    OmsExecutionEffectProjector,
+    OmsExecutionProjectionError,
+)
 from .portfolio_risk_guard import PortfolioRiskExecutionGuard
 from .private_stream_application import (
     PrivateStreamApplication,
@@ -191,6 +224,7 @@ from .snapshot_coordinator import (
 )
 
 __all__ = [
+    "GROUPED_BOOTSTRAP_ORDER",
     "AccountPolicy",
     "AsyncExecutionPortBridge",
     "AuthenticatedOperatorCommandService",
@@ -210,8 +244,13 @@ __all__ = [
     "CarryApplicationRuntimeStateError",
     "CarryApplicationRuntimeStatus",
     "CarryBasketEvidencePort",
+    "CarryFinancialEvidence",
+    "CarryReadSideProjection",
+    "CarryReadSideProjectionError",
+    "CarryReadSideProjector",
     "CarryRuntimeDisposition",
     "CarryRuntimeResult",
+    "DeterministicOfflineExecutionPort",
     "DurableExecutionHandoff",
     "DurableSubmitStatePort",
     "EnvironmentOperatorKeyProvider",
@@ -232,7 +271,20 @@ __all__ = [
     "FinancialFactOverflowError",
     "FinancialFactSink",
     "FinancialFactWorkerFailedError",
+    "GroupedAdmissionDisposition",
+    "GroupedAdmissionResult",
+    "GroupedBootstrapEvidence",
+    "GroupedBootstrapStep",
+    "GroupedCancelDisposition",
+    "GroupedCancelResult",
     "GroupedExecutionBlockedError",
+    "GroupedExecutionRuntime",
+    "GroupedExecutionRuntimeError",
+    "GroupedExecutionRuntimeStateError",
+    "GroupedExecutionRuntimeStatus",
+    "GroupedExecutionStepDisposition",
+    "GroupedExecutionStepResult",
+    "GroupedExecutionWriterViolationError",
     "HealthPort",
     "HmacOperatorCommandAuthenticator",
     "JsonLinesOperatorCommandJournal",
@@ -242,6 +294,11 @@ __all__ = [
     "MutualTlsIdentity",
     "ObservationDisposition",
     "ObservationIdentityConflictError",
+    "OfflineExecutionDirective",
+    "OfflineExecutionDirectiveKind",
+    "OfflineExecutionScriptExhaustedError",
+    "OmsExecutionEffectProjector",
+    "OmsExecutionProjectionError",
     "OmsIdentityPolicy",
     "OmsInvariantError",
     "OmsPersistenceError",
@@ -335,6 +392,7 @@ __all__ = [
     "StartupReconciliationState",
     "StateGate",
     "StrategyPort",
+    "SynchronousExecutionCancelPort",
     "SynchronousExecutionSubmitPort",
     "TradingApplication",
     "TradingDeploymentRuntime",
