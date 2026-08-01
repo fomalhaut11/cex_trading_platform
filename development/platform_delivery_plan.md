@@ -108,12 +108,15 @@ Exit condition:
 
 ## Phase 1 - Execution Promotion
 
-Status: next credential-free development phase.
+Status: T045 complete; T046 is the next credential-free development task.
 
 ### T045 - Composition Audit
 
-T045 is an evidence-backed current-code audit before implementation. It must
-answer:
+Status: complete. Evidence:
+`development/t045_execution_promotion_composition_audit.md`.
+
+T045 was an evidence-backed current-code audit before implementation. It
+answered:
 
 1. how a `BasketTargetIntent` enters whole-Basket Risk admission;
 2. who creates and durably binds `OrderGroupId`;

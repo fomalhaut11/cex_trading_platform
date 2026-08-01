@@ -68,8 +68,9 @@ project to retain existing capabilities while shelving non-MVP plans.
 Current state:
 
 - `development/funding_carry_fast_track_plan.md` is the active plan;
-- no T045 implementation work has started;
-- T045 is the only current next engineering task;
+- T045 composition audit is complete and recorded in
+  `development/t045_execution_promotion_composition_audit.md`;
+- T046 is the only current next engineering task;
 - Testnet/grouped external execution is not authorized.
 - real-money micro-live execution is not authorized.
 
@@ -197,7 +198,6 @@ evidence. It does not yet compose the full Risk/OMS/Portfolio/Accounting loop.
 
 Not yet implemented:
 
-- T045 current-code grouped composition audit;
 - T046 mode-neutral offline execution runtime and fault harness;
 - A018 full offline grouped execution-loop acceptance;
 - T050 Funding Carry Live Operations Lite and Shadow mode;
@@ -238,8 +238,8 @@ Sequence:
 
 ```text
 Phase 0  Kernel v1 compatibility freeze        ACTIVE
-T045     Execution Promotion composition audit NEXT, NOT STARTED
-T046     Mode-neutral offline runtime/harness  PLANNED
+T045     Execution Promotion composition audit COMPLETE
+T046     Mode-neutral offline runtime/harness  NEXT
 A018     Offline Execution acceptance          PLANNED
 A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
 T050     Live Operations Lite + Shadow         PLANNED
@@ -250,9 +250,10 @@ A021     Controlled Micro-Live                 EXTERNAL, UNAUTHORIZED
 The broader `development/platform_delivery_plan.md`, T047, T048 and T049 are
 retained Post-MVP plans and are not in the active queue.
 
-## 9. Exact T045 Scope
+## 9. T045 Outcome
 
-T045 is a current-code audit before implementation. It must answer:
+T045 is complete. Its evidence is recorded in
+`development/t045_execution_promotion_composition_audit.md` and answers:
 
 1. how `BasketTargetIntent` enters whole-Basket Risk admission;
 2. who creates and binds `OrderGroupId`;
@@ -272,8 +273,9 @@ T045 deliverables:
 - happy-path and failure sequence diagrams;
 - bounded T046 plan.
 
-T045 does not enable network I/O and should not modify frozen public
-interfaces without first showing a reproducible gap.
+The audit found no reason to modify frozen public interfaces. T046 will add
+only Runtime composition and internal adapters; it does not enable network
+I/O.
 
 ## 10. Deferred Application Runtime Decisions
 
@@ -362,7 +364,7 @@ Read only what is needed, in this order:
 1. `START_HERE.md` — current status and next action;
 2. `development/funding_carry_fast_track_plan.md` — active MVP path;
 3. `architecture/kernel_v1_freeze.md` — allowed/prohibited changes;
-4. `development/execution_promotion_plan.md` — T045/A018 detail;
+4. `development/execution_promotion_plan.md` — T045/T046/A018 detail;
 5. `architecture/module_topology.md` — dependencies;
 6. `architecture/state_ownership.md` — single writers;
 7. `development/tasks.md` and `development/progress.md` — task/evidence status;

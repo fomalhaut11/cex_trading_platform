@@ -47,7 +47,7 @@
 | T042 | Funding Carry typed Snapshot, Features, Objectives and pure decision policy | Complete | T040-T041, T007A, T026-T028 |
 | T043 | Carry aggregate, application fact journal, replay and recovery proposals | Complete | T041-T042, T016 |
 | T044 | Runtime Carry read-port composition with grouped external execution blocked | Complete | T035, T039-T043 |
-| T045 | Grouped execution current-code composition audit | Planned | ADR-009-014, T031, T035, T039, T044 |
+| T045 | Grouped execution current-code composition audit | Complete | ADR-009-014, T031, T035, T039, T044 |
 | T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | T045 |
 | T047 | Application Runtime / SDK Lite based on first closed-loop evidence | Deferred, Post-MVP | A021 |
 | T048 | Historical event Replay foundation | Deferred, Post-MVP | T047 |
@@ -168,8 +168,8 @@ Web GPT accepted and closed the ADR-014 offline implementation after reviewing
 the handoff, interface and ADR. No redesign was requested.
 
 The project owner switched the active objective to the fastest bounded Binance
-single-account BTC Funding Carry live loop. T045-T046/A018 remain the immediate
-credential-free scope; A019 Testnet, T050 Operations/Shadow, A020 live
+single-account BTC Funding Carry live loop. T045 is complete; T046/A018 are the
+immediate credential-free scope. A019 Testnet, T050 Operations/Shadow, A020 live
 readiness and A021 controlled micro-live form the active promotion sequence.
 A019 and A021 require separate explicit authorization. T047-T049 and all other
 strategy/platform expansion are retained but deferred until after the MVP.

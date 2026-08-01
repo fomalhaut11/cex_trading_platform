@@ -1,6 +1,6 @@
 # Grouped Execution Promotion Plan
 
-Status: planned; credential-free preparation only.
+Status: T045 complete; T046/A018 planned; credential-free work only.
 
 Architecture basis: ADR-009 through ADR-014.
 
@@ -53,8 +53,11 @@ ADR-011, ADR-012 or ADR-014.
 
 ## T045 - Execution Promotion Composition Audit
 
-This is the next credential-free development scope. T045 is an evidence-backed
-current-code audit and produces no external side effect.
+Status: complete. Evidence:
+`development/t045_execution_promotion_composition_audit.md`.
+
+T045 was an evidence-backed current-code audit and produced no external side
+effect.
 
 ### Composition audit
 
@@ -201,7 +204,7 @@ authenticated production ledger.
 
 | ID | Work item | Status | External effect |
 |---|---|---|---|
-| T045 | Grouped execution current-code composition audit | Planned | None |
+| T045 | Grouped execution current-code composition audit | Complete | None |
 | T046 | Mode-neutral offline execution runtime and deterministic fault harness | Planned | None |
 | A018 | Offline Execution Promotion acceptance | Planned | None |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | Testnet |

@@ -132,11 +132,14 @@ A020  Funding Carry MVP Live Readiness
 A021  Controlled Micro-Live Acceptance
 ```
 
-T045 is the next task and is not yet started.
+T045 is complete. T046 is the next credential-free engineering task.
 
 ## T045 - Composition Audit
 
-T045 remains a current-code audit before implementation:
+Status: complete. Evidence:
+`development/t045_execution_promotion_composition_audit.md`.
+
+T045 completed the current-code audit before implementation:
 
 - exact Basket-to-Risk admission path;
 - Basket approval to `OrderGroupId` identity binding;
