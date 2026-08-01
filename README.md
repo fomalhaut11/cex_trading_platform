@@ -40,11 +40,6 @@ $env:PYTHONPATH = "src"
 Read `architecture/module_topology.md`, `architecture/state_ownership.md` and
 the accepted ADRs before changing a public contract.
 
-The optional local code graph is documented in
-`development/graphify_code_graph.md`. Its committed snapshot supports
-dependency navigation and impact analysis, but source, tests and accepted
-architecture documents remain authoritative.
-
 The active delivery sequence is the single-account BTC Funding Carry
 Fast-Track MVP in `development/funding_carry_fast_track_plan.md`. The broader
 `development/platform_delivery_plan.md` is retained but deferred until after

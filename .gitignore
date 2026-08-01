@@ -36,13 +36,3 @@ outputs/
 Thumbs.db
 .agents/
 .codex/
-
-# Graphify reproducibility state is local; portable graph artifacts are tracked.
-graphify-out/cache/
-graphify-out/.graphify_analysis.json
-graphify-out/.graphify_labels.json
-graphify-out/.graphify_python
-graphify-out/.graphify_root
-graphify-out/manifest.json
-graphify-out/graph.html
-graphify-out/GRAPH_TREE.html
