@@ -147,9 +147,10 @@ execution, Testnet or production trading.
 The kernel is frozen and the scope is narrowed to Binance, one dedicated
 account, BTC Spot plus USD-M linear perpetual and fixed configured quantity:
 
-1. **Execution Promotion** — T045/T046/A018 compose the existing Basket, Risk,
-   OMS, durable handoff, Portfolio and Accounting boundaries in a deterministic
-   offline closed loop. A019 is the later, separately authorized Testnet gate.
+1. **Execution Promotion** — T045/T046/A018 completed the deterministic offline
+   closed loop across the existing Basket, Risk, OMS, durable handoff,
+   Portfolio and Accounting boundaries. A019 is the next, separately
+   authorized Testnet gate.
 2. **Live Operations/Shadow** — T050 reuses existing operator and health
    controls to provide only the position, hedge, Risk, execution, Accounting
    and health evidence needed by A020.

@@ -108,7 +108,7 @@ Exit condition:
 
 ## Phase 1 - Execution Promotion
 
-Status: T045-T046 complete; A018 is the next credential-free acceptance task.
+Status: T045-T046/A018 complete; A019 is external and unauthorized.
 
 ### T045 - Composition Audit
 
@@ -183,7 +183,8 @@ external evidence adapters. It must not contain a Funding branch.
 
 ### A018 - Offline Execution Acceptance
 
-Status: next; not yet accepted.
+Status: complete. Evidence:
+`development/a018_offline_execution_acceptance.md`.
 
 A018 passes only when:
 

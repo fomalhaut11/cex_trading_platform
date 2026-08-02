@@ -1,6 +1,6 @@
 # T046 Mode-Neutral Offline Execution Runtime
 
-Status: complete on 2026-08-01. A018 acceptance remains next.
+Status: complete on 2026-08-01. A018 was subsequently accepted on 2026-08-02.
 
 Code baseline entering T046: `9ae43f8` (`d-development`).
 
@@ -83,12 +83,12 @@ MyPy --strict src                 passed (140 source files, 2.3.0)
 pytest branch coverage            85.03%, gate 85% passed
 ```
 
-## A018 Remaining Acceptance Work
+## Subsequent A018 Acceptance
 
-T046 supplies the runtime and fault harness. A018 is deliberately not marked
-complete. It must consolidate the full restart matrix at every non-terminal
-boundary, run the frozen-boundary audit, record the final exact commit and CI
-evidence, and produce the self-contained Testnet go/no-go handoff.
+T046 supplies the runtime and fault harness. A018 subsequently consolidated
+the full restart matrix at every non-terminal boundary, ran the
+frozen-boundary audit and produced the self-contained Testnet go/no-go handoff.
+Evidence: `development/a018_offline_execution_acceptance.md`.
 
 Even after A018, A019 remains external and unauthorized until the project
 owner separately approves bounded Binance Testnet execution and supplies the

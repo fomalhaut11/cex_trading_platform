@@ -72,7 +72,7 @@
 | A015 | Offline Portfolio position coverage, N-leg Risk, reservation, permit, recovery and blocked-route acceptance | Complete | T032-T035 |
 | A016 | Offline Accounting facts, balance, replay, reconciliation, allocation, valuation and failure acceptance | Complete | T036-T039 |
 | A017 | Offline Carry decision, lifecycle, hedge, restart and Accounting-boundary acceptance | Complete | T040-T044 |
-| A018 | Offline grouped Execution Promotion acceptance | Planned | T045-T046 |
+| A018 | Offline grouped Execution Promotion acceptance | Complete | T045-T046 |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | A018, explicit project-owner authorization |
 | A020 | Funding Carry MVP Live Readiness acceptance | Planned, no trading authority | A019, T050 |
 | A021 | Controlled BTC Funding Carry micro-live acceptance | External, unauthorized | A020, explicit real-money authorization |
@@ -168,8 +168,8 @@ Web GPT accepted and closed the ADR-014 offline implementation after reviewing
 the handoff, interface and ADR. No redesign was requested.
 
 The project owner switched the active objective to the fastest bounded Binance
-single-account BTC Funding Carry live loop. T045-T046 are complete; A018 is the
-immediate credential-free acceptance scope. A019 Testnet, T050
+single-account BTC Funding Carry live loop. T045-T046/A018 are complete; A019
+Testnet remains the next promotion gate but is external and unauthorized. T050
 Operations/Shadow, A020 live readiness and A021 controlled micro-live form the
 active promotion sequence.
 A019 and A021 require separate explicit authorization. T047-T049 and all other

@@ -1005,11 +1005,11 @@ authorities. ADR-013 final Web GPT acceptance remains pending. Web GPT
 accepted and closed ADR-014 design and offline implementation without
 reopening the ADR.
 
-Proceed with the credential-free T045/T046/A018 Execution Promotion audit and
-deterministic closed-loop harness described in
-`development/execution_promotion_plan.md`. Do not connect the Carry Runtime to
-a venue or remove the grouped-execution block. A019 Testnet and production
-remain separately unauthorized. The active follow-on is T050
+T045/T046/A018 Execution Promotion and its deterministic closed-loop harness
+are complete as described in `development/execution_promotion_plan.md`. Do not
+connect the Carry Runtime to a venue or remove the grouped-execution block.
+A019 Testnet and production remain separately unauthorized. After a separately
+authorized A019, the active follow-on is T050
 Operations/Shadow, A020 live readiness and separately authorized A021
 controlled micro-live. T047 Application Runtime, T048 Replay and T049 Paper
 are retained but deferred Post-MVP.

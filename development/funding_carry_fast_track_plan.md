@@ -132,7 +132,8 @@ A020  Funding Carry MVP Live Readiness
 A021  Controlled Micro-Live Acceptance
 ```
 
-T045 and T046 are complete. A018 is the next credential-free acceptance task.
+T045, T046 and A018 are complete. A019 is the next promotion gate, but remains
+external and unauthorized.
 
 ## T045 - Composition Audit
 
@@ -167,8 +168,10 @@ Output:
 T046 uses a deterministic, fault-injectable in-memory Execution port.
 
 T046 implementation is complete and recorded in
-`development/t046_offline_execution_runtime.md`. A018 remains next and must
-consolidate the complete restart/fault matrix and promotion handoff.
+`development/t046_offline_execution_runtime.md`. A018 is accepted at tested
+code baseline `b7c99af127ae04b51fa9459df8d2d30297d53635`; its complete
+restart/fault matrix and promotion handoff are recorded in
+`development/a018_offline_execution_acceptance.md`.
 
 Required scenarios:
 
@@ -185,8 +188,8 @@ Required scenarios:
 - Funding reversal creates a normal close Basket;
 - physical close remains distinct from financial reconciliation.
 
-A018 must pass complete regression, branch coverage and frozen-boundary audit.
-External I/O remains blocked.
+A018 passed complete regression, branch coverage and the frozen-boundary
+audit. External I/O remains blocked.
 
 ## A019 - Binance Grouped Testnet
 

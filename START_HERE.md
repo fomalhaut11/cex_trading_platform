@@ -1,6 +1,6 @@
 # CEX Quant — Current Project State and LLM Handoff
 
-Status date: 2026-07-30.
+Status date: 2026-08-02.
 
 Audience: the next LLM/Codex session, project owner and external architecture
 reviewer.
@@ -15,28 +15,31 @@ its status claims.
 ```text
 Repository:   fomalhaut11/cex_trading_platform
 Remote:       https://github.com/fomalhaut11/cex_trading_platform.git
-Branch:       main
-State base:   0123b6322de80f9fb488b92942ef19b31cdd6512
-origin/main:  matched the state base when verified
-Worktree:     clean before this documentation-only handoff
+Branch:       d-development
+A018 code:    b7c99af127ae04b51fa9459df8d2d30297d53635
+origin/main:  44bdd7de8a9aa25f3ad6e7d1ea528e5c8747f8ae
+Relationship: A018 code baseline was 6 commits ahead of origin/main
 ```
 
-Latest code implementation baseline:
+The A018 code baseline above is the exact locally tested source/test tree.
+Later local commits may synchronize evidence documents only; inspect the log
+before relying on a newer `HEAD`.
+
+Latest A018 implementation commits:
 
 ```text
-40d10125318ebafc6c9979dc6ee3447c10739657
-feat(carry): implement ADR-014 offline application
+74a3437115f4eb33586cb654895f5aa07d6d30be
+fix(a018): close offline restart gates
+
+b7c99af127ae04b51fa9459df8d2d30297d53635
+test(a018): complete grouped fault scenarios
 ```
 
-Later commits through current `HEAD` are documentation, acceptance, Kernel
-freeze and delivery planning.
-
-Remote CI:
+Remote status:
 
 ```text
-GitHub Actions run: 30519391352
-Result:             success
-Head:               0123b6322de80f9fb488b92942ef19b31cdd6512
+A018 pushed:        no
+A018 remote CI:     not run
 ```
 
 ## 2. Current Mission
@@ -72,7 +75,9 @@ Current state:
   `development/t045_execution_promotion_composition_audit.md`;
 - T046 is complete and recorded in
   `development/t046_offline_execution_runtime.md`;
-- A018 is the only current next acceptance task;
+- A018 is complete and recorded in
+  `development/a018_offline_execution_acceptance.md`;
+- A019 is the next promotion gate, but remains external and unauthorized;
 - Testnet/grouped external execution is not authorized.
 - real-money micro-live execution is not authorized.
 
@@ -194,18 +199,19 @@ Accounting never treats market Funding rate as realized settlement.
 - recovery proposals without Risk or execution authority.
 
 `CarryApplicationRuntime` currently stops after recording generic Basket
-evidence. It does not yet compose the full Risk/OMS/Portfolio/Accounting loop.
+evidence. The separate mode-neutral `GroupedExecutionRuntime` now composes the
+offline Risk/OMS/Portfolio/Accounting/Carry loop with deterministic execution;
+no production composition root enables it for external execution.
 
 ## 7. What Is Not Implemented or Authorized
 
 Not yet implemented or accepted:
 
-- A018 full offline grouped execution-loop acceptance;
 - T050 Funding Carry Live Operations Lite and Shadow mode;
 - A020 live-readiness acceptance;
 - A021 controlled micro-live acceptance;
 - CTA application;
-- real grouped Carry integration.
+- authenticated grouped Carry integration.
 
 Retained but deferred until after the MVP:
 
@@ -241,7 +247,7 @@ Sequence:
 Phase 0  Kernel v1 compatibility freeze        ACTIVE
 T045     Execution Promotion composition audit COMPLETE
 T046     Mode-neutral offline runtime/harness  COMPLETE
-A018     Offline Execution acceptance          NEXT
+A018     Offline Execution acceptance          COMPLETE
 A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
 T050     Live Operations Lite + Shadow         PLANNED
 A020     MVP Live Readiness                    PLANNED, NO TRADING AUTHORITY
@@ -278,6 +284,12 @@ The audit found no reason to modify frozen public interfaces. T046 subsequently
 added only Runtime composition and internal adapters; it did not enable
 network I/O. Its evidence is in
 `development/t046_offline_execution_runtime.md`.
+
+A018 then accepted the deterministic failure/restart matrix, frozen-boundary
+audit and local quality gates at tested code baseline
+`b7c99af127ae04b51fa9459df8d2d30297d53635`. The Testnet decision remains
+NO-GO/HOLD pending separate authorization and external prerequisites. Evidence:
+`development/a018_offline_execution_acceptance.md`.
 
 ## 10. Deferred Application Runtime Decisions
 

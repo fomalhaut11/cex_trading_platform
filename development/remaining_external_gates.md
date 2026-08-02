@@ -101,8 +101,9 @@ No real-money endpoint is authorized by this runbook.
 ADR-014 design and offline implementation acceptance do not unblock grouped
 external submission. Before the first Funding Carry Testnet loop:
 
-1. T045/T046/A018 must prove the complete grouped path with a deterministic,
-   fault-injectable in-memory gateway;
+1. T045/T046/A018 have proved the complete grouped path with a deterministic,
+   fault-injectable in-memory gateway; evidence is
+   `development/a018_offline_execution_acceptance.md`;
 2. ADR-013 final implementation acceptance must be recorded;
 3. the project owner must explicitly authorize A019 grouped Testnet execution;
 4. the exact Testnet account, Spot/perpetual instruments, quantity and

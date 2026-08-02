@@ -1,6 +1,6 @@
 # Grouped Execution Promotion Plan
 
-Status: T045-T046 complete; A018 next; credential-free work only.
+Status: T045-T046/A018 complete; A019 external and unauthorized.
 
 Architecture basis: ADR-009 through ADR-014.
 
@@ -111,7 +111,8 @@ to test:
 
 ### A018 promotion artifact
 
-Status: next; not yet accepted.
+Status: complete. Evidence:
+`development/a018_offline_execution_acceptance.md`.
 
 Produce one self-contained readiness report containing:
 
@@ -211,7 +212,7 @@ authenticated production ledger.
 |---|---|---|---|
 | T045 | Grouped execution current-code composition audit | Complete | None |
 | T046 | Mode-neutral offline execution runtime and deterministic fault harness | Complete | None |
-| A018 | Offline Execution Promotion acceptance | Next | None |
+| A018 | Offline Execution Promotion acceptance | Complete | None |
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | Testnet |
 | T047 | Application Runtime / SDK Lite after closed-loop evidence | Deferred, Post-MVP | None |
 | T048 | Historical event Replay foundation | Deferred, Post-MVP | None |

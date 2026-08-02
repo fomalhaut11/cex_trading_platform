@@ -280,6 +280,6 @@ T045 is complete because it identifies the current call graph, all identity
 and causation edges, domain writers, happy/failure/restart sequences and the
 smallest evidenced T046 composition scope.
 
-Kernel v1 remains frozen. T046 is now the next credential-free engineering
-task. A018 remains planned; A019 Testnet and all production execution remain
-unauthorized.
+Kernel v1 remains frozen. At T045 completion, T046 was the next
+credential-free engineering task. T046 and A018 were subsequently completed;
+A019 Testnet and all production execution remain unauthorized.

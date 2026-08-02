@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-08-01
+Last updated: 2026-08-02
 
 Current self-contained handoff:
 
@@ -11,8 +11,9 @@ Current self-contained handoff:
 Primary delivery track: Kernel v1 compatibility freeze is active; T045
 Execution Promotion composition audit and T046 mode-neutral offline
 runtime/fault-harness implementation are complete. A018 offline promotion
-acceptance is next. The sole active product target is the Binance
-single-account BTC Funding Carry Fast-Track MVP.
+acceptance is also complete at tested code baseline
+`b7c99af127ae04b51fa9459df8d2d30297d53635`. The sole active product target
+remains the Binance single-account BTC Funding Carry Fast-Track MVP.
 
 Parallel external track: Phase 4 production readiness and external acceptance
 continues. Neither track authorizes grouped Testnet or production trading.
@@ -273,16 +274,16 @@ continues. Neither track authorizes grouped Testnet or production trading.
   reviewing the handoff, public interface and ADR. No A-class correction or
   redesign was requested. Long-term guidance keeps Carry, CTA and Market
   Making state family-specific.
-- Execution Promotion T045-T046 is complete. A018 fault/restart acceptance is
-  the next credential-free scope. Authenticated grouped Testnet A019 remains
-  unauthorized.
+- Execution Promotion T045-T046/A018 is complete. Evidence:
+  `development/a018_offline_execution_acceptance.md`. Authenticated grouped
+  Testnet A019 remains external and unauthorized.
 - Kernel v1 compatibility freeze is recorded in
   `architecture/kernel_v1_freeze.md`. The former Phase 0-5 platform sequence
   remains in `development/platform_delivery_plan.md` as deferred direction.
 - The project owner retained but deferred T047 Application Runtime / SDK Lite,
   T048 historical Replay, T049 Paper Exchange and all non-MVP strategy work.
   The active plan is `development/funding_carry_fast_track_plan.md`:
-  T046/A018, separately authorized A019 Testnet, T050 Operations/Shadow,
+  separately authorized A019 Testnet, T050 Operations/Shadow,
   A020 live readiness and separately authorized A021 controlled micro-live.
 - Repository branch-protection planning.
 - Authenticated Testnet private-stream and restart evidence preparation.
@@ -303,13 +304,13 @@ continues. Neither track authorizes grouped Testnet or production trading.
 
 ## Next
 
-1. Complete A018's deterministic restart/fault matrix, frozen-boundary audit
-   and self-contained Testnet readiness handoff without enabling external I/O.
+1. Keep A019 on NO-GO/HOLD until every external prerequisite is recorded and
+   the project owner separately authorizes bounded grouped Testnet execution.
 2. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-3. Produce an explicit Testnet go/no-go artifact only after A018 passes;
-   grouped external submission remains blocked until project-owner
-   authorization.
+3. After authorization and prerequisites, run only the bounded A019 Testnet
+   acceptance defined in `development/a018_offline_execution_acceptance.md`;
+   production endpoints remain prohibited.
 4. After separately authorized A019, build only T050 Operations Lite and
    Shadow evidence required by A020; do not resume general SDK/Replay/Paper.
 5. Require a separate real-money go/no-go before A021.
@@ -326,14 +327,17 @@ continues. Neither track authorizes grouped Testnet or production trading.
 ## Verification
 
 - `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -p "test*.py"`: 565 passed.
+- `python -m unittest discover -s tests -p "test*.py"`: 573 passed.
 - ADR-014 A017: 5 acceptance scenarios passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
 - `python -m mypy --strict src`: passed with MyPy 2.3.0 for 140 source files.
 - T045 composition audit: complete; Kernel v1 public interfaces unchanged.
 - T046 offline runtime/fault harness: complete; external I/O disabled.
-- Pytest branch coverage: 85.03%; the 85% CI gate passes locally with 565
-  tests and 216 subtests.
+- A018 offline grouped Execution acceptance: complete at tested code baseline
+  `b7c99af127ae04b51fa9459df8d2d30297d53635`; frozen-boundary audit passed;
+  A019 remains NO-GO/HOLD.
+- Pytest branch coverage: 85.16%; the 85% CI gate passes locally with 573
+  tests and 228 subtests.
 - ADR-014 remote GitHub Actions run `30510254523` passed for handoff commit
   `ba32dce7ce468b14307088ef13e649c52f6fb74e`.
 - Final ADR-014 evidence-only head `2835ee2523642f8650d3ecd2388fc6db694c52b0`
