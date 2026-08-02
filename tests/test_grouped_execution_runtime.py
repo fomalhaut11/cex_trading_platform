@@ -334,6 +334,136 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
             GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED,
         )
 
+    def test_first_leg_fill_then_second_reject_requires_recovery(self) -> None:
+        runtime, execution = self.runtime(
+            OfflineExecutionDirective(
+                kind=OfflineExecutionDirectiveKind.ACCEPT,
+            ),
+            OfflineExecutionDirective(
+                kind=OfflineExecutionDirectiveKind.REJECT,
+                reason="second leg rejected",
+            ),
+        )
+        admission = self.admit(runtime)
+        assert admission.group is not None
+
+        first = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission),
+            self.policy,
+        )
+        assert first.action is not None
+        self.fill(runtime, first, "10")
+        first_quantities = {
+            first.action.instrument_id: (
+                "10" if first.action.side.value == "buy" else "-10"
+            )
+        }
+
+        second = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission, first_quantities),
+            self.policy,
+        )
+
+        self.assertEqual(
+            second.disposition,
+            GroupedExecutionStepDisposition.REJECTED,
+        )
+        self.assertEqual(second.group.actions[-1].state, ExecutionActionState.REJECTED)
+        self.assertEqual(len(execution.submissions), 2)
+        self.assertEqual(
+            runtime.status,
+            GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED,
+        )
+
+    def test_partial_fill_on_each_leg_is_durable_and_residual_safe(self) -> None:
+        accepted = OfflineExecutionDirective(
+            kind=OfflineExecutionDirectiveKind.ACCEPT
+        )
+        runtime, execution = self.runtime(accepted, accepted)
+        admission = self.admit(runtime)
+        assert admission.group is not None
+
+        first = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission),
+            self.policy,
+        )
+        assert first.action is not None
+        first_child = first.group.actions[-1]
+        self.clock.step()
+        first_partial = runtime.apply_child_event(
+            OrderEvent(
+                venue_update_id="first-leg-partial",
+                client_order_id=first_child.child_order_id,
+                status=OrderStatus.PARTIALLY_FILLED,
+                cumulative_filled_quantity=Quantity.from_str("4"),
+                event_time_ns=self.clock(),
+                venue_order_id=first_child.venue_order_id,
+                average_fill_price=Price.from_str("100"),
+            )
+        )
+        self.assertEqual(
+            self.groups.child(first_child.child_order_id).status,
+            OrderStatus.PARTIALLY_FILLED,
+        )
+        first_leg = next(
+            item
+            for item in first_partial.legs
+            if item.instrument_id == first.action.instrument_id
+        )
+        self.assertEqual(
+            first_leg.signed_cumulative_filled_delta,
+            Quantity.from_str(
+                "4" if first.action.side.value == "buy" else "-4"
+            ),
+        )
+        self.fill(runtime, first, "10")
+        first_quantities = {
+            first.action.instrument_id: (
+                "10" if first.action.side.value == "buy" else "-10"
+            )
+        }
+
+        second = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission, first_quantities),
+            self.policy,
+        )
+        assert second.action is not None
+        second_child = second.group.actions[-1]
+        self.clock.step()
+        second_partial = runtime.apply_child_event(
+            OrderEvent(
+                venue_update_id="second-leg-partial",
+                client_order_id=second_child.child_order_id,
+                status=OrderStatus.PARTIALLY_FILLED,
+                cumulative_filled_quantity=Quantity.from_str("3"),
+                event_time_ns=self.clock(),
+                venue_order_id=second_child.venue_order_id,
+                average_fill_price=Price.from_str("100"),
+            )
+        )
+
+        self.assertEqual(
+            self.groups.child(second_child.child_order_id).status,
+            OrderStatus.PARTIALLY_FILLED,
+        )
+        second_leg = next(
+            item
+            for item in second_partial.legs
+            if item.instrument_id == second.action.instrument_id
+        )
+        self.assertEqual(
+            second_leg.signed_cumulative_filled_delta,
+            Quantity.from_str(
+                "3" if second.action.side.value == "buy" else "-3"
+            ),
+        )
+        self.assertEqual(len(execution.submissions), 2)
+        self.assertEqual(runtime.status, GroupedExecutionRuntimeStatus.RUNNING)
+
     def test_restart_blocks_submission_until_ordered_bootstrap_is_complete(
         self,
     ) -> None:
