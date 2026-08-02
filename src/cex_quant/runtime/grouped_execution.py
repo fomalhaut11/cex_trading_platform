@@ -284,6 +284,23 @@ class GroupedExecutionRuntime:
             for item in self._groups.groups()
             if item.status is OrderGroupStatus.RECOVERY_REQUIRED
         )
+        non_runnable_groups = tuple(
+            item
+            for item in self._groups.groups()
+            if item.status
+            not in {
+                OrderGroupStatus.ACTIVE,
+                OrderGroupStatus.CLOSED,
+                OrderGroupStatus.RECOVERY_REQUIRED,
+            }
+        )
+        if non_runnable_groups:
+            states = ",".join(
+                sorted({item.status.value for item in non_runnable_groups})
+            )
+            raise GroupedExecutionRuntimeStateError(
+                f"non-runnable Order Group state remains after bootstrap: {states}"
+            )
         if recovery_groups and not recovery_authorization_id.strip():
             raise GroupedExecutionRuntimeStateError(
                 "group recovery requires explicit authorization evidence"
