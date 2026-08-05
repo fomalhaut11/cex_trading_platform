@@ -21,12 +21,16 @@ from cex_quant.oms import (
     ExecutionAction,
     ExecutionActionPermit,
     ExecutionPlanRef,
+    ExecutionStage,
+    ExecutionStagePermit,
     OrderGroupAdmission,
     OrderGroupView,
     OrderSide,
     OrderType,
     PositionSide,
     TimeInForce,
+    create_execution_stage,
+    create_execution_stage_permit,
     deterministic_group_action_id,
     execution_action_checksum,
     execution_plan_parameters_checksum,
@@ -241,6 +245,61 @@ def permit_for(
         issued_at_ns=issued_at_ns,
         valid_until_ns=valid_until_ns,
         risk_policy_version=8,
+    )
+
+
+def stage_for(
+    view: OrderGroupView,
+    *,
+    leg_indices: tuple[int, ...] = (0,),
+    now_ns: UnixNanos,
+    dispatch_width: int = 1,
+) -> ExecutionStage:
+    actions = tuple(
+        action_for(
+            view,
+            leg_index=leg_index,
+            now_ns=now_ns,
+            action_kind=f"stage_market_attempt_{leg_index}",
+        )
+        for leg_index in leg_indices
+    )
+    return create_execution_stage(
+        group_id=view.order_group_id,
+        base_group_revision=view.revision,
+        execution_plan=view.execution_plan,
+        actions=actions,
+        dispatch_width=dispatch_width,
+        created_at_ns=now_ns,
+    )
+
+
+def stage_permit_for(
+    stage: ExecutionStage,
+    *,
+    issued_at_ns: UnixNanos,
+    valid_until_ns: UnixNanos = DEFAULT_PERMIT_EXPIRY,
+) -> ExecutionStagePermit:
+    action_permits = tuple(
+        permit_for(
+            action,
+            issued_at_ns=issued_at_ns,
+            valid_until_ns=valid_until_ns,
+            permit_id=(
+                "execution-stage-action-permit-"
+                f"{index}-{str(action.action_id)[:16]}"
+            ),
+        )
+        for index, action in enumerate(stage.actions, start=1)
+    )
+    return create_execution_stage_permit(
+        stage=stage,
+        action_permits=action_permits,
+        partial_execution_envelope_checksum="0" * 64,
+        risk_snapshot_id=action_permits[0].risk_snapshot_id,
+        issued_at_ns=issued_at_ns,
+        valid_until_ns=valid_until_ns,
+        risk_policy_version=action_permits[0].risk_policy_version,
     )
 
 

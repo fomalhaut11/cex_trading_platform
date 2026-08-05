@@ -33,13 +33,12 @@ At Basket admission, `ObjectiveExecutionPlanResolver` maps the exact,
 versioned Objective Type to an immutable `ExecutionPlanRef`. Runtime verifies
 that the complete reference, including its parameters checksum, exists in the
 bounded `ExecutionPlannerRegistry`. At each execution step it asks the
-registered `OrderGroupPlanner` for at most one deterministic
-`ExecutionAction`. The planner owns no Risk, operator or external-I/O
-authority.
+registered `OrderGroupPlanner` for one bounded deterministic `ExecutionStage`
+or no proposal. The planner owns no Risk, operator or external-I/O authority.
 
-`SequentialResidualExecutionPlanner` is the generic one-action-in-flight
-reference implementation. Other algorithms are additive Runtime components;
-they do not require changes to Basket, Order Group, permit, child-order or
+`SequentialResidualExecutionPlanner` is the generic width-one reference
+implementation. Other algorithms are additive Runtime components; they do not
+require changes to Basket, individual Action/Child, Gateway, Portfolio or
 ledger contracts.
 
 `runtime.adapters.ExactExecutionGatewayRouter` dispatches submit, cancel and
@@ -68,6 +67,9 @@ fill-driven hedge may overlap a working leader order with bounded hedge
 Actions. Triangular arbitrage and option parity may use wider Stages without
 changing Basket, Portfolio, Accounting or individual Gateway contracts.
 
-Detailed Stage schemas and activation remain subject to the reviewed
-follow-up required by ADR-011 section 32. No parallel or external execution is
-authorized by this direction alone.
+ADR-015 accepts the detailed Stage, aggregate permit, atomic preparation,
+mixed-version replay and per-Child result-vector contracts. T051/A022 implement
+the compatibility host with `max_stage_width = 1` and
+`max_dispatch_width = 1`. Wider Risk envelopes and parallel dispatch remain a
+separate activation gate. Neither ADR-015 nor the offline implementation
+authorizes Testnet or external execution.

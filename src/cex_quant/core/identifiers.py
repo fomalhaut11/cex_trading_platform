@@ -10,6 +10,8 @@ CorrelationId = NewType("CorrelationId", str)
 EventId = NewType("EventId", str)
 ExecutionPermitId = NewType("ExecutionPermitId", str)
 ExecutionPlanId = NewType("ExecutionPlanId", str)
+ExecutionStageId = NewType("ExecutionStageId", str)
+ExecutionStagePermitId = NewType("ExecutionStagePermitId", str)
 FeatureId = NewType("FeatureId", str)
 FinancialFactId = NewType("FinancialFactId", str)
 FinancialObservationId = NewType("FinancialObservationId", str)
@@ -47,6 +49,8 @@ __all__ = [
     "EventId",
     "ExecutionPermitId",
     "ExecutionPlanId",
+    "ExecutionStageId",
+    "ExecutionStagePermitId",
     "FeatureId",
     "FinancialFactId",
     "FinancialObservationId",

@@ -4,8 +4,8 @@ import unittest
 
 from cex_quant.core import ExecutionPlanId, ObjectiveTypeId, UnixNanos
 from cex_quant.oms import (
-    ExecutionAction,
     ExecutionPlanRef,
+    ExecutionStage,
     execution_plan_parameters_checksum,
 )
 from cex_quant.runtime import (
@@ -116,7 +116,9 @@ class SequentialResidualExecutionPlannerFitnessTests(unittest.TestCase):
             max_leg_basket(),
         ):
             with self.subTest(legs=len(basket.legs)):
-                action = self._first_action(basket)
+                stage = self._first_stage(basket)
+                action = stage.actions[0]
+                self.assertEqual(stage.dispatch_width, 1)
                 self.assertIn(
                     action.instrument_id,
                     tuple(leg.instrument_id for leg in basket.legs),
@@ -125,7 +127,8 @@ class SequentialResidualExecutionPlannerFitnessTests(unittest.TestCase):
     def test_same_planner_accepts_cross_venue_multi_account_basket(self) -> None:
         basket = cross_venue_basket()
 
-        action = self._first_action(basket)
+        stage = self._first_stage(basket)
+        action = stage.actions[0]
 
         self.assertIn(str(action.instrument_id.venue), {"BINANCE", "OKX"})
         self.assertIn(
@@ -134,20 +137,20 @@ class SequentialResidualExecutionPlannerFitnessTests(unittest.TestCase):
         )
 
     @staticmethod
-    def _first_action(basket: BasketTargetIntent) -> ExecutionAction:
+    def _first_stage(basket: BasketTargetIntent) -> ExecutionStage:
         clock = ManualClock(value=2_000)
         groups = OrderGroupRuntime(now_ns=clock)
         plan = execution_plan()
         created = groups.create_group(admission(basket), plan)
         group = groups.activate_group(created.order_group_id)
         planner = SequentialResidualExecutionPlanner()
-        action = planner.propose(
+        stage = planner.propose(
             group,
             portfolio_snapshot((), ()),
             UnixNanos(2_010),
         )
-        assert action is not None
-        return action
+        assert stage is not None
+        return stage
 
 
 if __name__ == "__main__":

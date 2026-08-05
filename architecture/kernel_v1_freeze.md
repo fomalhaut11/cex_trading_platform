@@ -86,7 +86,7 @@ not:
 - create one universal `ApplicationState` or application journal;
 - make Carry position/lifecycle mandatory for other application families;
 - move existing packages solely to match a speculative target directory;
-- introduce ADR-015 merely to add unexercised kernel capability.
+- introduce new kernel surface merely for an unexercised hypothetical.
 
 ## Application Independence
 
@@ -119,9 +119,11 @@ An ADR amendment is a last resort, not the default development mechanism.
 
 On 2026-08-05 the project owner confirmed bounded overlapping and parallel
 multi-leg execution as a definite requirement. ADR-011 section 32 records the
-approved design direction: V1 remains the width-one mode of a future unified
-Execution Stage model. This is a legitimate change-control trigger, not an
-authorization to bypass design review or external trading gates.
+approved design direction: V1 remains the width-one mode of a unified
+Execution Stage model. ADR-015 has since accepted the detailed contract, and
+T051/A022 implement its credential-free width-one compatibility path. This is
+not authorization to bypass the wider-dispatch review or external trading
+gates.
 
 The evolution may generalize Planner, permit, Order Group revision, journal,
 Runtime dispatch and recovery semantics. It must preserve Basket targets,
@@ -129,10 +131,12 @@ Portfolio and Accounting truth ownership, individual Child order contracts,
 exact Gateway routing, single-writer state mutation, durable-before-I/O,
 explicit UNKNOWN and mixed-version replay.
 
-No production composition root should freeze a single-Action-only API as the
-permanent platform interface before the Stage follow-up is reviewed. Existing
-V1 behavior remains supported and must not be removed merely to add parallel
-capability.
+The production composition root may now depend on the reviewed Stage API, but
+the active host capability remains `max_stage_width = 1` and
+`max_dispatch_width = 1`. Existing V1 behavior and legacy journal replay remain
+supported. Wider Risk envelopes and parallel venue-I/O scheduling require a
+separate reviewed activation and must not alter the frozen truth-ownership or
+individual Gateway contracts.
 
 ## Physical Package Stability
 

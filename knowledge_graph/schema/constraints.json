@@ -62,8 +62,24 @@
       "status": "accepted"
     },
     {
+      "id": "adr:ADR-015",
+      "status": "accepted"
+    },
+    {
       "id": "task:T045",
       "status": "complete"
+    },
+    {
+      "id": "task:T051",
+      "status": "complete"
+    },
+    {
+      "id": "task:A022",
+      "status": "complete"
+    },
+    {
+      "id": "contract:execution-stage",
+      "status": "accepted-offline"
     },
     {
       "id": "gate:grouped-external-execution",
@@ -79,7 +95,7 @@
     },
     {
       "id": "constraint:execution-stage-evolution",
-      "status": "approved-direction"
+      "status": "accepted"
     }
   ],
   "schema_version": "1.0"

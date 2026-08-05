@@ -8,6 +8,7 @@ from threading import get_ident
 
 from cex_quant.core import (
     ClientOrderId,
+    ExecutionStageId,
     GroupActionId,
     IntentId,
     OrderGroupId,
@@ -40,6 +41,13 @@ from .model import (
     OrderSide,
     OrderStatus,
     OrderView,
+)
+from .stage_model import (
+    ExecutionStage,
+    ExecutionStagePermit,
+    ExecutionStageState,
+    ExecutionStageView,
+    validate_execution_stage_permit,
 )
 from .state import OrderStateMachine, UpdateDisposition
 
@@ -78,6 +86,13 @@ class _ActionRecord:
     last_transition_ns: UnixNanos
     venue_order_id: VenueOrderId | None = None
     reason: str = ""
+
+
+@dataclass(slots=True)
+class _StageRecord:
+    stage: ExecutionStage
+    permit: ExecutionStagePermit
+    action_ids: tuple[GroupActionId, ...]
 
 
 _CONTROL_TRANSITIONS = {
@@ -144,6 +159,8 @@ class OrderGroupStateMachine:
         self._portfolio_confirmation_id = ""
         self._recovery_authorization_id = ""
         self._actions: dict[GroupActionId, _ActionRecord] = {}
+        self._stages: dict[ExecutionStageId, _StageRecord] = {}
+        self._action_to_stage: dict[GroupActionId, ExecutionStageId] = {}
         self._permit_to_action: dict[str, GroupActionId] = {}
         self._child_to_action: dict[ClientOrderId, GroupActionId] = {}
         self._leg_action_ids: dict[str, list[GroupActionId]] = {
@@ -185,6 +202,9 @@ class OrderGroupStateMachine:
             recovery_reason=self._recovery_reason,
             close_outcome=self._close_outcome,
             portfolio_confirmation_id=self._portfolio_confirmation_id,
+            stages=tuple(
+                self._stage_view(record) for record in self._stages.values()
+            ),
         )
 
     def child(self, client_order_id: ClientOrderId) -> OrderView:
@@ -294,6 +314,157 @@ class OrderGroupStateMachine:
             raise OrderGroupIdentityError(
                 "child request content does not match permitted action"
             )
+
+    def validate_stage_preparation(
+        self,
+        *,
+        stage: ExecutionStage,
+        permit: ExecutionStagePermit,
+        requests: tuple[OrderRequest, ...],
+        at_ns: UnixNanos,
+    ) -> None:
+        """Validate one complete Stage before its single journal mutation."""
+
+        self._assert_writer()
+        self._assert_time(at_ns)
+        if self._status is not OrderGroupStatus.ACTIVE:
+            raise OrderGroupTransitionError(
+                "new Stage preparation requires ACTIVE group"
+            )
+        if at_ns > self._admission.valid_until_ns:
+            raise OrderGroupAuthorizationError("group admission has expired")
+        if stage.group_id != self._group_id:
+            raise OrderGroupIdentityError("Stage belongs to another group")
+        if stage.base_group_revision != self._revision:
+            raise OrderGroupAuthorizationError("Stage group revision is stale")
+        if stage.execution_plan != self._execution_plan:
+            raise OrderGroupIdentityError("Stage execution plan mismatch")
+        if stage.created_at_ns > at_ns:
+            raise ValueError("Stage creation cannot be in the future")
+        if stage.stage_id in self._stages:
+            raise OrderGroupIdentityError("stage_id is already owned")
+        try:
+            validate_execution_stage_permit(stage, permit)
+        except ValueError as error:
+            raise OrderGroupAuthorizationError(str(error)) from error
+        if at_ns < permit.issued_at_ns or at_ns > permit.valid_until_ns:
+            raise OrderGroupAuthorizationError("Stage permit is not currently valid")
+        if permit.valid_until_ns > self._admission.valid_until_ns:
+            raise OrderGroupAuthorizationError("Stage permit outlives admission")
+        if len(requests) != len(stage.actions):
+            raise OrderGroupIdentityError("Stage request vector width mismatch")
+        if self._unresolved_action_ids():
+            raise OrderGroupCapacityError(
+                "current host permits no overlapping unresolved Stage"
+            )
+        if (
+            len(self._actions) + len(stage.actions)
+            > self._limits.max_children_per_group
+        ):
+            raise OrderGroupCapacityError("group child hard cap reached")
+
+        pending_per_leg: dict[str, int] = {}
+        for action, action_permit, request in zip(
+            stage.actions,
+            permit.action_permits,
+            requests,
+            strict=True,
+        ):
+            if (
+                action.action_id in self._actions
+                or action.action_id in self._action_to_stage
+            ):
+                raise OrderGroupIdentityError("Stage action_id is already owned")
+            existing_permit_action = self._permit_to_action.get(
+                str(action_permit.permit_id)
+            )
+            if existing_permit_action is not None:
+                raise OrderGroupIdentityError(
+                    "Stage Action permit is already bound to an Action"
+                )
+            leg = self._leg(action.basket_leg_id)
+            if (
+                leg.account_id != action.account_id
+                or leg.instrument_id != action.instrument_id
+            ):
+                raise OrderGroupIdentityError(
+                    "Stage Action does not match admitted leg"
+                )
+            leg_key = str(action.basket_leg_id)
+            pending_per_leg[leg_key] = pending_per_leg.get(leg_key, 0) + 1
+            if (
+                len(self._leg_action_ids[leg_key]) + pending_per_leg[leg_key]
+                > self._limits.max_child_attempts_per_leg
+            ):
+                raise OrderGroupCapacityError("leg child-attempt hard cap reached")
+            expected_child_id = child_order_id_for_action(action.action_id)
+            if request.client_order_id != expected_child_id:
+                raise OrderGroupIdentityError("Stage Child identity mismatch")
+            if request.client_order_id in self._child_to_action:
+                raise OrderGroupIdentityError("Stage Child is already owned")
+            if (
+                request.approval_id != str(action_permit.permit_id)
+                or request.intent_id != self._admission.basket.intent_id
+                or request.account_id != action.account_id
+                or request.instrument_id != action.instrument_id
+                or request.side is not action.side
+                or request.order_type is not action.order_type
+                or request.quantity != action.quantity
+                or request.time_in_force is not action.time_in_force
+                or request.limit_price != action.limit_price
+                or request.stop_price != action.stop_price
+                or request.reduce_only != action.reduce_only
+                or request.post_only != action.post_only
+                or request.position_side is not action.position_side
+                or request.created_at_ns != at_ns
+            ):
+                raise OrderGroupIdentityError(
+                    "Stage Child request does not match permitted Action"
+                )
+
+    def prepare_stage(
+        self,
+        *,
+        stage: ExecutionStage,
+        permit: ExecutionStagePermit,
+        requests: tuple[OrderRequest, ...],
+        at_ns: UnixNanos,
+    ) -> OrderGroupView:
+        """Atomically install a complete already-durable Stage in memory."""
+
+        self.validate_stage_preparation(
+            stage=stage,
+            permit=permit,
+            requests=requests,
+            at_ns=at_ns,
+        )
+        for action, action_permit, request in zip(
+            stage.actions,
+            permit.action_permits,
+            requests,
+            strict=True,
+        ):
+            child = OrderStateMachine(request)
+            child.mark_submitting(at_ns=at_ns)
+            self._actions[action.action_id] = _ActionRecord(
+                action=action,
+                permit=action_permit,
+                child=child,
+                state=ExecutionActionState.PREPARED,
+                transport_attempts=0,
+                last_transition_ns=at_ns,
+            )
+            self._permit_to_action[str(action_permit.permit_id)] = action.action_id
+            self._child_to_action[request.client_order_id] = action.action_id
+            self._leg_action_ids[str(action.basket_leg_id)].append(action.action_id)
+            self._action_to_stage[action.action_id] = stage.stage_id
+        self._stages[stage.stage_id] = _StageRecord(
+            stage=stage,
+            permit=permit,
+            action_ids=tuple(item.action_id for item in stage.actions),
+        )
+        self._advance(at_ns)
+        return self.view()
 
     def prepare_action(
         self,
@@ -545,6 +716,26 @@ class OrderGroupStateMachine:
             last_transition_ns=record.last_transition_ns,
             venue_order_id=record.venue_order_id,
             reason=record.reason,
+        )
+
+    def _stage_view(self, stage_record: _StageRecord) -> ExecutionStageView:
+        records = tuple(self._record(item) for item in stage_record.action_ids)
+        if any(item.state is ExecutionActionState.UNKNOWN for item in records):
+            state = ExecutionStageState.RECOVERY_REQUIRED
+        elif all(not self._record_is_unresolved(item) for item in records):
+            state = ExecutionStageState.COMPLETED
+        elif all(item.state is ExecutionActionState.PREPARED for item in records):
+            state = ExecutionStageState.PREPARED
+        else:
+            state = ExecutionStageState.ACTIVE
+        return ExecutionStageView(
+            stage=stage_record.stage,
+            permit_id=stage_record.permit.permit_id,
+            child_order_ids=tuple(
+                item.child.view().request.client_order_id for item in records
+            ),
+            state=state,
+            last_transition_ns=max(item.last_transition_ns for item in records),
         )
 
     def _leg_view(self, basket_leg_id: object) -> OrderGroupLegView:

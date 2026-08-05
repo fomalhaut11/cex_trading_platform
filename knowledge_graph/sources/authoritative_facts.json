@@ -29,7 +29,7 @@
     },
     {
       "evidence": {
-        "locator": "ExecutionActionPermit        # issued durably by Portfolio Risk",
+        "locator": "ExecutionStagePermit         # issued durably by Portfolio Risk",
         "source_path": "architecture/module_topology.md"
       },
       "relation": "AUTHORIZES_ACTION_FOR",
@@ -101,7 +101,7 @@
     },
     {
       "evidence": {
-        "locator": "registered `OrderGroupPlanner` for at most one deterministic",
+        "locator": "registered `OrderGroupPlanner` for one bounded deterministic",
         "source_path": "architecture/runtime_architecture.md"
       },
       "relation": "COORDINATES",
@@ -119,12 +119,39 @@
     },
     {
       "evidence": {
-        "locator": "### Stable design principles",
-        "source_path": "adr/ADR-011-parent-order-group-multi-leg-execution.md"
+        "locator": "## Decision",
+        "source_path": "adr/ADR-015-execution-stage.md"
       },
       "relation": "GOVERNS",
       "source": "constraint:execution-stage-evolution",
       "target": "component:runtime-execution-planning"
+    },
+    {
+      "evidence": {
+        "locator": "Introduce a bounded immutable `ExecutionStage`",
+        "source_path": "adr/ADR-015-execution-stage.md"
+      },
+      "relation": "PRODUCES",
+      "source": "component:runtime-execution-planning",
+      "target": "contract:execution-stage"
+    },
+    {
+      "evidence": {
+        "locator": "Portfolio Risk durably records Stage permission",
+        "source_path": "adr/ADR-015-execution-stage.md"
+      },
+      "relation": "AUTHORIZES_ACTION_FOR",
+      "source": "boundary:portfolio-risk",
+      "target": "contract:execution-stage"
+    },
+    {
+      "evidence": {
+        "locator": "OMS durably records the complete Stage",
+        "source_path": "adr/ADR-015-execution-stage.md"
+      },
+      "relation": "PERSISTS",
+      "source": "boundary:oms-order-group",
+      "target": "contract:execution-stage"
     }
   ],
   "nodes": [
@@ -170,11 +197,29 @@
     {
       "authority": "authoritative",
       "code_labels": [
-        "PortfolioRiskCoordinator",
-        "PortfolioRiskExecutionGuard"
+        "ExecutionStage",
+        "ExecutionStagePermit",
+        "GroupStagePreparedEntry"
       ],
       "evidence": {
-        "locator": "Portfolio Risk reservations, permit generations",
+        "locator": "Introduce a bounded immutable `ExecutionStage`",
+        "source_path": "adr/ADR-015-execution-stage.md"
+      },
+      "id": "contract:execution-stage",
+      "label": "Bounded Execution Stage",
+      "status": "accepted-offline",
+      "type": "DomainContract"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "PortfolioRiskCoordinator",
+        "PortfolioRiskExecutionGuard",
+        "PortfolioRiskExecutionStageGuard",
+        "ExecutionStagePermit"
+      ],
+      "evidence": {
+        "locator": "Portfolio Risk reservations, Stage/Action permits, generations",
         "source_path": "architecture/state_ownership.md"
       },
       "id": "boundary:portfolio-risk",
@@ -187,10 +232,12 @@
       "code_labels": [
         "OrderGroupRuntime",
         "OrderGroupStateMachine",
-        "ExecutionActionPermit"
+        "ExecutionActionPermit",
+        "ExecutionStage",
+        "GroupStagePreparedEntry"
       ],
       "evidence": {
-        "locator": "Order Group execution control and child/action facts",
+        "locator": "Order Group execution control and Stage/Action/Child facts",
         "source_path": "architecture/state_ownership.md"
       },
       "id": "boundary:oms-order-group",
@@ -295,12 +342,12 @@
     {
       "authority": "authoritative",
       "evidence": {
-        "locator": "## 32. Accepted Execution-Stage Evolution Direction",
-        "source_path": "adr/ADR-011-parent-order-group-multi-leg-execution.md"
+        "locator": "## Decision",
+        "source_path": "adr/ADR-015-execution-stage.md"
       },
       "id": "constraint:execution-stage-evolution",
       "label": "Unified Bounded Execution Stage Evolution",
-      "status": "approved-direction",
+      "status": "accepted",
       "type": "ArchitectureConstraint"
     }
   ],

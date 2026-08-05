@@ -25,8 +25,10 @@ from cex_quant.oms import (
 from cex_quant.portfolio import PositionRiskReadiness
 from cex_quant.risk import (
     JsonLinesPortfolioRiskJournal,
+    PortfolioRiskAuthorizationError,
     PortfolioRiskCoordinator,
     PortfolioRiskEngine,
+    PortfolioRiskJournalEntryKind,
 )
 from cex_quant.runtime import (
     GROUPED_BOOTSTRAP_ORDER,
@@ -150,6 +152,8 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
         halt: bool = False,
         guard: object | None = None,
         cancel_directives: tuple[OfflineExecutionDirective, ...] = (),
+        max_stage_width: int = 1,
+        max_dispatch_width: int = 1,
     ) -> tuple[GroupedExecutionRuntime, DeterministicOfflineExecutionPort]:
         execution = DeterministicOfflineExecutionPort(
             tuple(directives),
@@ -167,6 +171,8 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
             ),
             execution_plan=execution_plan(),
             now_ns=self.clock,
+            max_stage_width=max_stage_width,
+            max_dispatch_width=max_dispatch_width,
         )
         runtime.start()
         return runtime, execution
@@ -234,6 +240,25 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
             first.disposition,
             GroupedExecutionStepDisposition.ACCEPTED,
         )
+        self.assertIsNotNone(first.stage)
+        self.assertIsNotNone(first.stage_risk_decision)
+        assert first.stage is not None
+        self.assertEqual(first.stage.dispatch_width, 1)
+        self.assertEqual(first.stage.actions, (first.action,))
+        self.assertEqual(len(first.child_results), 1)
+        self.assertEqual(
+            first.child_results[0].client_order_id,
+            first.submit_result.client_order_id,
+        )
+        risk_entry_kinds = tuple(item.kind for item in self.journal.read())
+        self.assertIn(
+            PortfolioRiskJournalEntryKind.STAGE_PERMIT_ISSUED,
+            risk_entry_kinds,
+        )
+        self.assertIn(
+            PortfolioRiskJournalEntryKind.STAGE_PERMIT_CONSUMED,
+            risk_entry_kinds,
+        )
         self.assertEqual(first.action.quantity.as_decimal(), 10)
         self.fill(runtime, first, "10")
 
@@ -283,6 +308,52 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
         )
         self.assertEqual(len(execution.submissions), 2)
         self.assertEqual(runtime.status, GroupedExecutionRuntimeStatus.RUNNING)
+
+    def test_current_host_rejects_parallel_stage_capability(self) -> None:
+        with self.assertRaisesRegex(ValueError, "width one"):
+            self.runtime(
+                OfflineExecutionDirective(
+                    kind=OfflineExecutionDirectiveKind.ACCEPT
+                ),
+                max_stage_width=2,
+                max_dispatch_width=2,
+            )
+
+    def test_stage_permit_issue_and_consumption_replay_fail_closed(self) -> None:
+        runtime, _ = self.runtime(
+            OfflineExecutionDirective(kind=OfflineExecutionDirectiveKind.ACCEPT)
+        )
+        admission = self.admit(runtime)
+        assert admission.group is not None
+        step = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission),
+            self.policy,
+        )
+        assert step.stage is not None
+        assert step.stage_risk_decision is not None
+        assert step.stage_risk_decision.permit is not None
+        generation_before_restart = self.coordinator.authorization_generation
+
+        recovered = PortfolioRiskCoordinator(
+            journal=self.journal,
+            risk_policy_version=self.policy.version,
+            reservation_lifetime_ns=self.policy.reservation_lifetime_ns,
+            max_active_reservations=self.policy.max_active_reservations,
+            now_ns=self.clock(),
+        )
+
+        self.assertEqual(
+            recovered.authorization_generation,
+            generation_before_restart + 1,
+        )
+        with self.assertRaises(PortfolioRiskAuthorizationError):
+            recovered.validate_stage_permit(
+                permit=step.stage_risk_decision.permit,
+                stage=step.stage,
+                group=step.group,
+                now_ns=self.clock(),
+            )
 
     def test_grouped_runtime_uses_bridged_exact_scope_router(self) -> None:
         spot_gateway = _AcceptingAsyncGateway()

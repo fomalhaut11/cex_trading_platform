@@ -8,7 +8,7 @@ from enum import StrEnum
 from threading import get_ident
 from typing import Never, Protocol, cast
 
-from cex_quant.core import ClientOrderId, OrderGroupId, UnixNanos
+from cex_quant.core import ClientOrderId, GroupActionId, OrderGroupId, UnixNanos
 from cex_quant.execution import (
     CancelOrder,
     CancelResult,
@@ -18,9 +18,12 @@ from cex_quant.execution import (
     SubmitResult,
 )
 from cex_quant.oms import (
+    MAX_EXECUTION_STAGE_ACTIONS,
+    MAX_EXECUTION_STAGE_DISPATCH_WIDTH,
     ExecutionAction,
     ExecutionActionState,
     ExecutionPlanRef,
+    ExecutionStage,
     OrderEvent,
     OrderGroupAdmission,
     OrderGroupStatus,
@@ -29,10 +32,12 @@ from cex_quant.oms import (
     OrderStatus,
     OrderSubmitOutcome,
     OrderView,
+    child_order_id_for_action,
 )
 from cex_quant.risk import (
     BasketPortfolioRiskDecision,
     ExecutionActionRiskDecision,
+    ExecutionStageRiskDecision,
     PortfolioRiskCoordinator,
     PortfolioRiskEngine,
     PortfolioRiskPolicy,
@@ -57,7 +62,7 @@ from .execution_planning import (
     default_execution_planning,
 )
 from .order_group_runtime import OrderGroupRuntime
-from .portfolio_risk_guard import PortfolioRiskExecutionGuard
+from .portfolio_risk_guard import PortfolioRiskExecutionStageGuard
 
 
 class GroupedExecutionRuntimeStatus(StrEnum):
@@ -100,6 +105,13 @@ class GroupedExecutionStepDisposition(StrEnum):
     UNKNOWN = "unknown"
     RISK_REJECTED = "risk_rejected"
     NO_ACTION = "no_action"
+
+
+class StageChildDisposition(StrEnum):
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    DEFINITELY_NOT_SENT = "definitely_not_sent"
+    UNKNOWN = "unknown"
 
 
 class GroupedCancelDisposition(StrEnum):
@@ -163,11 +175,39 @@ class GroupedAdmissionResult:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class StageChildResult:
+    """One per-Child immediate result retained inside a Stage result vector."""
+
+    action_id: GroupActionId
+    client_order_id: ClientOrderId
+    disposition: StageChildDisposition
+    submit_result: SubmitResult | None = None
+    reason: str = ""
+
+    def __post_init__(self) -> None:
+        if self.reason.strip() != self.reason:
+            raise ValueError("Stage Child result reason must be trimmed")
+        if self.disposition in {
+            StageChildDisposition.ACCEPTED,
+            StageChildDisposition.REJECTED,
+        }:
+            if self.submit_result is None:
+                raise ValueError("accepted/rejected Child requires submit evidence")
+            if self.submit_result.client_order_id != self.client_order_id:
+                raise ValueError("Stage Child submit evidence identity mismatch")
+        elif self.submit_result is not None or not self.reason:
+            raise ValueError("failed/unknown Child requires only a reason")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class GroupedExecutionStepResult:
     disposition: GroupedExecutionStepDisposition
     group: OrderGroupView
     action: ExecutionAction | None = None
     risk_decision: ExecutionActionRiskDecision | None = None
+    stage: ExecutionStage | None = None
+    stage_risk_decision: ExecutionStageRiskDecision | None = None
+    child_results: tuple[StageChildResult, ...] = ()
     submit_result: SubmitResult | None = None
     reason: str = ""
 
@@ -177,11 +217,34 @@ class GroupedExecutionStepResult:
         if self.disposition is GroupedExecutionStepDisposition.NO_ACTION:
             if any(
                 item is not None
-                for item in (self.action, self.risk_decision, self.submit_result)
+                for item in (
+                    self.action,
+                    self.risk_decision,
+                    self.stage,
+                    self.stage_risk_decision,
+                    self.submit_result,
+                )
             ):
                 raise ValueError("NO_ACTION cannot contain action evidence")
-        elif self.action is None or self.risk_decision is None:
-            raise ValueError("action step requires action and Risk decision")
+            if self.child_results:
+                raise ValueError("NO_ACTION cannot contain Child results")
+        elif (
+            self.action is None
+            or self.risk_decision is None
+            or self.stage is None
+            or self.stage_risk_decision is None
+        ):
+            raise ValueError("execution step requires Stage, Action and Risk evidence")
+        elif self.disposition is GroupedExecutionStepDisposition.RISK_REJECTED:
+            if self.child_results:
+                raise ValueError("Risk-rejected Stage has no Child results")
+        elif (
+            len(self.child_results) != 1
+            or self.child_results[0].action_id != self.action.action_id
+            or self.child_results[0].client_order_id
+            != child_order_id_for_action(self.action.action_id)
+        ):
+            raise ValueError("width-one execution requires one exact Child result")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -218,6 +281,8 @@ class GroupedExecutionRuntime:
         execution_plan: ExecutionPlanRef | None = None,
         execution_plan_resolver: ExecutionPlanResolver | None = None,
         execution_planner_registry: ExecutionPlannerRegistry | None = None,
+        max_stage_width: int = 1,
+        max_dispatch_width: int = 1,
     ) -> None:
         self._risk_engine = risk_engine
         self._risk_coordinator = risk_coordinator
@@ -246,6 +311,17 @@ class GroupedExecutionRuntime:
         assert execution_planner_registry is not None
         self._execution_plan_resolver = execution_plan_resolver
         self._execution_planner_registry = execution_planner_registry
+        if (
+            not 1 <= max_stage_width <= MAX_EXECUTION_STAGE_ACTIONS
+            or not 1
+            <= max_dispatch_width
+            <= min(max_stage_width, MAX_EXECUTION_STAGE_DISPATCH_WIDTH)
+        ):
+            raise ValueError("grouped Stage host capability is invalid")
+        if max_stage_width != 1 or max_dispatch_width != 1:
+            raise ValueError("current grouped Stage host supports width one only")
+        self._max_stage_width = max_stage_width
+        self._max_dispatch_width = max_dispatch_width
         self._now_ns = now_ns
         self._writer_thread_id = get_ident()
         self._status = GroupedExecutionRuntimeStatus.NEW
@@ -408,48 +484,64 @@ class GroupedExecutionRuntime:
         try:
             group = self._groups.group(group_id)
             planner = self._execution_planner_registry.require(group.execution_plan)
-            action = planner.propose(
+            stage = planner.propose(
                 group,
                 risk_snapshot.value,
                 self._now_ns(),
             )
-            if action is None:
+            if stage is None:
                 return GroupedExecutionStepResult(
                     disposition=GroupedExecutionStepDisposition.NO_ACTION,
                     group=group,
                 )
-            risk_decision = self._risk_engine.authorize_action(
+            if (
+                len(stage.actions) > self._max_stage_width
+                or stage.dispatch_width > self._max_dispatch_width
+            ):
+                raise GroupedExecutionRuntimeStateError(
+                    "planned Stage exceeds grouped host capability"
+                )
+            stage_risk_decision = self._risk_engine.authorize_stage(
                 group,
-                action,
+                stage,
                 risk_snapshot,
                 policy,
                 now_ns=self._now_ns(),
             )
-            if not risk_decision.allowed:
+            risk_decision = stage_risk_decision.action_decisions[0]
+            action = stage.actions[0]
+            if not stage_risk_decision.allowed:
                 return GroupedExecutionStepResult(
                     disposition=GroupedExecutionStepDisposition.RISK_REJECTED,
                     group=group,
                     action=action,
                     risk_decision=risk_decision,
+                    stage=stage,
+                    stage_risk_decision=stage_risk_decision,
                     reason=",".join(item.value for item in risk_decision.reasons),
                 )
-            permit = self._risk_coordinator.issue_permit(
-                risk_decision,
+            stage_permit = self._risk_coordinator.issue_stage_permit(
+                stage_risk_decision,
                 now_ns=self._now_ns(),
             )
-            request = self._groups.prepare_child_submit(
-                action=action,
-                permit=permit,
+            requests = self._groups.prepare_stage(
+                stage=stage,
+                permit=stage_permit,
             )
+            if len(requests) != 1:
+                raise GroupedExecutionRuntimeStateError(
+                    "width-one Stage host received a wider request vector"
+                )
+            request = requests[0]
             state = _GroupedSubmitStateAdapter(
                 groups=self._groups,
                 action=action,
                 request=request,
             )
-            risk_guard = PortfolioRiskExecutionGuard(
+            risk_guard = PortfolioRiskExecutionStageGuard(
                 coordinator=self._risk_coordinator,
-                action=action,
-                permit=permit,
+                stage=stage,
+                permit=stage_permit,
                 group_view=self._groups.group,
                 now_ns=self._now_ns,
                 platform_guard=self._platform_guard,
@@ -472,6 +564,8 @@ class GroupedExecutionRuntime:
                     group_id=group_id,
                     action=action,
                     risk_decision=risk_decision,
+                    stage=stage,
+                    stage_risk_decision=stage_risk_decision,
                     error=error,
                 )
             except ExecutionTransportError as error:
@@ -481,6 +575,8 @@ class GroupedExecutionRuntime:
                     group_id=group_id,
                     action=action,
                     risk_decision=risk_decision,
+                    stage=stage,
+                    stage_risk_decision=stage_risk_decision,
                     error=error,
                 )
             except ExecutionStateUnknownError as error:
@@ -490,6 +586,8 @@ class GroupedExecutionRuntime:
                     group_id=group_id,
                     action=action,
                     risk_decision=risk_decision,
+                    stage=stage,
+                    stage_risk_decision=stage_risk_decision,
                     error=error,
                 )
             disposition = (
@@ -510,7 +608,22 @@ class GroupedExecutionRuntime:
                 group=self._groups.group(group_id),
                 action=action,
                 risk_decision=risk_decision,
+                stage=stage,
+                stage_risk_decision=stage_risk_decision,
                 submit_result=submit_result,
+                child_results=(
+                    StageChildResult(
+                        action_id=action.action_id,
+                        client_order_id=request.client_order_id,
+                        disposition=(
+                            StageChildDisposition.ACCEPTED
+                            if disposition is GroupedExecutionStepDisposition.ACCEPTED
+                            else StageChildDisposition.REJECTED
+                        ),
+                        submit_result=submit_result,
+                        reason=(submit_result.rejection_message or ""),
+                    ),
+                ),
                 reason=(submit_result.rejection_message or ""),
             )
         except Exception as error:
@@ -648,6 +761,8 @@ class GroupedExecutionRuntime:
         group_id: OrderGroupId,
         action: ExecutionAction,
         risk_decision: ExecutionActionRiskDecision,
+        stage: ExecutionStage,
+        stage_risk_decision: ExecutionStageRiskDecision,
         error: Exception,
     ) -> GroupedExecutionStepResult:
         reason = str(error).strip() or type(error).__name__
@@ -656,6 +771,16 @@ class GroupedExecutionRuntime:
             group=self._groups.group(group_id),
             action=action,
             risk_decision=risk_decision,
+            stage=stage,
+            stage_risk_decision=stage_risk_decision,
+            child_results=(
+                StageChildResult(
+                    action_id=action.action_id,
+                    client_order_id=child_order_id_for_action(action.action_id),
+                    disposition=StageChildDisposition(disposition.value),
+                    reason=reason[:512],
+                ),
+            ),
             reason=reason[:512],
         )
 
@@ -780,7 +905,7 @@ class _PermitThenTransmitGuard:
     def __init__(
         self,
         *,
-        risk_guard: PortfolioRiskExecutionGuard,
+        risk_guard: ExternalSubmitGuardPort,
         groups: OrderGroupRuntime,
         action: ExecutionAction,
     ) -> None:
@@ -811,5 +936,7 @@ __all__ = [
     "GroupedExecutionStepDisposition",
     "GroupedExecutionStepResult",
     "GroupedExecutionWriterViolationError",
+    "StageChildDisposition",
+    "StageChildResult",
     "SynchronousExecutionCancelPort",
 ]

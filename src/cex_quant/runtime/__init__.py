@@ -109,6 +109,8 @@ from .grouped_execution import (
     GroupedExecutionStepDisposition,
     GroupedExecutionStepResult,
     GroupedExecutionWriterViolationError,
+    StageChildDisposition,
+    StageChildResult,
     SynchronousExecutionCancelPort,
 )
 from .offline_execution import (
@@ -201,7 +203,10 @@ from .portfolio_projection import (
     OmsExecutionEffectProjector,
     OmsExecutionProjectionError,
 )
-from .portfolio_risk_guard import PortfolioRiskExecutionGuard
+from .portfolio_risk_guard import (
+    PortfolioRiskExecutionGuard,
+    PortfolioRiskExecutionStageGuard,
+)
 from .private_stream_application import (
     PrivateStreamApplication,
     PrivateStreamApplicationSnapshot,
@@ -390,6 +395,7 @@ __all__ = [
     "PipelineStatus",
     "PortfolioReadPort",
     "PortfolioRiskExecutionGuard",
+    "PortfolioRiskExecutionStageGuard",
     "PrivateStreamApplication",
     "PrivateStreamApplicationSnapshot",
     "PrivateStreamApplicationState",
@@ -419,6 +425,8 @@ __all__ = [
     "SnapshotEvidencePort",
     "SnapshotIdentityPolicy",
     "SnapshotWriterViolationError",
+    "StageChildDisposition",
+    "StageChildResult",
     "StageOutcome",
     "StageTrace",
     "StartupOrderReconciliationCoordinator",

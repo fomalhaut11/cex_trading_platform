@@ -57,6 +57,13 @@ from .model import (
     PositionSide,
     TimeInForce,
 )
+from .stage_codec import (
+    decode_execution_stage,
+    decode_execution_stage_permit,
+    encode_execution_stage,
+    encode_execution_stage_permit,
+)
+from .stage_model import ExecutionStage, ExecutionStagePermit
 
 FORMAT_NAME = "cex_quant.oms_journal"
 LEGACY_FORMAT_VERSION = 1
@@ -91,6 +98,7 @@ class OmsJournalEntryType(StrEnum):
     GROUP_CONTROL_CHANGED = "group_control_changed"
     GROUP_ACTION_PREPARED = "group_action_prepared"
     GROUP_ACTION_STATE_CHANGED = "group_action_state_changed"
+    GROUP_STAGE_PREPARED = "group_stage_prepared"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -195,6 +203,19 @@ class GroupActionStateChangedEntry:
         return OmsJournalEntryType.GROUP_ACTION_STATE_CHANGED
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GroupStagePreparedEntry:
+    group_id: OrderGroupId
+    stage: ExecutionStage
+    permit: ExecutionStagePermit
+    requests: tuple[OrderRequest, ...]
+    at_ns: UnixNanos
+
+    @property
+    def entry_type(self) -> OmsJournalEntryType:
+        return OmsJournalEntryType.GROUP_STAGE_PREPARED
+
+
 OmsJournalEntry: TypeAlias = (
     OrderCreatedEntry
     | OrderSubmittingEntry
@@ -205,6 +226,7 @@ OmsJournalEntry: TypeAlias = (
     | GroupControlChangedEntry
     | GroupActionPreparedEntry
     | GroupActionStateChangedEntry
+    | GroupStagePreparedEntry
 )
 
 
@@ -421,6 +443,14 @@ def _encode_entry(entry: OmsJournalEntry) -> JsonObject:
             ),
             "reason": entry.reason,
         }
+    elif isinstance(entry, GroupStagePreparedEntry):
+        payload = {
+            "group_id": str(entry.group_id),
+            "stage": _encode_blob(encode_execution_stage(entry.stage)),
+            "permit": _encode_blob(encode_execution_stage_permit(entry.permit)),
+            "requests": [_encode_request(item) for item in entry.requests],
+            "at_ns": int(entry.at_ns),
+        }
     else:
         raise TypeError(f"unsupported journal entry: {type(entry).__name__}")
     return {"type": entry.entry_type.value, "payload": payload}
@@ -479,6 +509,19 @@ def _decode_entry(raw: JsonObject) -> OmsJournalEntry:
             action=decode_execution_action(_decode_blob(payload, "action")),
             permit=decode_execution_action_permit(_decode_blob(payload, "permit")),
             request=_decode_request(_object(payload["request"], "request")),
+            at_ns=UnixNanos(_integer(payload, "at_ns")),
+        )
+    if entry_type is OmsJournalEntryType.GROUP_STAGE_PREPARED:
+        requests = payload.get("requests")
+        if not isinstance(requests, list):
+            raise OmsJournalIntegrityError("Stage requests must be a list")
+        return GroupStagePreparedEntry(
+            group_id=OrderGroupId(_string(payload, "group_id")),
+            stage=decode_execution_stage(_decode_blob(payload, "stage")),
+            permit=decode_execution_stage_permit(_decode_blob(payload, "permit")),
+            requests=tuple(
+                _decode_request(_object(item, "request")) for item in requests
+            ),
             at_ns=UnixNanos(_integer(payload, "at_ns")),
         )
     venue_order_id = _optional_string(payload, "venue_order_id")
@@ -713,6 +756,7 @@ __all__ = [
     "GroupActionStateChangedEntry",
     "GroupControlChangedEntry",
     "GroupCreatedEntry",
+    "GroupStagePreparedEntry",
     "JsonLinesOmsJournal",
     "OmsJournal",
     "OmsJournalEntry",

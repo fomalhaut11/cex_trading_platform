@@ -3,9 +3,9 @@
     "graphify_version":  "graphify 0.9.31",
     "extraction_mode":  "code-only-local-ast-unlabeled-clustering",
     "graph_path":  "graphify-out/graph.json",
-    "graph_sha256":  "2368ce2ca2b6741df4f59d6d0f9540d270b8c793c0e56a06abfe4306573eb389",
-    "source_count":  257,
-    "source_fingerprint":  "1068e9291b32fe765fcf09a43de50d5e4615ce6905e9da196620fdd0a937e4a5",
+    "graph_sha256":  "074d95df6451959055134cc278f4f3a41b18129badc1efdb9a9788903b86c3bb",
+    "source_count":  260,
+    "source_fingerprint":  "e275e7d36cd40fd6a47c17e7f56b67ca25812b96911d7fef1f7812b6753ef7c9",
     "sources":  [
                     {
                         "path":  "pyproject.toml",
@@ -149,7 +149,7 @@
                     },
                     {
                         "path":  "src/cex_quant/core/__init__.py",
-                        "sha256":  "89fe03fa837a8cd90d7b1c153f23653fa5dd2484424b5bf40557d5f51821f6cd"
+                        "sha256":  "218c14c1b8dc0037b900e69c82a24226f3d29a1e7d365e44ec5ab6be34ba4452"
                     },
                     {
                         "path":  "src/cex_quant/core/events.py",
@@ -161,7 +161,7 @@
                     },
                     {
                         "path":  "src/cex_quant/core/identifiers.py",
-                        "sha256":  "dd799d115cad6ab485b29395457d7e903b233f3ef168e788a59ec0019c96a99e"
+                        "sha256":  "690f889e336bdb1a632c9944f2e86fbf0e7cb8e30d1efc90e6fc7f8ac730085e"
                     },
                     {
                         "path":  "src/cex_quant/core/time.py",
@@ -325,7 +325,7 @@
                     },
                     {
                         "path":  "src/cex_quant/oms/__init__.py",
-                        "sha256":  "c2d23ebf9d741555db67e5a114f6e3ae6e522947f731b2495a3e1e004efc8711"
+                        "sha256":  "389bd031513fc289e0b9a209b11276040b89709498a1ef904f5d758f8d323595"
                     },
                     {
                         "path":  "src/cex_quant/oms/group_codec.py",
@@ -333,15 +333,15 @@
                     },
                     {
                         "path":  "src/cex_quant/oms/group_model.py",
-                        "sha256":  "34ca141fc60f083775aad4d560a1646bfaa592d87ec2a17e206b1091078dd837"
+                        "sha256":  "6eae5998ce00cb60d1320c3dc1359b74a2c6b761c05dfc78c7bd4dfcad95829e"
                     },
                     {
                         "path":  "src/cex_quant/oms/group_state.py",
-                        "sha256":  "c9ec4c87da070e7044fbc2f946587586795eb478a50504cb363c45c22dfeb054"
+                        "sha256":  "f8dcaf27ac1d42e12ce5db51666525e81c8e4d66ce43a683a6841b58a0f77c43"
                     },
                     {
                         "path":  "src/cex_quant/oms/journal.py",
-                        "sha256":  "6acdcef246cdf02cac126d67a5e01916b5d7b59c4fbe7884657fd1368781c89a"
+                        "sha256":  "751fd7eb812770057a53c4930483d629f2631df037755049bfc1d9dc3dc17263"
                     },
                     {
                         "path":  "src/cex_quant/oms/model.py",
@@ -350,6 +350,14 @@
                     {
                         "path":  "src/cex_quant/oms/reconciliation.py",
                         "sha256":  "5ed92959e3bb7637734e6f04ec70543c0a807e9a9367e94749ef85e2e5aac5fc"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/stage_codec.py",
+                        "sha256":  "b8c1022f1024e2c1bd06185b291403b4758e85b38a694b6ded1f816ea7fb0a66"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/stage_model.py",
+                        "sha256":  "98eb94b3b9543177233b1544500dd55307dd66f56bacc9817ebbc2726d52b654"
                     },
                     {
                         "path":  "src/cex_quant/oms/state.py",
@@ -397,7 +405,7 @@
                     },
                     {
                         "path":  "src/cex_quant/risk/__init__.py",
-                        "sha256":  "ccbe56e8ff4dc6725e18576a23f93d737a1d78a423ab6324f6b1e405fbe7a3ca"
+                        "sha256":  "9b3dfa6a7cb7ad433197749da02bbea87e9e13a36a1a9a9cfda2ce5f93ba0531"
                     },
                     {
                         "path":  "src/cex_quant/risk/engine.py",
@@ -409,23 +417,23 @@
                     },
                     {
                         "path":  "src/cex_quant/risk/portfolio_coordinator.py",
-                        "sha256":  "92a2d056dcd1a27ddeb9f071f13e66deafebc56b3e0a65fe7e6352089d89059b"
+                        "sha256":  "ed3dac54a86f2d4a4ac0ad836dd7c1ee5ef49ea22aef9a75edf2d53d1b7ce334"
                     },
                     {
                         "path":  "src/cex_quant/risk/portfolio_engine.py",
-                        "sha256":  "55be73671aa17776a7108560bdc5a47005e55cb4a34b01f20f53544e541182e8"
+                        "sha256":  "d3538fc1ae88c9d4be4917210cf9296d51bc46eb2048a71488b4213f579a0599"
                     },
                     {
                         "path":  "src/cex_quant/risk/portfolio_journal.py",
-                        "sha256":  "0e6a43b959f627048c91b916c823e66d690eb54dcb876d9fc1052fff1c983594"
+                        "sha256":  "0590e02ea9c0e4cab515b847256b076afb4bc0b14e321c471939e093e48d59a4"
                     },
                     {
                         "path":  "src/cex_quant/risk/portfolio_model.py",
-                        "sha256":  "fa374d9620d2602a44ac1b83103a854a97fd797afee46e530310cdf349cadeda"
+                        "sha256":  "3109bc1df1f48bd8e4c89c27fd40df8cc9b2e848b0f2ff0d8a7e9c6db7330317"
                     },
                     {
                         "path":  "src/cex_quant/runtime/__init__.py",
-                        "sha256":  "62e1d5fdcef587d58ed713968b035e7a7a9ae05256977690a4208c4cc42a13d7"
+                        "sha256":  "e1434028a7d6fcc517a0d8b2ae354d59e4cb79ceb5b1bcc9b7d294493c81785b"
                     },
                     {
                         "path":  "src/cex_quant/runtime/adapters/__init__.py",
@@ -481,7 +489,7 @@
                     },
                     {
                         "path":  "src/cex_quant/runtime/execution_planning.py",
-                        "sha256":  "1b7f03823149d95c2b36c7982d46bf97a16ce9adabe2b16e78a513d1be7acfdf"
+                        "sha256":  "dd17c03477b8b4984ddf17e58aa1cbc88326eb4fcd5a4ce4c6c59ad00a0feca9"
                     },
                     {
                         "path":  "src/cex_quant/runtime/financial_fact_handoff.py",
@@ -489,7 +497,7 @@
                     },
                     {
                         "path":  "src/cex_quant/runtime/grouped_execution.py",
-                        "sha256":  "65cbf14986cbcd30e1ed4ff68982ae41fa572162c3c8ea91227943d8d9aeebbd"
+                        "sha256":  "944df0a3ac5521f1579793642b4191f844df91a54250f43c687fbef04861c3c4"
                     },
                     {
                         "path":  "src/cex_quant/runtime/offline_execution.py",
@@ -513,7 +521,7 @@
                     },
                     {
                         "path":  "src/cex_quant/runtime/order_group_runtime.py",
-                        "sha256":  "1c9739c491a93fda15e443c122b199c7f137e10a11fe95ac0c55aea408c198cc"
+                        "sha256":  "f9d66d22e0765069ea459990922b5a3b288fad51b00ba15d46e4307bbdfbd72c"
                     },
                     {
                         "path":  "src/cex_quant/runtime/pipeline.py",
@@ -521,11 +529,11 @@
                     },
                     {
                         "path":  "src/cex_quant/runtime/portfolio_projection.py",
-                        "sha256":  "33a0c5d6ca2d7fe46b52991b21bde7aadb808c88852d8eeb9d875c90132c94e8"
+                        "sha256":  "7325e807c64d2795601668331e390164a0de71a3a04f719bbd45fecc702d86f1"
                     },
                     {
                         "path":  "src/cex_quant/runtime/portfolio_risk_guard.py",
-                        "sha256":  "36d0893f4d76f10f43f93f6ed94b8bacbc8d5a3273386c5f136634af969f4143"
+                        "sha256":  "53f0edf4e22b205d27ce46587da0e00f74e382c1aa795a8c6a40fdf1dd53f384"
                     },
                     {
                         "path":  "src/cex_quant/runtime/private_stream_application.py",
@@ -665,7 +673,7 @@
                     },
                     {
                         "path":  "tests/group_test_support.py",
-                        "sha256":  "d4caf7e29e73cf451b71a5cd2a4ba969ca0e4cc2510ed95269e4880af6618fc5"
+                        "sha256":  "bb6e38199ca828847b68e870282ff8885712806ce1c10fd145d9f1bc489878aa"
                     },
                     {
                         "path":  "tests/performance/__init__.py",
@@ -809,11 +817,15 @@
                     },
                     {
                         "path":  "tests/test_execution_planning.py",
-                        "sha256":  "79329ffe2e66bdfe20dba2c2af7e4aea74dcfd50f2bc381f1d0537ae07311db0"
+                        "sha256":  "340478a6794b463a872e18d4fce82a3ab211243c4690863a1f19a10fd727fc15"
                     },
                     {
                         "path":  "tests/test_execution_routing.py",
                         "sha256":  "5b6e37d993b6d174187abe2d7083597f3827bec48fe3c4e9536974801c3dba18"
+                    },
+                    {
+                        "path":  "tests/test_execution_stage.py",
+                        "sha256":  "43fabc47ea1826b5b2404fff767f5860075a293043f5c0a21ae45ec047001373"
                     },
                     {
                         "path":  "tests/test_features_engine.py",
@@ -837,7 +849,7 @@
                     },
                     {
                         "path":  "tests/test_grouped_execution_runtime.py",
-                        "sha256":  "1c6166f09e76189c9ec691831f952ad8a9e49164bad199b8910170dc8966bfe1"
+                        "sha256":  "5c96e961ce898d5b0a62cbc483ae59c822c5e806cd6e6b84155fbf7b842c5814"
                     },
                     {
                         "path":  "tests/test_instruments.py",

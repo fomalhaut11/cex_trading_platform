@@ -2,9 +2,9 @@
   "errors": [],
   "schema_version": "1.0",
   "summary": {
-    "edge_count": 3051,
+    "edge_count": 3161,
     "error_count": 0,
-    "node_count": 1637,
+    "node_count": 1671,
     "valid": true,
     "warning_count": 4
   },

@@ -8,6 +8,8 @@ from threading import get_ident
 from cex_quant.core import (
     ClientOrderId,
     ExecutionPermitId,
+    ExecutionStageId,
+    ExecutionStagePermitId,
     GroupActionId,
     IntentId,
     OrderGroupId,
@@ -19,10 +21,13 @@ from cex_quant.oms import (
     ExecutionActionPermit,
     ExecutionActionState,
     ExecutionPlanRef,
+    ExecutionStage,
+    ExecutionStagePermit,
     GroupActionPreparedEntry,
     GroupActionStateChangedEntry,
     GroupControlChangedEntry,
     GroupCreatedEntry,
+    GroupStagePreparedEntry,
     OmsJournal,
     OmsJournalEntry,
     OrderEvent,
@@ -80,6 +85,11 @@ class OrderGroupRuntime:
         self._permit_to_action: dict[
             ExecutionPermitId,
             tuple[OrderGroupId, GroupActionId],
+        ] = {}
+        self._stage_to_group: dict[ExecutionStageId, OrderGroupId] = {}
+        self._stage_permit_to_stage: dict[
+            ExecutionStagePermitId,
+            ExecutionStageId,
         ] = {}
         self._creation: dict[
             OrderGroupId,
@@ -302,6 +312,111 @@ class OrderGroupRuntime:
             action.action_id,
         )
         return request
+
+    def prepare_stage(
+        self,
+        *,
+        stage: ExecutionStage,
+        permit: ExecutionStagePermit,
+    ) -> tuple[OrderRequest, ...]:
+        """Durably prepare a complete Stage and all Child identities at once."""
+
+        self._assert_persistence_healthy()
+        machine = self._group(stage.group_id)
+        stage_owner = self._stage_to_group.get(stage.stage_id)
+        if stage_owner is not None:
+            raise OrderGroupRuntimeError("ExecutionStageId is already owned")
+        stage_permit_owner = self._stage_permit_to_stage.get(permit.permit_id)
+        if stage_permit_owner is not None:
+            raise OrderGroupRuntimeError("ExecutionStagePermitId is already owned")
+        for action, action_permit in zip(
+            stage.actions,
+            permit.action_permits,
+            strict=True,
+        ):
+            permit_owner = self._permit_to_action.get(action_permit.permit_id)
+            if permit_owner is not None and permit_owner != (
+                stage.group_id,
+                action.action_id,
+            ):
+                raise OrderGroupRuntimeError(
+                    "ExecutionPermitId is already bound to another action"
+                )
+        at_ns = self._now_ns()
+        requests = tuple(
+            OrderRequest(
+                client_order_id=child_order_id_for_action(action.action_id),
+                approval_id=str(action_permit.permit_id),
+                intent_id=IntentId(machine.source_intent_id),
+                account_id=action.account_id,
+                instrument_id=action.instrument_id,
+                side=action.side,
+                order_type=action.order_type,
+                quantity=action.quantity,
+                created_at_ns=at_ns,
+                time_in_force=action.time_in_force,
+                limit_price=action.limit_price,
+                stop_price=action.stop_price,
+                reduce_only=action.reduce_only,
+                post_only=action.post_only,
+                position_side=action.position_side,
+            )
+            for action, action_permit in zip(
+                stage.actions,
+                permit.action_permits,
+                strict=True,
+            )
+        )
+        try:
+            machine.validate_stage_preparation(
+                stage=stage,
+                permit=permit,
+                requests=requests,
+                at_ns=at_ns,
+            )
+        except OrderGroupCapacityError as error:
+            self._change_control(
+                stage.group_id,
+                OrderGroupStatus.SUSPENDED,
+                at_ns=at_ns,
+                reason=str(error),
+            )
+            raise
+        for request in requests:
+            child_owner = self._child_to_group.get(request.client_order_id)
+            if child_owner is not None and child_owner != stage.group_id:
+                raise OrderGroupRuntimeError(
+                    "ClientOrderId is already owned by another Order Group"
+                )
+        self._persist(
+            GroupStagePreparedEntry(
+                group_id=stage.group_id,
+                stage=stage,
+                permit=permit,
+                requests=requests,
+                at_ns=at_ns,
+            )
+        )
+        machine.prepare_stage(
+            stage=stage,
+            permit=permit,
+            requests=requests,
+            at_ns=at_ns,
+        )
+        self._stage_to_group[stage.stage_id] = stage.group_id
+        self._stage_permit_to_stage[permit.permit_id] = stage.stage_id
+        for action, action_permit, request in zip(
+            stage.actions,
+            permit.action_permits,
+            requests,
+            strict=True,
+        ):
+            self._child_to_group[request.client_order_id] = stage.group_id
+            self._permit_to_action[action_permit.permit_id] = (
+                stage.group_id,
+                action.action_id,
+            )
+        return requests
 
     def submit_prepared_child(
         self,
@@ -536,6 +651,8 @@ class OrderGroupRuntime:
                             "recovered ExecutionPermitId has multiple owners"
                         )
                     self._permit_to_action[entry.permit.permit_id] = current_owner
+                elif isinstance(entry, GroupStagePreparedEntry):
+                    self._recover_stage(entry)
                 elif isinstance(entry, GroupActionStateChangedEntry):
                     self._recover_action_state(entry)
                 elif (
@@ -554,6 +671,43 @@ class OrderGroupRuntime:
             raise OrderGroupRecoveryError(
                 f"invalid Order Group recovery history: {error}"
             ) from error
+
+    def _recover_stage(self, entry: GroupStagePreparedEntry) -> None:
+        if entry.stage.stage_id in self._stage_to_group:
+            raise OrderGroupRecoveryError("recovered Stage has multiple owners")
+        if entry.permit.permit_id in self._stage_permit_to_stage:
+            raise OrderGroupRecoveryError(
+                "recovered Stage permit has multiple owners"
+            )
+        for request in entry.requests:
+            child_owner = self._child_to_group.get(request.client_order_id)
+            if child_owner is not None and child_owner != entry.group_id:
+                raise OrderGroupRecoveryError(
+                    "recovered ClientOrderId has multiple group owners"
+                )
+        machine = self._group(entry.group_id)
+        machine.prepare_stage(
+            stage=entry.stage,
+            permit=entry.permit,
+            requests=entry.requests,
+            at_ns=entry.at_ns,
+        )
+        self._stage_to_group[entry.stage.stage_id] = entry.group_id
+        self._stage_permit_to_stage[entry.permit.permit_id] = entry.stage.stage_id
+        for action, action_permit, request in zip(
+            entry.stage.actions,
+            entry.permit.action_permits,
+            entry.requests,
+            strict=True,
+        ):
+            permit_owner = self._permit_to_action.get(action_permit.permit_id)
+            current_owner = (entry.group_id, action.action_id)
+            if permit_owner is not None and permit_owner != current_owner:
+                raise OrderGroupRecoveryError(
+                    "recovered ExecutionPermitId has multiple owners"
+                )
+            self._permit_to_action[action_permit.permit_id] = current_owner
+            self._child_to_group[request.client_order_id] = entry.group_id
 
     def _recover_action_state(
         self,

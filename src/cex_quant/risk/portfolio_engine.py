@@ -32,10 +32,13 @@ from cex_quant.observability import HealthStatus
 from cex_quant.oms import (
     ExecutionAction,
     ExecutionActionPermit,
+    ExecutionStage,
     OrderGroupStatus,
     OrderGroupView,
     OrderSide,
+    create_execution_stage_permit,
     execution_action_checksum,
+    execution_stage_checksum,
 )
 from cex_quant.portfolio import PositionRiskReadiness
 from cex_quant.snapshots import DecisionSnapshotPublication
@@ -44,6 +47,7 @@ from cex_quant.strategy import BasketTargetIntent, basket_target_intent_checksum
 from .portfolio_model import (
     BasketPortfolioRiskDecision,
     ExecutionActionRiskDecision,
+    ExecutionStageRiskDecision,
     MarginScopeExposure,
     PortfolioApprovalEvidence,
     PortfolioExposure,
@@ -337,6 +341,65 @@ class PortfolioRiskEngine:
             projected_exposure=projected_exposure,
             conservative_exposure=conservative_exposure,
             permit=permit,
+        )
+
+    def authorize_stage(
+        self,
+        group: OrderGroupView,
+        stage: ExecutionStage,
+        risk_snapshot: DecisionSnapshotPublication[PortfolioRiskSnapshot],
+        policy: PortfolioRiskPolicy,
+        *,
+        now_ns: UnixNanos,
+    ) -> ExecutionStageRiskDecision:
+        """Authorize the width-one ADR-015 compatibility Stage."""
+
+        if len(stage.actions) != 1 or stage.dispatch_width != 1:
+            raise ValueError(
+                "current Portfolio Risk Stage implementation supports width one"
+            )
+        action_decision = self.authorize_action(
+            group,
+            stage.actions[0],
+            risk_snapshot,
+            policy,
+            now_ns=now_ns,
+        )
+        stage_permit = None
+        if action_decision.allowed:
+            assert action_decision.permit is not None
+            partial_envelope_checksum = _sha256(
+                {
+                    "conservative": _exposure_payload(
+                        action_decision.conservative_exposure
+                    ),
+                    "current": _exposure_payload(action_decision.current_exposure),
+                    "projected": _exposure_payload(
+                        action_decision.projected_exposure
+                    ),
+                    "stage_checksum": execution_stage_checksum(stage),
+                }
+            )
+            stage_permit = create_execution_stage_permit(
+                stage=stage,
+                action_permits=(action_decision.permit,),
+                partial_execution_envelope_checksum=partial_envelope_checksum,
+                risk_snapshot_id=action_decision.risk_snapshot_id,
+                issued_at_ns=action_decision.permit.issued_at_ns,
+                valid_until_ns=action_decision.permit.valid_until_ns,
+                risk_policy_version=action_decision.permit.risk_policy_version,
+            )
+        return ExecutionStageRiskDecision(
+            status=action_decision.status,
+            stage=stage,
+            risk_snapshot_id=action_decision.risk_snapshot_id,
+            risk_snapshot_metadata=action_decision.risk_snapshot_metadata,
+            reasons=action_decision.reasons,
+            current_exposure=action_decision.current_exposure,
+            projected_exposure=action_decision.projected_exposure,
+            conservative_exposure=action_decision.conservative_exposure,
+            action_decisions=(action_decision,),
+            permit=stage_permit,
         )
 
     def supervise_group(

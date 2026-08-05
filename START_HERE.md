@@ -13,12 +13,12 @@ its status claims.
 ## 1. Exact Baseline
 
 ```text
-Repository:   fomalhaut11/cex_trading_platform
-Remote:       https://github.com/fomalhaut11/cex_trading_platform.git
-Branch:       d-development
-A018 code:    b7c99af127ae04b51fa9459df8d2d30297d53635
-origin/main:  44bdd7de8a9aa25f3ad6e7d1ea528e5c8747f8ae
-Relationship: A018 code baseline was 6 commits ahead of origin/main
+Repository:        fomalhaut11/cex_trading_platform
+Remote:            https://github.com/fomalhaut11/cex_trading_platform.git
+Branch:            d-development
+A018 code:         b7c99af127ae04b51fa9459df8d2d30297d53635
+Stage predecessor: f222b39
+origin/main:       44bdd7de8a9aa25f3ad6e7d1ea528e5c8747f8ae
 ```
 
 The A018 code baseline above is the exact locally tested source/test tree.
@@ -35,11 +35,11 @@ b7c99af127ae04b51fa9459df8d2d30297d53635
 test(a018): complete grouped fault scenarios
 ```
 
-Remote status:
+Remote status before the pending Stage commit:
 
 ```text
-A018 pushed:        no
-A018 remote CI:     not run
+d-development:      pushed through f222b39
+Stage change:       local validation in progress
 ```
 
 ## 2. Current Mission
@@ -77,6 +77,8 @@ Current state:
   `development/t046_offline_execution_runtime.md`;
 - A018 is complete and recorded in
   `development/a018_offline_execution_acceptance.md`;
+- ADR-015 is accepted and T051/A022 implement the credential-free width-one
+  Execution Stage foundation;
 - A019 is the next promotion gate, but remains external and unauthorized;
 - Testnet/grouped external execution is not authorized.
 - real-money micro-live execution is not authorized.
@@ -96,6 +98,7 @@ ADR-011  Parent Order Group and multi-leg execution control
 ADR-012  Portfolio Risk and exact action authorization
 ADR-013  Financial Ledger and PnL Attribution contracts
 ADR-014  Carry Application boundary
+ADR-015  Bounded Execution Stage and width-one compatibility
 ```
 
 Allowed kernel changes:
@@ -124,6 +127,7 @@ Forbidden by default:
 | ADR-012 Portfolio Risk | Accepted | T032-T035/A015 complete; A-01–A-07 closed |
 | ADR-013 Financial Ledger | Approved in principle | T036-T039/A016 complete under project-owner offline authority; final Web GPT acceptance pending |
 | ADR-014 Carry Application | Design and offline implementation Accepted | T040-T044/A017 closed |
+| ADR-015 Execution Stage | Accepted for bounded credential-free implementation | T051/A022 complete; host width remains one |
 
 Do not describe ADR-013 as finally accepted until its final review is recorded.
 
@@ -155,7 +159,8 @@ Do not describe ADR-013 as finally accepted until its final review is recorded.
 ### OMS and Execution Control
 
 - single-order OMS and durable journal/reconciliation;
-- Parent Order Group identity, plan/action/child facts and replay;
+- Parent Order Group identity, Stage/Action/Child facts and mixed-version replay;
+- atomic width-one Stage preparation and stable per-Child result vectors;
 - UNKNOWN/recovery semantics;
 - shared durable-before-external-I/O handoff;
 - authenticated Binance execution/query/cancel/private-stream adapters.
@@ -171,7 +176,7 @@ grouped external execution.
 - normalized margin/liquidation inputs;
 - generic N-leg projection and whole-Basket approval;
 - reservations/resource claims;
-- exact per-action permits and generation invalidation;
+- aggregate Stage plus exact per-Action permits and generation invalidation;
 - immediate pre-I/O guard and recovery evidence.
 
 ### Accounting
@@ -226,6 +231,7 @@ Not authorized:
 - external Funding Carry execution;
 - production trading;
 - production endpoints or credentials;
+- Stage width or dispatch width greater than one;
 - automatic multi-symbol/multi-venue capital allocation.
 
 External prerequisites also remain for persistent host time, target-host soak,
@@ -248,6 +254,8 @@ Phase 0  Kernel v1 compatibility freeze        ACTIVE
 T045     Execution Promotion composition audit COMPLETE
 T046     Mode-neutral offline runtime/harness  COMPLETE
 A018     Offline Execution acceptance          COMPLETE
+T051     Width-one Execution Stage foundation  COMPLETE
+A022     Offline Stage acceptance               COMPLETE
 A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
 T050     Live Operations Lite + Shadow         PLANNED
 A020     MVP Live Readiness                    PLANNED, NO TRADING AUTHORITY
@@ -297,6 +305,12 @@ versioned execution-planner registry. Offline architecture-fitness tests cover
 two-, three-, four- and 16-leg Baskets plus a synthetic Binance/OKX
 multi-account Basket. No OKX adapter, external execution or trading authority
 was added.
+
+ADR-015 then generalized the planner boundary from one Action to one bounded
+Stage. T051/A022 migrate Risk, OMS and grouped Runtime to the same Stage path
+while keeping the active host at width one, persisting the complete
+Stage/Action/Child set atomically and retaining mixed legacy journal replay.
+Parallel dispatch and wider partial-execution Risk envelopes remain unbuilt.
 
 ## 10. Deferred Application Runtime Decisions
 
@@ -361,21 +375,23 @@ Do not develop multiple new strategies in parallel.
 
 ## 13. Verification Baseline
 
-Latest full local validation after the Runtime planner/router refactor:
+Latest full local validation after ADR-015/T051/A022:
 
 ```text
-pytest:             604 passed
-unittest subtests:  238 passed
-branch coverage:    85.27% (minimum 85%)
+pytest:             616 passed
+unittest subtests:  246 passed
+branch coverage:    85.10% (minimum 85%)
 Ruff:               passed
-strict MyPy:        passed over 142 source files
+strict MyPy:        passed over 144 source files
 compileall:         passed
-knowledge graph:    1,637 project nodes / 3,051 edges, valid and fresh
+secret scan:        passed
+knowledge graph:    1,671 project nodes / 3,161 edges, valid and fresh
+Graphify code graph: 260 files / 5,247 nodes / 17,352 edges
 ```
 
-These local refactor and graph changes have not yet been committed or pushed;
-the last recorded remote verified state remains GitHub Actions run
-`30519391352`.
+The planner/router predecessor is pushed through `f222b39`. The Stage change
+and refreshed graph are locally validated but not yet committed or pushed; the
+last recorded remote verified state remains GitHub Actions run `30519391352`.
 
 A local Windows pytest run may emit a `.pytest_cache` creation warning. It did
 not affect test results, and clean remote CI passed.

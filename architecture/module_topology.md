@@ -55,18 +55,21 @@ offline grouped Runtime:
 BasketTargetIntent
   -> OrderGroupAdmission
   -> OMS Order Group + ExecutionPlanRef
-  -> ExecutionAction
-  -> ExecutionActionPermit        # issued durably by Portfolio Risk
-  -> durable Child Order Attempt
+  -> ExecutionStage[ordered ExecutionAction]
+  -> ExecutionStagePermit         # issued durably by Portfolio Risk
+  -> atomic Stage/Action/Child preparation
+  -> durable Child Order Attempt + per-Child result
   -> existing OrderRequest
   -> existing Execution adapter
 ```
 
 Runtime resolves exact, versioned Objective metadata to an
 `ExecutionPlanRef`, verifies the full reference in a bounded planner registry
-and delegates action proposal to that planner. The default sequential
-residual planner is a replaceable Runtime component, not policy embedded in
-the OMS or gateway router.
+and delegates Stage proposal to that planner. The default sequential residual
+planner emits a width-one Stage and is a replaceable Runtime component, not
+policy embedded in the OMS or gateway router. ADR-015 keeps Stage width and
+dispatch width independently bounded; the current host supports only one for
+both limits.
 
 The exact execution router is a Runtime adapter keyed only by
 `(account_id, instrument_id)`. It composes configured asynchronous gateways
@@ -185,8 +188,9 @@ listener. Concrete TLS termination remains a deployment boundary.
     authority; only Runtime may coordinate the accepted boundaries.
 17. OMS group state owns group control, child mappings and execution facts;
     it cannot compute Delta, basis, margin, `HEDGED` or application meaning.
-18. `ExecutionActionPermit` is immutable evidence issued by Portfolio Risk;
-    OMS validates exact binding but never issues it.
+18. `ExecutionStagePermit` and its exact `ExecutionActionPermit` members are
+    immutable evidence issued by Portfolio Risk; OMS validates exact binding
+    but never issues them.
 19. Accepted ADR-012 keeps execution-consistent positions and normalized
     margin facts in Portfolio, exposure/approval/permit authority in Risk,
     group/action/child facts in OMS and ordered coordination in Runtime.
@@ -203,9 +207,11 @@ listener. Concrete TLS termination remains a deployment boundary.
     views. T040-T044/A017 implement this boundary offline while external
     execution remains blocked.
 22. Runtime owns execution-plan resolution, the bounded planner registry and
-    exact gateway-route composition. A planner may propose no more than one V1
-    action per call and owns no authority. Routing is exact and fail-closed;
-    no OMS or Execution-domain contract may infer a fallback venue, account or
+    exact gateway-route composition. A planner may propose one bounded Stage
+    per call and owns no authority. The current T051 host admits only a
+    width-one Stage and dispatch width one; wider activation requires separate
+    Risk and dispatcher acceptance. Routing is exact and fail-closed; no OMS
+    or Execution-domain contract may infer a fallback venue, account or
     product route.
 
 ## Process Boundaries

@@ -85,15 +85,15 @@ useful evidence.
 
 ## Current Architecture Validation
 
-The graph must show the completed T045-T046/A018 composition and the additive
-execution extension points:
+The graph must show the completed T045-T046/A018 composition, the accepted
+ADR-015 T051/A022 Stage foundation and the additive execution extension points:
 
 1. `GroupedExecutionRuntime` resolves an immutable `ExecutionPlanRef` through
    `ObjectiveExecutionPlanResolver` and obtains the algorithm from
    `ExecutionPlannerRegistry`.
-2. `SequentialResidualExecutionPlanner` owns only deterministic action
-   proposal. Portfolio Risk still issues permits, OMS owns group/child facts
-   and Runtime orders the calls.
+2. `SequentialResidualExecutionPlanner` owns only deterministic width-one Stage
+   proposal. Portfolio Risk issues aggregate Stage and exact Action permits,
+   OMS owns Stage/Action/Child facts and Runtime orders the calls.
 3. `ExactExecutionGatewayRouter` lives under Runtime adapters and dispatches
    submit, cancel and query through exact account/instrument scopes. It has no
    strategy, leg-count, product or venue-selection policy.
@@ -102,6 +102,9 @@ execution extension points:
    Basket, Risk, OMS or Accounting contracts.
 5. Graph diagnostics must report no missing endpoints, dangling endpoints,
    exact duplicate edges or directed same-endpoint collapse.
+6. `ExecutionStage`, `ExecutionStagePermit`, `GroupStagePreparedEntry` and the
+   per-Child result vector are visible without a parallel dispatcher or wider
+   host capability.
 
 These graph relationships are offline structural evidence only. They do not
 implement an OKX gateway, authorize cross-venue execution, open Testnet or

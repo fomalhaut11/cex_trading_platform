@@ -11,6 +11,7 @@ import json
 import re
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from cex_quant.core import (
     AccountId,
@@ -41,6 +42,9 @@ from .model import (
     TimeInForce,
     _validate_order_fields,
 )
+
+if TYPE_CHECKING:
+    from .stage_model import ExecutionStageView
 
 MAX_GROUP_CHILDREN = 64
 MAX_CHILD_ATTEMPTS_PER_LEG = 8
@@ -279,6 +283,7 @@ class OrderGroupView:
     recovery_reason: str = ""
     close_outcome: OrderGroupCloseOutcome | None = None
     portfolio_confirmation_id: str = ""
+    stages: tuple[ExecutionStageView, ...] = ()
 
     def __post_init__(self) -> None:
         _require_id(self.order_group_id, name="order_group_id")

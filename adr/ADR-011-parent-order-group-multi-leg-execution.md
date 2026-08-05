@@ -1294,7 +1294,7 @@ Stage dispatch width    = 1..Stage width
 
 1. V1 becomes the width-one case of one unified Stage execution model, not a
    separate legacy execution system.
-2. A future planner proposes a bounded Stage containing one or more exact
+2. A planner proposes a bounded Stage containing one or more exact
    `ExecutionAction` values. Stage identity, base group revision and action
    membership are immutable.
 3. Funding Carry may use terminal-serial, fill-driven overlapping or bounded
@@ -1337,3 +1337,9 @@ Before implementation, a separate ADR or explicit amendment must define:
 This confirmed requirement satisfies the scenario and owner-direction parts
 of the Kernel v1 change-control trigger. It does not waive the remaining
 analysis, migration, test or external-authorization gates.
+
+ADR-015 subsequently supplies this reviewed follow-up. T051/A022 implement
+the bounded schemas, aggregate Stage permit, atomic Stage/Action/Child
+preparation, stable per-Child result vector and mixed legacy/Stage replay for
+the width-one compatibility host. Wider Risk-envelope calculation, parallel
+dispatch, Testnet and production execution remain separately gated.

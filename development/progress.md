@@ -20,10 +20,11 @@ continues. Neither track authorizes grouped Testnet or production trading.
 
 ## Completed
 
-- Project-owner direction now fixes V1 as the width-one case of a future
-  bounded Execution Stage model. Parallel multi-leg execution is a confirmed
-  requirement, while Stage schemas, batch authorization, persistence and
-  recovery still require a reviewed ADR/amendment before implementation.
+- ADR-015 is accepted and T051/A022 implement the bounded Execution Stage
+  contract, aggregate Stage authority, atomic Stage/Action/Child persistence,
+  stable per-Child result vector and mixed legacy/Stage replay. The current
+  host remains width-one; wider Risk envelopes and parallel dispatch are not
+  activated or authorized.
 - Refactored grouped execution policy out of the Runtime coordinator into a
   bounded exact `ExecutionPlannerRegistry` selected from versioned Objective
   metadata. The sequential residual algorithm remains the compatibility
@@ -293,6 +294,11 @@ continues. Neither track authorizes grouped Testnet or production trading.
 - Execution Promotion T045-T046/A018 is complete. Evidence:
   `development/a018_offline_execution_acceptance.md`. Authenticated grouped
   Testnet A019 remains external and unauthorized.
+- Execution Stage foundation T051/A022 is complete under ADR-015. The default
+  planner now emits a width-one Stage, Risk durably issues and consumes the
+  aggregate and exact Action authorities, and OMS replays atomic Stage facts
+  alongside legacy Action history. No external route or parallel dispatcher
+  was enabled.
 - Kernel v1 compatibility freeze is recorded in
   `architecture/kernel_v1_freeze.md`. The former Phase 0-5 platform sequence
   remains in `development/platform_delivery_plan.md` as deferred direction.
@@ -322,38 +328,46 @@ continues. Neither track authorizes grouped Testnet or production trading.
 
 1. Keep A019 on NO-GO/HOLD until every external prerequisite is recorded and
    the project owner separately authorizes bounded grouped Testnet execution.
-2. Complete ADR-013 final review using the clarification response and offline
+2. Treat the ADR-015 Stage interface as the stable production composition
+   boundary; keep host width and dispatch width at one until a separate wider
+   execution acceptance exists.
+3. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-3. After authorization and prerequisites, run only the bounded A019 Testnet
+4. After authorization and prerequisites, run only the bounded A019 Testnet
    acceptance defined in `development/a018_offline_execution_acceptance.md`;
    production endpoints remain prohibited.
-4. After separately authorized A019, build only T050 Operations Lite and
+5. After separately authorized A019, build only T050 Operations Lite and
    Shadow evidence required by A020; do not resume general SDK/Replay/Paper.
-5. Require a separate real-money go/no-go before A021.
-6. Configure protected-branch checks after agreeing the direct-push policy.
-7. Configure concrete TLS/mTLS termination, protected identity forwarding,
+6. Require a separate real-money go/no-go before A021.
+7. Configure protected-branch checks after agreeing the direct-push policy.
+8. Configure concrete TLS/mTLS termination, protected identity forwarding,
    remote audit retention and deployment secret injection around T024.
-8. Configure a persistent approved host time source and collect clock
+9. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-9. Run A002C authenticated Binance Testnet acceptance.
-10. Run A002B target-host soak and latency-distribution acceptance.
-11. Exercise and approve the initial runbooks on the target host; add Binance
+10. Run A002C authenticated Binance Testnet acceptance.
+11. Run A002B target-host soak and latency-distribution acceptance.
+12. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
 
 ## Verification
 
-- `python -m compileall -q src`: passed.
-- `python -m unittest discover -s tests -p "test*.py"`: 573 passed.
+- `python -m compileall -q src tests tools`: passed.
+- `python -m unittest discover -s tests -p "test*.py"`: 616 passed.
 - ADR-014 A017: 5 acceptance scenarios passed.
 - `ruff check src tests tools`: passed with Ruff 0.16.0.
-- `python -m mypy --strict src`: passed with MyPy 2.3.0 for 140 source files.
+- strict MyPy: passed for 144 source files.
+- high-confidence secret scan: passed.
+- T051/A022 Execution Stage acceptance: complete; host width and dispatch
+  width remain one and external I/O remains disabled.
+- Federated knowledge graph: fresh and valid with 1,671 project nodes and
+  3,161 edges; Graphify indexes 260 code files, 5,247 nodes and 17,352 edges.
 - T045 composition audit: complete; Kernel v1 public interfaces unchanged.
 - T046 offline runtime/fault harness: complete; external I/O disabled.
 - A018 offline grouped Execution acceptance: complete at tested code baseline
   `b7c99af127ae04b51fa9459df8d2d30297d53635`; frozen-boundary audit passed;
   A019 remains NO-GO/HOLD.
-- Pytest branch coverage: 85.16%; the 85% CI gate passes locally with 573
-  tests and 228 subtests.
+- Pytest branch coverage: 85.10%; the 85% CI gate passes locally with 616
+  tests and 246 subtests.
 - ADR-014 remote GitHub Actions run `30510254523` passed for handoff commit
   `ba32dce7ce468b14307088ef13e649c52f6fb74e`.
 - Final ADR-014 evidence-only head `2835ee2523642f8650d3ecd2388fc6db694c52b0`

@@ -6,9 +6,9 @@
 | Latest perpetual Funding state | `FundingRateState` | Snapshot Coordinator, Carry assembler, monitoring |
 | Feature state | Online Feature Engine | Strategy, monitoring |
 | Strategy state | Owning strategy instance | Strategy runtime |
-| Portfolio Risk reservations, permit generations and recovery evidence | Portfolio Risk Coordinator | Runtime, OMS evidence adapters, operations |
+| Portfolio Risk reservations, Stage/Action permits, generations and recovery evidence | Portfolio Risk Coordinator | Runtime, OMS evidence adapters, operations |
 | Order state | OMS | Risk, portfolio, operations |
-| Order Group execution control and child/action facts | OMS Order Group state machine | Runtime, Portfolio Risk, operations |
+| Order Group execution control and Stage/Action/Child facts | OMS Order Group state machine | Runtime, Portfolio Risk, operations |
 | Account and position state | Portfolio/Account Engine | Risk, strategy |
 | Financial facts, ledger and attribution state | Accounting Ledger/Allocation owners | Applications, portfolio reporting, operations |
 | Carry economic position, lifecycle and recovery facts | `CarryPositionBook` | Carry policy/runtime, monitoring, operations |
@@ -28,9 +28,11 @@ Order Group state is deliberately not portfolio state. OMS exposes immutable
 per-leg signed fill and working-quantity vectors. Accepted ADR-012 keeps
 generic Delta, basis, margin, liquidation, exposure and safety assessment in
 Portfolio Risk. The Risk Coordinator is the single writer for reservations,
-typed resource claims, authorization generations, permit liveness and
-recovery evidence; the pure Risk Engine owns no mutable state. Accepted
-ADR-014 keeps application-specific `HEDGED`
+typed resource claims, authorization generations, aggregate Stage and exact
+Action permit liveness, and recovery evidence; the pure Risk Engine owns no
+mutable state. OMS durably owns complete Stage membership and every
+Stage-to-Action-to-Child mapping before I/O. Accepted ADR-014 keeps
+application-specific `HEDGED`
 interpretation in the owning application aggregate. `RECOVERY_REQUIRED` is an
 OMS execution-control state and can independently require application
 recovery; `HEDGED` is not an OMS state. Carry derives hedge state from

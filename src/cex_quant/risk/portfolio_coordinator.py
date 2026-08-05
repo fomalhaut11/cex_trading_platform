@@ -12,6 +12,8 @@ from threading import get_ident
 
 from cex_quant.core import (
     ExecutionPermitId,
+    ExecutionStageId,
+    ExecutionStagePermitId,
     FixedPoint,
     GroupActionId,
     IntentId,
@@ -27,11 +29,17 @@ from cex_quant.oms import (
     ExecutionAction,
     ExecutionActionPermit,
     ExecutionActionState,
+    ExecutionStage,
+    ExecutionStagePermit,
+    ExecutionStageState,
     OrderGroupStatus,
     OrderGroupView,
     decode_execution_action_permit,
+    decode_execution_stage_permit,
     encode_execution_action_permit,
+    encode_execution_stage_permit,
     execution_action_checksum,
+    validate_execution_stage_permit,
 )
 from cex_quant.portfolio import AccountPositionRiskView, PositionRiskReadiness
 from cex_quant.snapshots import DecisionSnapshotId
@@ -50,6 +58,7 @@ from .portfolio_journal import (
 from .portfolio_model import (
     BasketPortfolioRiskDecision,
     ExecutionActionRiskDecision,
+    ExecutionStageRiskDecision,
     GroupRecoveryAuthorization,
     PortfolioApprovalEvidence,
     PortfolioRiskDecisionStatus,
@@ -98,6 +107,14 @@ class _PermitRecord:
     permit: ExecutionActionPermit
     generation: int
     consumed: bool
+    stage_id: ExecutionStageId | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _StagePermitRecord:
+    permit: ExecutionStagePermit
+    generation: int
+    consumed: bool
 
 
 class PortfolioRiskCoordinator:
@@ -132,6 +149,10 @@ class PortfolioRiskCoordinator:
             PortfolioApprovalId, PortfolioApprovalEvidence
         ] = {}
         self._permits: dict[ExecutionPermitId, _PermitRecord] = {}
+        self._stage_permits: dict[
+            ExecutionStagePermitId,
+            _StagePermitRecord,
+        ] = {}
         self._reserved_initial_margin: dict[PortfolioApprovalId, Decimal] = {}
         self._recovery_authorizations: dict[
             RecoveryAuthorizationId, GroupRecoveryAuthorization
@@ -395,6 +416,139 @@ class PortfolioRiskCoordinator:
         )
         return permit
 
+    def issue_stage_permit(
+        self,
+        decision: ExecutionStageRiskDecision,
+        *,
+        now_ns: UnixNanos,
+    ) -> ExecutionStagePermit:
+        """Durably issue one Stage permit and all exact Action authorities."""
+
+        self._assert_mutation_allowed()
+        if (
+            decision.status is not PortfolioRiskDecisionStatus.ALLOW
+            or decision.permit is None
+        ):
+            raise PortfolioRiskAuthorizationError(
+                "only an allowed Stage decision can issue a permit"
+            )
+        permit = decision.permit
+        if permit.risk_policy_version != self._risk_policy_version:
+            raise PortfolioRiskAuthorizationError(
+                "Stage permit policy version is not current"
+            )
+        if now_ns > permit.valid_until_ns:
+            raise PortfolioRiskAuthorizationError("Stage permit is already expired")
+        existing_stage = self._stage_permits.get(permit.permit_id)
+        if existing_stage is not None:
+            if existing_stage.permit == permit:
+                return permit
+            raise PortfolioRiskIdentityConflictError(
+                "ExecutionStagePermitId content conflict"
+            )
+        for action_permit in permit.action_permits:
+            if action_permit.permit_id in self._permits:
+                raise PortfolioRiskIdentityConflictError(
+                    "Stage Action permit identity is already owned"
+                )
+        self._persist(
+            PortfolioRiskJournalEntry(
+                kind=PortfolioRiskJournalEntryKind.STAGE_PERMIT_ISSUED,
+                at_ns=now_ns,
+                payload={
+                    "permit": base64.b64encode(
+                        encode_execution_stage_permit(permit)
+                    ).decode("ascii"),
+                    "generation": self._generation,
+                },
+            )
+        )
+        self._stage_permits[permit.permit_id] = _StagePermitRecord(
+            permit=permit,
+            generation=self._generation,
+            consumed=False,
+        )
+        for action_permit in permit.action_permits:
+            self._permits[action_permit.permit_id] = _PermitRecord(
+                permit=action_permit,
+                generation=self._generation,
+                consumed=False,
+                stage_id=permit.stage_id,
+            )
+        return permit
+
+    def validate_stage_permit(
+        self,
+        *,
+        permit: ExecutionStagePermit,
+        stage: ExecutionStage,
+        group: OrderGroupView,
+        now_ns: UnixNanos,
+    ) -> None:
+        self._assert_healthy()
+        record = self._stage_permits.get(permit.permit_id)
+        if record is None or record.permit != permit:
+            raise PortfolioRiskAuthorizationError(
+                "Stage permit is unknown or changed"
+            )
+        if record.consumed:
+            raise PortfolioRiskAuthorizationError("Stage permit is already consumed")
+        if record.generation != self._generation:
+            raise PortfolioRiskAuthorizationError(
+                "Stage permit authorization generation is stale"
+            )
+        if now_ns > permit.valid_until_ns:
+            raise PortfolioRiskAuthorizationError("Stage permit is expired")
+        try:
+            validate_execution_stage_permit(stage, permit)
+        except ValueError as error:
+            raise PortfolioRiskAuthorizationError(str(error)) from error
+        prepared = tuple(
+            item for item in group.stages if item.stage.stage_id == stage.stage_id
+        )
+        if (
+            group.order_group_id != stage.group_id
+            or group.revision != stage.base_group_revision + 1
+            or len(prepared) != 1
+            or prepared[0].stage != stage
+            or prepared[0].permit_id != permit.permit_id
+            or prepared[0].state is not ExecutionStageState.PREPARED
+        ):
+            raise PortfolioRiskAuthorizationError(
+                "Stage permit does not match current prepared group Stage"
+            )
+
+    def consume_stage_for_external_io(
+        self,
+        *,
+        permit: ExecutionStagePermit,
+        stage: ExecutionStage,
+        group: OrderGroupView,
+        now_ns: UnixNanos,
+    ) -> None:
+        """Durably consume aggregate Stage authority before its first I/O."""
+
+        self._assert_mutation_allowed()
+        self.validate_stage_permit(
+            permit=permit,
+            stage=stage,
+            group=group,
+            now_ns=now_ns,
+        )
+        self._persist(
+            PortfolioRiskJournalEntry(
+                kind=PortfolioRiskJournalEntryKind.STAGE_PERMIT_CONSUMED,
+                at_ns=now_ns,
+                payload={"permit_id": str(permit.permit_id)},
+            )
+        )
+        record = self._stage_permits[permit.permit_id]
+        self._stage_permits[permit.permit_id] = _StagePermitRecord(
+            permit=record.permit,
+            generation=record.generation,
+            consumed=True,
+        )
+
     def validate_permit(
         self,
         *,
@@ -402,6 +556,7 @@ class PortfolioRiskCoordinator:
         action: ExecutionAction,
         group: OrderGroupView,
         now_ns: UnixNanos,
+        stage_permit: ExecutionStagePermit | None = None,
     ) -> None:
         """Immediate pre-I/O liveness check; performs no external action."""
 
@@ -417,6 +572,23 @@ class PortfolioRiskCoordinator:
             )
         if now_ns > permit.valid_until_ns:
             raise PortfolioRiskAuthorizationError("permit is expired")
+        if record.stage_id is not None:
+            stage_record = (
+                None
+                if stage_permit is None
+                else self._stage_permits.get(stage_permit.permit_id)
+            )
+            if (
+                stage_permit is None
+                or stage_record is None
+                or stage_record.permit != stage_permit
+                or not stage_record.consumed
+                or record.stage_id != stage_permit.stage_id
+                or permit not in stage_permit.action_permits
+            ):
+                raise PortfolioRiskAuthorizationError(
+                    "Stage-owned Action permit requires consumed Stage authority"
+                )
         prepared = tuple(
             item
             for item in group.actions
@@ -446,6 +618,7 @@ class PortfolioRiskCoordinator:
         action: ExecutionAction,
         group: OrderGroupView,
         now_ns: UnixNanos,
+        stage_permit: ExecutionStagePermit | None = None,
     ) -> None:
         """Durably consume exact authority immediately before external I/O."""
 
@@ -455,6 +628,7 @@ class PortfolioRiskCoordinator:
             action=action,
             group=group,
             now_ns=now_ns,
+            stage_permit=stage_permit,
         )
         self._persist(
             PortfolioRiskJournalEntry(
@@ -468,6 +642,7 @@ class PortfolioRiskCoordinator:
             permit=record.permit,
             generation=record.generation,
             consumed=True,
+            stage_id=record.stage_id,
         )
 
     def record_material_change(
@@ -861,6 +1036,40 @@ class PortfolioRiskCoordinator:
                 permit=current_permit.permit,
                 generation=current_permit.generation,
                 consumed=True,
+                stage_id=current_permit.stage_id,
+            )
+        elif entry.kind is PortfolioRiskJournalEntryKind.STAGE_PERMIT_ISSUED:
+            stage_permit = _decode_stage_permit(_string(payload, "permit"))
+            generation = _integer(payload, "generation")
+            stage_record = _StagePermitRecord(
+                permit=stage_permit,
+                generation=generation,
+                consumed=False,
+            )
+            existing_stage = self._stage_permits.get(stage_permit.permit_id)
+            if existing_stage is not None and existing_stage != stage_record:
+                raise ValueError("Stage permit identity conflict")
+            self._stage_permits[stage_permit.permit_id] = stage_record
+            for action_permit in stage_permit.action_permits:
+                action_record = _PermitRecord(
+                    permit=action_permit,
+                    generation=generation,
+                    consumed=False,
+                    stage_id=stage_permit.stage_id,
+                )
+                existing_action = self._permits.get(action_permit.permit_id)
+                if existing_action is not None and existing_action != action_record:
+                    raise ValueError("Stage Action permit identity conflict")
+                self._permits[action_permit.permit_id] = action_record
+        elif entry.kind is PortfolioRiskJournalEntryKind.STAGE_PERMIT_CONSUMED:
+            stage_permit_id = ExecutionStagePermitId(
+                _string(payload, "permit_id")
+            )
+            current_stage = self._stage_permits[stage_permit_id]
+            self._stage_permits[stage_permit_id] = _StagePermitRecord(
+                permit=current_stage.permit,
+                generation=current_stage.generation,
+                consumed=True,
             )
         elif (
             entry.kind
@@ -1227,6 +1436,14 @@ def _decode_permit(encoded: str) -> ExecutionActionPermit:
     except (ValueError, binascii.Error):
         raise ValueError("journal permit is not valid base64") from None
     return decode_execution_action_permit(raw)
+
+
+def _decode_stage_permit(encoded: str) -> ExecutionStagePermit:
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error):
+        raise ValueError("journal Stage permit is not valid base64") from None
+    return decode_execution_stage_permit(raw)
 
 
 def _recovery_payload(

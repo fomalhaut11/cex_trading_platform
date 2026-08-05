@@ -27,6 +27,8 @@ class PortfolioRiskJournalEntryKind(StrEnum):
     RESERVATION_CHANGED = "reservation_changed"
     PERMIT_ISSUED = "permit_issued"
     PERMIT_CONSUMED = "permit_consumed"
+    STAGE_PERMIT_ISSUED = "stage_permit_issued"
+    STAGE_PERMIT_CONSUMED = "stage_permit_consumed"
     AUTHORIZATION_GENERATION_CHANGED = "authorization_generation_changed"
     DIRECTIVE_ISSUED = "directive_issued"
     RECOVERY_AUTHORIZED = "recovery_authorized"

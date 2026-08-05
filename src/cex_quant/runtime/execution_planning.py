@@ -13,11 +13,13 @@ from cex_quant.core import Quantity, UnixNanos
 from cex_quant.oms import (
     ExecutionAction,
     ExecutionPlanRef,
+    ExecutionStage,
     OrderGroupView,
     OrderSide,
     OrderType,
     PositionSide,
     TimeInForce,
+    create_execution_stage,
     deterministic_group_action_id,
 )
 from cex_quant.risk import PortfolioRiskSnapshot
@@ -34,14 +36,14 @@ class ExecutionPlanningConfigurationError(ValueError):
 
 
 class OrderGroupPlanner(Protocol):
-    """Propose at most one deterministic action without owning authority."""
+    """Propose one bounded deterministic Stage without owning authority."""
 
     def propose(
         self,
         group: OrderGroupView,
         portfolio: PortfolioRiskSnapshot,
         now_ns: UnixNanos,
-    ) -> ExecutionAction | None: ...
+    ) -> ExecutionStage | None: ...
 
 
 class ExecutionPlanResolver(Protocol):
@@ -165,14 +167,14 @@ class StaticExecutionPlanResolver:
 
 
 class SequentialResidualExecutionPlanner:
-    """Generic one-action-in-flight market-residual reference planner."""
+    """Generic width-one market-residual reference Stage planner."""
 
     def propose(
         self,
         group: OrderGroupView,
         portfolio: PortfolioRiskSnapshot,
         now_ns: UnixNanos,
-    ) -> ExecutionAction | None:
+    ) -> ExecutionStage | None:
         if any(leg.unresolved_action_ids for leg in group.legs):
             return None
         current = {
@@ -200,7 +202,7 @@ class SequentialResidualExecutionPlanner:
                 action_kind="market_residual",
                 leg_attempt_sequence=attempt,
             )
-            return ExecutionAction(
+            action = ExecutionAction(
                 group_id=group.order_group_id,
                 expected_group_revision=group.revision,
                 action_id=action_id,
@@ -217,6 +219,14 @@ class SequentialResidualExecutionPlanner:
                 post_only=False,
                 position_side=PositionSide.NET,
                 execution_plan=group.execution_plan,
+                created_at_ns=now_ns,
+            )
+            return create_execution_stage(
+                group_id=group.order_group_id,
+                base_group_revision=group.revision,
+                execution_plan=group.execution_plan,
+                actions=(action,),
+                dispatch_width=1,
                 created_at_ns=now_ns,
             )
         return None

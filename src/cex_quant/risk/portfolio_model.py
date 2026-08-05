@@ -38,7 +38,12 @@ from cex_quant.core import (
 )
 from cex_quant.instruments import Instrument, InstrumentId
 from cex_quant.observability import HealthReport
-from cex_quant.oms import ExecutionActionPermit, OrderGroupView
+from cex_quant.oms import (
+    ExecutionActionPermit,
+    ExecutionStage,
+    ExecutionStagePermit,
+    OrderGroupView,
+)
 from cex_quant.portfolio import (
     AccountPositionRiskView,
     MarginScopeSnapshot,
@@ -674,6 +679,37 @@ class ExecutionActionRiskDecision:
         return self.status is PortfolioRiskDecisionStatus.ALLOW
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ExecutionStageRiskDecision:
+    """Risk decision over one complete Stage and its partial-outcome envelope."""
+
+    status: PortfolioRiskDecisionStatus
+    stage: ExecutionStage
+    risk_snapshot_id: DecisionSnapshotId
+    risk_snapshot_metadata: RiskSnapshotMetadata
+    reasons: tuple[PortfolioRiskRejectReason, ...]
+    current_exposure: PortfolioExposure
+    projected_exposure: PortfolioExposure
+    conservative_exposure: PortfolioExposure
+    action_decisions: tuple[ExecutionActionRiskDecision, ...]
+    permit: ExecutionStagePermit | None
+
+    def __post_init__(self) -> None:
+        if self.risk_snapshot_metadata.snapshot_id != self.risk_snapshot_id:
+            raise ValueError("Stage decision Risk snapshot identity mismatch")
+        if len(self.action_decisions) != len(self.stage.actions):
+            raise ValueError("Stage decision Action vector width mismatch")
+        if self.status is PortfolioRiskDecisionStatus.ALLOW:
+            if self.reasons or self.permit is None:
+                raise ValueError("ALLOW requires Stage permit and no rejection reasons")
+        elif not self.reasons or self.permit is not None:
+            raise ValueError("non-ALLOW Stage decision requires reasons and no permit")
+
+    @property
+    def allowed(self) -> bool:
+        return self.status is PortfolioRiskDecisionStatus.ALLOW
+
+
 class PortfolioRiskDirectiveKind(StrEnum):
     CLEAR = "clear"
     BLOCK_NEW_ACTIONS = "block_new_actions"
@@ -841,6 +877,7 @@ __all__ = [
     "BasketPortfolioRiskDecision",
     "ExactRiskValue",
     "ExecutionActionRiskDecision",
+    "ExecutionStageRiskDecision",
     "GroupRecoveryAuthorization",
     "InstrumentRiskModelPolicy",
     "InstrumentSensitivity",

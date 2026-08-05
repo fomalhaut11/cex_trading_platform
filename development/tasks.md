@@ -53,6 +53,7 @@
 | T048 | Historical event Replay foundation | Deferred, Post-MVP | T047 |
 | T049 | Paper Exchange and Fill Model with explicit simulated evidence | Deferred, Post-MVP | T048 |
 | T050 | Funding Carry Live Operations Lite and production Shadow mode | Planned | A019, T021-T024 |
+| T051 | Bounded Execution Stage contracts and width-one Risk/OMS/Runtime migration | Complete | ADR-015, T046 |
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
@@ -76,6 +77,7 @@
 | A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | A018, explicit project-owner authorization |
 | A020 | Funding Carry MVP Live Readiness acceptance | Planned, no trading authority | A019, T050 |
 | A021 | Controlled BTC Funding Carry micro-live acceptance | External, unauthorized | A020, explicit real-money authorization |
+| A022 | Offline Stage identity, permission, persistence, result-vector and mixed-replay acceptance | Complete | T051 |
 
 A post-implementation review kept ADR-011 accepted and temporarily reopened
 its implementation evidence. Commit
@@ -174,3 +176,8 @@ Operations/Shadow, A020 live readiness and A021 controlled micro-live form the
 active promotion sequence.
 A019 and A021 require separate explicit authorization. T047-T049 and all other
 strategy/platform expansion are retained but deferred until after the MVP.
+
+ADR-015 and T051/A022 are complete offline. The production composition root
+may depend on the stable Stage interface, while the active host remains
+width-one. This foundation work does not advance A019, authorize a wider Stage
+dispatcher or grant any external trading authority.

@@ -9,6 +9,7 @@ from decimal import Decimal
 from cex_quant.core import AccountId, EventId, Quantity
 from cex_quant.oms import (
     GroupActionPreparedEntry,
+    GroupStagePreparedEntry,
     OmsJournal,
     OrderCreatedEntry,
     OrderRequest,
@@ -49,6 +50,10 @@ class OmsExecutionEffectProjector:
             through_sequence = sequence
             if isinstance(entry, GroupActionPreparedEntry):
                 _remember_request(requests, entry.request)
+                continue
+            if isinstance(entry, GroupStagePreparedEntry):
+                for stage_request in entry.requests:
+                    _remember_request(requests, stage_request)
                 continue
             if isinstance(entry, OrderCreatedEntry):
                 _remember_request(requests, entry.request)
