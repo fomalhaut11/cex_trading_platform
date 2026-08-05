@@ -80,7 +80,7 @@ Current state:
 - ADR-015 is accepted and T051/A022 implement the credential-free width-one
   Execution Stage foundation;
 - A019 is the next promotion gate, but remains external and unauthorized;
-- Testnet/grouped external execution is not authorized.
+- Demo/grouped external execution is not authorized.
 - real-money micro-live execution is not authorized.
 
 ## 4. Kernel v1 Freeze
@@ -227,7 +227,7 @@ Retained but deferred until after the MVP:
 
 Not authorized:
 
-- A019 authenticated grouped Binance Testnet;
+- A019 authenticated grouped Binance Demo;
 - external Funding Carry execution;
 - production trading;
 - production endpoints or credentials;
@@ -236,6 +236,12 @@ Not authorized:
 
 External prerequisites also remain for persistent host time, target-host soak,
 concrete TLS termination, remote audit retention and runbook exercises.
+
+A019 now uses Binance's unified Demo Trading endpoints for Spot, USD-M and
+COIN-M. The retained `TESTNET` enum is a compatibility name for that
+non-production profile. Account eligibility and Demo API-key provisioning are
+still external prerequisites; an unavailable Demo portal must not be bypassed
+with production endpoints.
 
 ## 8. Active Fast-Track Sequence
 
@@ -256,7 +262,7 @@ T046     Mode-neutral offline runtime/harness  COMPLETE
 A018     Offline Execution acceptance          COMPLETE
 T051     Width-one Execution Stage foundation  COMPLETE
 A022     Offline Stage acceptance               COMPLETE
-A019     Binance grouped Testnet acceptance    EXTERNAL, UNAUTHORIZED
+A019     Binance grouped Demo acceptance       EXTERNAL, UNAUTHORIZED
 T050     Live Operations Lite + Shadow         PLANNED
 A020     MVP Live Readiness                    PLANNED, NO TRADING AUTHORITY
 A021     Controlled Micro-Live                 EXTERNAL, UNAUTHORIZED
@@ -295,7 +301,7 @@ network I/O. Its evidence is in
 
 A018 then accepted the deterministic failure/restart matrix, frozen-boundary
 audit and local quality gates at tested code baseline
-`b7c99af127ae04b51fa9459df8d2d30297d53635`. The Testnet decision remains
+`b7c99af127ae04b51fa9459df8d2d30297d53635`. The Demo decision remains
 NO-GO/HOLD pending separate authorization and external prerequisites. Evidence:
 `development/a018_offline_execution_acceptance.md`.
 
@@ -385,8 +391,8 @@ Ruff:               passed
 strict MyPy:        passed over 144 source files
 compileall:         passed
 secret scan:        passed
-knowledge graph:    1,671 project nodes / 3,161 edges, valid and fresh
-Graphify code graph: 260 files / 5,247 nodes / 17,352 edges
+knowledge graph:    1,676 project nodes / 3,167 edges, valid and fresh
+Graphify code graph: 260 files / 5,256 nodes / 17,331 edges
 ```
 
 The planner/router predecessor is pushed through `f222b39`. The Stage change

@@ -12,21 +12,21 @@ from cex_quant.runtime.binance_environment import (
 
 
 class BinanceEnvironmentConfigTests(TestCase):
-    def test_defaults_to_complete_testnet_profile(self) -> None:
+    def test_defaults_to_complete_non_production_demo_profile(self) -> None:
         config = BinanceEnvironmentConfig()
 
         self.assertIs(config.environment, BinanceEnvironment.TESTNET)
         self.assertEqual(
             config.spot.rest_base_url,
-            "https://testnet.binance.vision",
+            "https://demo-api.binance.com",
         )
         self.assertEqual(
             config.spot.public_ws_base_url,
-            "wss://stream.testnet.binance.vision/stream",
+            "wss://demo-stream.binance.com/stream",
         )
         self.assertEqual(
             config.spot.private_ws_base_url,
-            "wss://ws-api.testnet.binance.vision/ws-api/v3",
+            "wss://demo-ws-api.binance.com/ws-api/v3",
         )
         self.assertEqual(
             config.usd_m.rest_base_url,
@@ -103,19 +103,19 @@ class BinanceEnvironmentConfigTests(TestCase):
         config = BinanceEnvironmentConfig()
 
         with self.assertRaisesRegex(ValueError, "must use https"):
-            replace(config.spot, rest_base_url="http://testnet.binance.vision")
+            replace(config.spot, rest_base_url="http://demo-api.binance.com")
         with self.assertRaisesRegex(ValueError, "must use wss"):
             replace(
                 config.spot,
                 public_ws_base_url=(
-                    "ws://stream.testnet.binance.vision/stream"
+                    "ws://demo-stream.binance.com/stream"
                 ),
             )
         with self.assertRaisesRegex(ValueError, "must not contain credentials"):
             replace(
                 config.spot,
                 rest_base_url=(
-                    "https://api-key:test-secret@testnet.binance.vision"
+                    "https://api-key:test-secret@demo-api.binance.com"
                 ),
             )
 
@@ -135,7 +135,7 @@ class BinanceEnvironmentConfigTests(TestCase):
             replace(
                 config.spot,
                 public_ws_base_url=(
-                    "wss://stream.testnet.binance.vision/stream?token=value"
+                    "wss://demo-stream.binance.com/stream?token=value"
                 ),
             )
         with self.assertRaisesRegex(ValueError, "include a host"):

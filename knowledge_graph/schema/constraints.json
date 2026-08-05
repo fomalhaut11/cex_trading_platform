@@ -24,6 +24,11 @@
       "target": "task:A018"
     },
     {
+      "relation": "USES_ENVIRONMENT",
+      "source": "gate:testnet",
+      "target": "environment:binance-demo"
+    },
+    {
       "relation": "DEPENDS_ON",
       "source": "gate:production",
       "target": "task:A020"
@@ -88,6 +93,10 @@
     {
       "id": "gate:testnet",
       "status": "unauthorized"
+    },
+    {
+      "id": "environment:binance-demo",
+      "status": "configured-offline"
     },
     {
       "id": "gate:production",

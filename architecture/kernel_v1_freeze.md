@@ -151,7 +151,7 @@ implementations.
 The compatibility freeze remains active through the fast-track live gates:
 
 - A018 offline Execution Promotion;
-- A019 separately authorized Testnet acceptance;
+- A019 separately authorized Demo acceptance;
 - T050 Live Operations/Shadow readiness;
 - A020 live-readiness acceptance;
 - A021 separately authorized controlled micro-live acceptance.

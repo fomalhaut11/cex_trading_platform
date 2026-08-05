@@ -16,18 +16,29 @@ Credentials are not configuration fields. They remain resolved through
 
 ## Endpoint profiles
 
-`BinanceEnvironmentConfig()` selects Testnet by default. Production requires
-both `environment=PRODUCTION` and `allow_production=True`; that acknowledgement
-is consumed during construction and is not retained in the immutable value.
+`BinanceEnvironmentConfig()` selects a Demo-backed non-production sandbox by
+default. The public enum retains the compatibility value `TESTNET`, but the
+selected endpoints are Binance Demo Mode for Spot, USD-M and COIN-M.
+Production requires both `environment=PRODUCTION` and
+`allow_production=True`; that acknowledgement is consumed during construction
+and is not retained in the immutable value.
 
 Each product profile contains REST, public WebSocket and private WebSocket
 origins. Values must use `https` or `wss`, contain no URL credentials, query or
 fragment, and match the allowlisted host for the selected product and
 environment. Product slots and environments cannot be mixed.
 
-The Futures Testnet hosts follow Binance's current documented demo endpoints:
-USD-M uses `demo-fapi.binance.com` and `demo-fstream.binance.com`; COIN-M uses
-`demo-dapi.binance.com` and `demo-dstream.binance.com`.
+The non-production hosts follow Binance's current documented Demo endpoints:
+Spot uses `demo-api.binance.com`, `demo-stream.binance.com` and
+`demo-ws-api.binance.com`; USD-M uses `demo-fapi.binance.com` and
+`demo-fstream.binance.com`; COIN-M uses `demo-dapi.binance.com` and
+`demo-dstream.binance.com`.
+
+Binance still documents the independent `testnet.binance.vision` Spot network,
+but describes it as a place to integrate upcoming Spot features. Demo Mode is
+the default here because Binance describes it as matching live features and
+using market data similar to the live exchange. This choice does not imply
+that simulated fills or strategy returns predict production results.
 
 ## Lifecycle and readiness
 
@@ -67,7 +78,8 @@ schedule rotation before Binance's connection-age limit.
 
 Offline unit and acceptance tests cover:
 
-- default Testnet selection and explicit production acknowledgement;
+- default Demo-backed non-production selection and explicit production
+  acknowledgement;
 - all three product endpoint profiles and environment-mixing rejection;
 - unsafe schemes, credentials in URLs and incorrect hosts;
 - monotonic connection timestamps and consecutive exponential backoff;
@@ -77,10 +89,12 @@ Offline unit and acceptance tests cover:
 - degraded reconciliation, unexpected stream exit and bounded shutdown.
 
 Authenticated endpoint handshakes, lease renewal and order recovery remain in
-external gate A002C and require user-provided Testnet credentials.
+external gate A002C and require user-provided Demo credentials.
 
 ## Protocol references
 
-- [Binance Spot Testnet WebSocket streams](https://developers.binance.com/en/docs/products/spot/testnet/web-socket-streams)
+- [Binance Spot Demo Mode](https://github.com/binance/binance-spot-api-docs/blob/master/demo-mode/general-info.md)
+- [Binance Demo Trading access and API management](https://www.binance.com/en/support/faq/detail/9be58f73e5e14338809e3b705b9687dd)
+- [Binance Spot Testnet comparison](https://developers.binance.com/en/docs/products/spot/testnet/general-info)
 - [Binance USD-M general information](https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/general-info)
 - [Binance COIN-M general information](https://developers.binance.com/en/docs/products/derivatives-trading-coin-futures/general-info)

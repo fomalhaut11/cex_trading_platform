@@ -6,7 +6,7 @@ Effective date: 2026-07-30.
 
 Planning baseline: `0123b6322de80f9fb488b92942ef19b31cdd6512`.
 
-Testnet authorization: not yet granted.
+Demo authorization: not yet granted.
 
 Real-money authorization: not granted.
 
@@ -123,7 +123,7 @@ T046  Mode-neutral offline execution runtime + fault harness
     |
 A018  Offline Execution Acceptance
     |
-A019  Binance grouped Testnet acceptance
+A019  Binance grouped Demo acceptance
     |
 T050  Funding Carry Live Operations Lite + Shadow
     |
@@ -191,13 +191,13 @@ Required scenarios:
 A018 passed complete regression, branch coverage and the frozen-boundary
 audit. External I/O remains blocked.
 
-## A019 - Binance Grouped Testnet
+## A019 - Binance Grouped Demo
 
 Status: external and unauthorized until separately approved.
 
 Scope:
 
-- dedicated Binance Testnet account;
+- dedicated Binance Demo account;
 - BTC Spot and BTC USD-M linear perpetual;
 - fixed bounded quantity;
 - manual start;
@@ -213,10 +213,10 @@ Prerequisites:
 
 - A018 accepted;
 - ADR-013 final implementation acceptance;
-- explicit project-owner Testnet authorization;
-- user-provided Testnet credentials through `BinanceCredentialProvider`;
+- explicit project-owner Demo authorization;
+- user-provided Demo credentials through `BinanceCredentialProvider`;
 - healthy persistent clock evidence;
-- approved Testnet account, symbols, quantity and maximum notional;
+- approved Demo account, symbols, quantity and maximum notional;
 - working operator halt and recovery procedure.
 
 ## T050 - Live Operations Lite and Shadow
@@ -368,7 +368,7 @@ general Paper/Replay platform.
 Planning targets, not delivery guarantees:
 
 ```text
-Weeks 1-4  T045/T046/A018 and Testnet readiness
+Weeks 1-4  T045/T046/A018 and Demo readiness
 Next gate  A019 after external authorization and credentials
 Weeks 5-6  T050/A020 live operations and Shadow readiness
 Next gate  A021 only after explicit real-money go/no-go

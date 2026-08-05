@@ -16,7 +16,7 @@ acceptance is also complete at tested code baseline
 remains the Binance single-account BTC Funding Carry Fast-Track MVP.
 
 Parallel external track: Phase 4 production readiness and external acceptance
-continues. Neither track authorizes grouped Testnet or production trading.
+continues. Neither track authorizes grouped Demo/Testnet or production trading.
 
 ## Completed
 
@@ -122,13 +122,13 @@ continues. Neither track authorizes grouped Testnet or production trading.
   orchestration.
 - A005 offline startup-race acceptance covering stream-first buffering, REST
   convergence, durable fill replay and a final restart.
-- T019 immutable Binance Testnet/production endpoint profiles, explicit
+- T019 immutable Binance non-production/production endpoint profiles, explicit
   production acknowledgement and product/environment host validation.
 - Interruptible private-stream supervision with real monotonic connection
   timestamps, consecutive exponential backoff and complete task cleanup.
 - Private-stream application lifecycle with stream-first reconciliation,
   immutable readiness snapshots, fail-closed degradation and bounded shutdown.
-- A006 offline environment and supervision acceptance covering Testnet
+- A006 offline environment and supervision acceptance covering non-production
   defaults, production guarding, readiness opening and connection cleanup.
 - T020 bounded asyncio Binance REST transport with strict request validation,
   bounded HTTP framing and explicit before/after-send failure semantics.
@@ -136,7 +136,8 @@ continues. Neither track authorizes grouped Testnet or production trading.
   clock-probe service feeding the existing midpoint health monitor.
 - Owned Spot signature-subscription and Futures listen-key WebSocket
   transports with complete renewal, cancellation and lease cleanup.
-- A007 offline transport/clock acceptance from the default Testnet profile
+- A007 offline transport/clock acceptance from the default non-production
+  profile
   through concrete HTTP framing to healthy clock samples.
 - T021 protocol-neutral aggregate health queries with stable ordered child
   reports, worst-status aggregation and sanitized fail-closed check failures.
@@ -293,7 +294,7 @@ continues. Neither track authorizes grouped Testnet or production trading.
   Making state family-specific.
 - Execution Promotion T045-T046/A018 is complete. Evidence:
   `development/a018_offline_execution_acceptance.md`. Authenticated grouped
-  Testnet A019 remains external and unauthorized.
+  Demo A019 remains external and unauthorized.
 - Execution Stage foundation T051/A022 is complete under ADR-015. The default
   planner now emits a width-one Stage, Risk durably issues and consumes the
   aggregate and exact Action authorities, and OMS replays atomic Stage facts
@@ -305,35 +306,37 @@ continues. Neither track authorizes grouped Testnet or production trading.
 - The project owner retained but deferred T047 Application Runtime / SDK Lite,
   T048 historical Replay, T049 Paper Exchange and all non-MVP strategy work.
   The active plan is `development/funding_carry_fast_track_plan.md`:
-  separately authorized A019 Testnet, T050 Operations/Shadow,
+  separately authorized A019 Demo, T050 Operations/Shadow,
   A020 live readiness and separately authorized A021 controlled micro-live.
 - Repository branch-protection planning.
-- Authenticated Testnet private-stream and restart evidence preparation.
+- Authenticated Demo private-stream and restart evidence preparation.
 - Concrete TLS termination, protected identity forwarding and remote audit
   service configuration around the completed bounded endpoint.
 - External acceptance preparation.
 
 ## Open External Gates
 
-- The Singapore VPN route now reaches all three Binance Testnet public time
-  endpoints. A route change requires the credential-free smoke to be repeated.
+- Every Demo public time endpoint returned HTTP 200 at least once on
+  2026-08-05, but repeated current-route probes did not complete TLS reliably.
+  Account eligibility, API-key provisioning and a stable complete
+  three-product server-route smoke therefore remain open.
 - Windows Time is running automatically, but VPN Fake-IP routing currently
   blocks NTP over UDP/123. One-time HTTPS venue-time correction produced
   healthy offsets of -23.967 ms, +32.652 ms and +44.133 ms for Spot, USD-M
   and COIN-M respectively. A persistent approved time source is still needed.
-- Authenticated Binance Testnet acceptance requires user-provided Testnet
-  credentials through the credential-provider boundary.
+- Authenticated Binance Demo acceptance requires user-provided Demo credentials
+  through the credential-provider boundary.
 
 ## Next
 
 1. Keep A019 on NO-GO/HOLD until every external prerequisite is recorded and
-   the project owner separately authorizes bounded grouped Testnet execution.
+   the project owner separately authorizes bounded grouped Demo execution.
 2. Treat the ADR-015 Stage interface as the stable production composition
    boundary; keep host width and dispatch width at one until a separate wider
    execution acceptance exists.
 3. Complete ADR-013 final review using the clarification response and offline
    implementation handoff; do not enable authenticated sources or trading.
-4. After authorization and prerequisites, run only the bounded A019 Testnet
+4. After authorization and prerequisites, run only the bounded A019 Demo
    acceptance defined in `development/a018_offline_execution_acceptance.md`;
    production endpoints remain prohibited.
 5. After separately authorized A019, build only T050 Operations Lite and
@@ -344,7 +347,7 @@ continues. Neither track authorizes grouped Testnet or production trading.
    remote audit retention and deployment secret injection around T024.
 9. Configure a persistent approved host time source and collect clock
    distributions for threshold calibration.
-10. Run A002C authenticated Binance Testnet acceptance.
+10. Run A002C authenticated Binance Demo acceptance.
 11. Run A002B target-host soak and latency-distribution acceptance.
 12. Exercise and approve the initial runbooks on the target host; add Binance
    Options mapping when it enters scope.
@@ -359,8 +362,8 @@ continues. Neither track authorizes grouped Testnet or production trading.
 - high-confidence secret scan: passed.
 - T051/A022 Execution Stage acceptance: complete; host width and dispatch
   width remain one and external I/O remains disabled.
-- Federated knowledge graph: fresh and valid with 1,671 project nodes and
-  3,161 edges; Graphify indexes 260 code files, 5,247 nodes and 17,352 edges.
+- Federated knowledge graph: fresh and valid with 1,676 project nodes and
+  3,167 edges; Graphify indexes 260 code files, 5,256 nodes and 17,331 edges.
 - T045 composition audit: complete; Kernel v1 public interfaces unchanged.
 - T046 offline runtime/fault harness: complete; external I/O disabled.
 - A018 offline grouped Execution acceptance: complete at tested code baseline

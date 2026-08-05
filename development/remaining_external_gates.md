@@ -54,8 +54,9 @@ running with automatic startup, but the VPN's Fake-IP mode maps NTP hosts to
 `198.18.1.x` and does not currently pass UDP/123, so ordinary NTP polling
 remains unavailable through that route.
 
-The host was corrected once from the Binance Spot Testnet HTTPS time endpoint
-using the request midpoint. Immediate independent probes then reported:
+The host was corrected once from the then-configured Binance Spot Testnet HTTPS
+time endpoint using the request midpoint. This is historical evidence, not the
+current default endpoint. Immediate independent probes then reported:
 
 - Spot: -23.967 ms offset, 318.610 ms RTT, `HEALTHY`;
 - USD-M: +32.652 ms offset, 436.006 ms RTT, `HEALTHY`;
@@ -71,21 +72,43 @@ Before authenticated Testnet or production:
 
 Risk remains fail-closed whenever clock health is not acceptable.
 
-## Binance Testnet
+## Binance Demo/Testnet
 
-Testnet requires a user-provided test account and credentials. Credentials
-must enter through `BinanceCredentialProvider`; they must not be written to
-source, fixtures, logs, exception messages or the recorder.
+The A019 non-production gate requires a user-provided Binance account with
+Demo Trading eligibility and Demo API credentials. Credentials must enter
+through `BinanceCredentialProvider`; they must not be written to source,
+fixtures, logs, exception messages or the recorder.
 
-The earlier credential-free server-time smoke returned HTTP 451 from all
-three Testnet origins. After selecting a Singapore VPN route on 2026-07-25,
-the project transport reached the configured Spot, USD-M and COIN-M Testnet
-origins successfully and all three public clock monitors reported `HEALTHY`.
-The public connectivity prerequisite is therefore resolved for the current
-route. A route change requires this smoke to be repeated; switching to
-production endpoints is not an authorized workaround.
+As of 2026-08-05, Binance's official Spot documentation distinguishes the
+independent Spot Testnet from unified Demo Mode. Demo Mode is the A019 default:
 
-The Testnet gate must cover:
+- Spot REST: `https://demo-api.binance.com`;
+- Spot market stream: `wss://demo-stream.binance.com`;
+- Spot private WebSocket API: `wss://demo-ws-api.binance.com/ws-api/v3`;
+- USD-M REST/stream: `https://demo-fapi.binance.com` and
+  `wss://demo-fstream.binance.com`;
+- COIN-M REST/stream: `https://demo-dapi.binance.com` and
+  `wss://demo-dstream.binance.com`.
+
+Binance states that Demo Trading is available only in eligible countries and
+regions. If the Demo portal is unavailable for the account or region, that is
+an unresolved external gate; the project must not bypass a regional control or
+substitute production endpoints.
+
+The earlier credential-free server-time smoke returned HTTP 451 from all three
+then-configured origins. After selecting a Singapore VPN route on 2026-07-25,
+the project transport reached those origins and all three public clock monitors
+reported `HEALTHY`; this remains historical route evidence. On 2026-08-05,
+fresh credential-free probes reached HTTP 200 from every Demo time origin at
+least once, but a repeated complete run was unstable: USD-M and the old Spot
+Testnet API path ended TLS sessions unexpectedly, and the Demo API-key
+management portal also failed its TLS handshake on that route. Therefore
+individual API reachability is proven but stable three-product connectivity,
+account eligibility and portal/key provisioning remain open. Any route change
+requires the complete smoke to be repeated; switching to production endpoints
+is not an authorized workaround.
+
+The Demo gate must cover:
 
 - signed account request and server-time validation;
 - submit, query and cancel using the same client order identifier;

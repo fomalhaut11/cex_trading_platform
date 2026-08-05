@@ -1,16 +1,16 @@
 {
   "code_graph": {
     "graph_path": "graphify-out/graph.json",
-    "graph_sha256": "074d95df6451959055134cc278f4f3a41b18129badc1efdb9a9788903b86c3bb",
+    "graph_sha256": "0269047d1e94c1ea6555d6cf92102020d0623cb0ea03dd5ef06b56434be6c343",
     "source_count": 260,
-    "source_fingerprint": "e275e7d36cd40fd6a47c17e7f56b67ca25812b96911d7fef1f7812b6753ef7c9",
+    "source_fingerprint": "c84f46787946d54b6b37d000401b09a085ce4767b55a21d30a2c7638ddc0ae53",
     "sources_path": "graphify-out/SOURCES.json",
     "tool": "graphify 0.9.31"
   },
   "generator_version": "1.0",
   "project_sources": {
     "source_count": 92,
-    "source_fingerprint": "bada2e78faecbf3ae4127f226e23d070eeeb00f0656dd9debba82ae25222d46b",
+    "source_fingerprint": "5a48f75cf98e142e6dfc2faa5f6eecb53b7c3bae47ecd4290102c68c2f156cb1",
     "sources": [
       {
         "path": ".github/workflows/ci.yml",
@@ -22,7 +22,7 @@
       },
       {
         "path": "START_HERE.md",
-        "sha256": "7726d2748fcb2510b0e64f1b5ee6190060c22ec8d25ed6b81e4ee40b830d201f"
+        "sha256": "831387c868e025346a20d19695693b3cf639c076a8dc3b06ca4ba6298add28bc"
       },
       {
         "path": "adr/ADR-002-event-state-storage.md",
@@ -90,7 +90,7 @@
       },
       {
         "path": "architecture/kernel_v1_freeze.md",
-        "sha256": "934df255acf8b411e47e4d6a9cd28ba0e8d7c68f56114ccc6f5f371c61f55da0"
+        "sha256": "3c3e0b204ac8fe7b1368da7466c6bcd59f23f18e63635937aa749127ad4ea3c1"
       },
       {
         "path": "architecture/market_data_architecture.md",
@@ -162,7 +162,7 @@
       },
       {
         "path": "development/binance_runtime_supervision_design.md",
-        "sha256": "1f99c48b256c5e80e914be7af1d3a9a163f6abbcdae41691ed096d25da664f86"
+        "sha256": "8464cdc4e59304e23024f5e50b81b5cbbe8d2cce3af30db71148cdc84f0532dd"
       },
       {
         "path": "development/binance_transport_clock_design.md",
@@ -202,7 +202,7 @@
       },
       {
         "path": "development/funding_carry_fast_track_plan.md",
-        "sha256": "872e619eda31d0d1c9ae1973bc4799865454ba48c81042bcf9b06de5bd52aea3"
+        "sha256": "7976e23fda0bc25bf7508b5540abae66b8f498b8fbce881f08b6ea68fc5d6f7b"
       },
       {
         "path": "development/graphify_code_graph.md",
@@ -246,7 +246,7 @@
       },
       {
         "path": "development/progress.md",
-        "sha256": "14e8121b2de37f102f1a180e75acd6df75852c123783646062294a2efeede672"
+        "sha256": "7ac3d6b7812fb85faea13d7e76a522a672ac8ef37156e82372c023947b884c23"
       },
       {
         "path": "development/recorder_design.md",
@@ -254,7 +254,7 @@
       },
       {
         "path": "development/remaining_external_gates.md",
-        "sha256": "6d8d536ee706ef8521b66e85e084ca9f635cfd8f418b0274743e91e1de9e6121"
+        "sha256": "03c3b000a6f0db7b8e5de11dbf6a8035958850f4b0365e9a5010bae609565ca9"
       },
       {
         "path": "development/risk_engine_design.md",
@@ -298,7 +298,7 @@
       },
       {
         "path": "development/tasks.md",
-        "sha256": "4f42c09a549def0c3e4a74b4a15b6ec2f9fa16ba781ad481229e5eb7c6a45090"
+        "sha256": "45d0db2b655ed78ffbe875b9631fe217ed9b8a7df9a2c78447fde53a37e49c4f"
       },
       {
         "path": "development/testing_strategy.md",
@@ -350,7 +350,7 @@
       },
       {
         "path": "knowledge_graph/schema/constraints.json",
-        "sha256": "3b82aa775fe6b555d2e526a98a3cf6093a6964666e15fb29c734df4c9fd1eca5"
+        "sha256": "7a55056975582a1552809bd427767cf500c1ff0c8075337b5b67c6e85279130a"
       },
       {
         "path": "knowledge_graph/schema/project_graph.schema.json",
@@ -358,7 +358,7 @@
       },
       {
         "path": "knowledge_graph/sources/authoritative_facts.json",
-        "sha256": "d59d570360dc148dcd0ae9f843bdc3afc9f280ee7007f33c1b4e8395d81c56e1"
+        "sha256": "bed5668bbd3e9bcf010f83a6c5f8999775d35e85db81e62bbc521d6d84331ae8"
       },
       {
         "path": "operations/aws_lightsail_server_guide_zh.md",

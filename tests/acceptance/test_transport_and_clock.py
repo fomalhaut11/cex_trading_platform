@@ -79,10 +79,10 @@ class ServerTimeOpener:
 
 
 class TransportAndClockAcceptanceTests(IsolatedAsyncioTestCase):
-    async def test_testnet_profiles_drive_all_public_clock_probes(self) -> None:
+    async def test_demo_profiles_drive_all_public_clock_probes(self) -> None:
         expected = {
             BinanceProduct.SPOT: (
-                "testnet.binance.vision",
+                "demo-api.binance.com",
                 b"GET /api/v3/time HTTP/1.1",
             ),
             BinanceProduct.USD_M: (

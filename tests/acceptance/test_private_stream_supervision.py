@@ -101,15 +101,18 @@ class BlockingTransport:
 
 
 class BinanceEnvironmentAcceptanceTests(TestCase):
-    def test_testnet_is_default_and_production_requires_acknowledgement(
+    def test_demo_is_default_and_production_requires_acknowledgement(
         self,
     ) -> None:
-        testnet = BinanceEnvironmentConfig()
+        demo = BinanceEnvironmentConfig()
 
-        self.assertIs(testnet.environment, BinanceEnvironment.TESTNET)
-        self.assertTrue(testnet.spot.rest_base_url.startswith("https://testnet"))
-        self.assertIn("demo-fapi", testnet.usd_m.rest_base_url)
-        self.assertIn("demo-dapi", testnet.coin_m.rest_base_url)
+        self.assertIs(demo.environment, BinanceEnvironment.TESTNET)
+        self.assertEqual(
+            demo.spot.rest_base_url,
+            "https://demo-api.binance.com",
+        )
+        self.assertIn("demo-fapi", demo.usd_m.rest_base_url)
+        self.assertIn("demo-dapi", demo.coin_m.rest_base_url)
         with self.assertRaisesRegex(ValueError, "allow_production=True"):
             BinanceEnvironmentConfig(
                 environment=BinanceEnvironment.PRODUCTION

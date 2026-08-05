@@ -5,10 +5,10 @@ Graphify code graph remains in `graphify-out/graph.json`.
 
 ## Summary
 
-- Project nodes: 1671
-- Project edges: 3161
-- Project source fingerprint: `bada2e78faecbf3ae4127f226e23d070eeeb00f0656dd9debba82ae25222d46b`
-- Code source fingerprint: `e275e7d36cd40fd6a47c17e7f56b67ca25812b96911d7fef1f7812b6753ef7c9`
+- Project nodes: 1676
+- Project edges: 3167
+- Project source fingerprint: `5a48f75cf98e142e6dfc2faa5f6eecb53b7c3bae47ecd4290102c68c2f156cb1`
+- Code source fingerprint: `c84f46787946d54b6b37d000401b09a085ce4767b55a21d30a2c7638ddc0ae53`
 - Validation: PASS
 
 ## Node Types
@@ -19,12 +19,13 @@ Graphify code graph remains in `graphify-out/graph.json`.
 - `ArchitectureDecision`: 14
 - `ArchitectureDecisionDocument`: 14
 - `ArchitectureDocument`: 11
-- `CodeSymbol`: 191
-- `CommitReference`: 51
+- `CodeSymbol`: 194
+- `CommitReference`: 52
 - `ContinuousIntegrationJob`: 2
 - `ContinuousIntegrationWorkflow`: 1
 - `DeliveryDocument`: 45
 - `DeliveryTask`: 53
+- `DeploymentEnvironment`: 1
 - `DocumentSection`: 1119
 - `DomainBoundary`: 4
 - `DomainContract`: 2
@@ -42,8 +43,8 @@ Graphify code graph remains in `graphify-out/graph.json`.
 
 ## Edge Authority
 
-- `authoritative`: 186
-- `extracted`: 2975
+- `authoritative`: 187
+- `extracted`: 2980
 
 ## Status Distribution
 
@@ -52,6 +53,7 @@ Graphify code graph remains in `graphify-out/graph.json`.
 - `active`: 35
 - `blocked`: 1
 - `complete`: 67
+- `configured-offline`: 1
 - `deferred`: 3
 - `external`: 2
 - `implemented-offline`: 2

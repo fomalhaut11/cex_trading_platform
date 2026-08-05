@@ -57,7 +57,7 @@
 | A001 | Offline foundation scenario acceptance | Complete | T001-T014 |
 | A002A | Offline performance and bounded-memory baseline | Complete | T015 |
 | A002B | Target-host soak and latency acceptance | External | A002A |
-| A002C | Binance Testnet authenticated acceptance | External | T017 |
+| A002C | Binance Demo/Testnet authenticated acceptance | External | T017 |
 | A003 | Offline OMS restart and reconciliation acceptance | Complete | T016 |
 | A004 | Offline Binance recovery-protocol acceptance | Complete | T017 |
 | A005 | Offline private-stream startup race acceptance | Complete | T018 |
@@ -74,7 +74,7 @@
 | A016 | Offline Accounting facts, balance, replay, reconciliation, allocation, valuation and failure acceptance | Complete | T036-T039 |
 | A017 | Offline Carry decision, lifecycle, hedge, restart and Accounting-boundary acceptance | Complete | T040-T044 |
 | A018 | Offline grouped Execution Promotion acceptance | Complete | T045-T046 |
-| A019 | Authenticated grouped Binance Testnet acceptance | External, unauthorized | A018, explicit project-owner authorization |
+| A019 | Authenticated grouped Binance Demo acceptance | External, unauthorized | A018, explicit project-owner authorization |
 | A020 | Funding Carry MVP Live Readiness acceptance | Planned, no trading authority | A019, T050 |
 | A021 | Controlled BTC Funding Carry micro-live acceptance | External, unauthorized | A020, explicit real-money authorization |
 | A022 | Offline Stage identity, permission, persistence, result-vector and mixed-replay acceptance | Complete | T051 |
@@ -171,7 +171,7 @@ the handoff, interface and ADR. No redesign was requested.
 
 The project owner switched the active objective to the fastest bounded Binance
 single-account BTC Funding Carry live loop. T045-T046/A018 are complete; A019
-Testnet remains the next promotion gate but is external and unauthorized. T050
+Demo remains the next promotion gate but is external and unauthorized. T050
 Operations/Shadow, A020 live readiness and A021 controlled micro-live form the
 active promotion sequence.
 A019 and A021 require separate explicit authorization. T047-T049 and all other

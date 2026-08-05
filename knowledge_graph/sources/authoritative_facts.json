@@ -65,6 +65,15 @@
     },
     {
       "evidence": {
+        "locator": "Demo Mode is the A019 default:",
+        "source_path": "development/remaining_external_gates.md"
+      },
+      "relation": "USES_ENVIRONMENT",
+      "source": "gate:testnet",
+      "target": "environment:binance-demo"
+    },
+    {
+      "evidence": {
         "locator": "A020  Funding Carry MVP Live Readiness",
         "source_path": "development/funding_carry_fast_track_plan.md"
       },
@@ -287,13 +296,29 @@
     {
       "authority": "authoritative",
       "evidence": {
-        "locator": "Testnet authorization: not yet granted.",
+        "locator": "Demo authorization: not yet granted.",
         "source_path": "development/funding_carry_fast_track_plan.md"
       },
       "id": "gate:testnet",
-      "label": "Binance Grouped Testnet Execution",
+      "label": "Binance Grouped Demo Execution",
       "status": "unauthorized",
       "type": "ExternalAuthorizationGate"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "BinanceEnvironment",
+        "BinanceEnvironmentConfig",
+        "BinanceProductEndpoints"
+      ],
+      "evidence": {
+        "locator": "Demo Mode is the A019 default:",
+        "source_path": "development/remaining_external_gates.md"
+      },
+      "id": "environment:binance-demo",
+      "label": "Binance Unified Demo Environment",
+      "status": "configured-offline",
+      "type": "DeploymentEnvironment"
     },
     {
       "authority": "authoritative",

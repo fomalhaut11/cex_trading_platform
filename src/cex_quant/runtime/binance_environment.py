@@ -10,7 +10,12 @@ from cex_quant.execution.adapters import BinanceProduct
 
 
 class BinanceEnvironment(StrEnum):
-    """Deployment environment selected for every Binance product endpoint."""
+    """Deployment environment selected for every Binance product endpoint.
+
+    ``TESTNET`` is the compatibility name for the non-production sandbox. Its
+    default endpoints use Binance Demo Mode, which Binance documents as the
+    production-similar Spot and Futures testing environment.
+    """
 
     TESTNET = "testnet"
     PRODUCTION = "production"
@@ -63,9 +68,10 @@ class BinanceProductEndpoints:
 class BinanceEnvironmentConfig:
     """Complete, immutable endpoint selection for the trading runtime.
 
-    Testnet is the default. Production construction requires an explicit
-    acknowledgement at the call site. Credentials deliberately are not part
-    of this value and remain owned by ``BinanceCredentialProvider``.
+    The Demo-backed non-production profile is the default. Production
+    construction requires an explicit acknowledgement at the call site.
+    Credentials deliberately are not part of this value and remain owned by
+    ``BinanceCredentialProvider``.
     """
 
     environment: BinanceEnvironment
@@ -171,9 +177,9 @@ _EXPECTED_HOSTS: dict[
     tuple[str, str, str],
 ] = {
     (BinanceEnvironment.TESTNET, BinanceProduct.SPOT): (
-        "testnet.binance.vision",
-        "stream.testnet.binance.vision",
-        "ws-api.testnet.binance.vision",
+        "demo-api.binance.com",
+        "demo-stream.binance.com",
+        "demo-ws-api.binance.com",
     ),
     (BinanceEnvironment.TESTNET, BinanceProduct.USD_M): (
         "demo-fapi.binance.com",
@@ -207,11 +213,9 @@ _TESTNET_ENDPOINTS = (
     BinanceProductEndpoints(
         environment=BinanceEnvironment.TESTNET,
         product=BinanceProduct.SPOT,
-        rest_base_url="https://testnet.binance.vision",
-        public_ws_base_url="wss://stream.testnet.binance.vision/stream",
-        private_ws_base_url=(
-            "wss://ws-api.testnet.binance.vision/ws-api/v3"
-        ),
+        rest_base_url="https://demo-api.binance.com",
+        public_ws_base_url="wss://demo-stream.binance.com/stream",
+        private_ws_base_url="wss://demo-ws-api.binance.com/ws-api/v3",
     ),
     BinanceProductEndpoints(
         environment=BinanceEnvironment.TESTNET,
