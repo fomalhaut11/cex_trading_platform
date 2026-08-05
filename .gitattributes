@@ -1,2 +1,4 @@
 * text=auto eol=lf
-
+graphify-out/graph.json linguist-generated=true -diff
+graphify-out/SOURCES.json linguist-generated=true -diff
+knowledge_graph/generated/*.json linguist-generated=true -diff

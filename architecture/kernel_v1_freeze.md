@@ -115,6 +115,25 @@ A frozen contract may be reconsidered only when all of the following exist:
 The preferred response is an adapter, composition or application-layer change.
 An ADR amendment is a last resort, not the default development mechanism.
 
+## Approved Execution Evolution Direction
+
+On 2026-08-05 the project owner confirmed bounded overlapping and parallel
+multi-leg execution as a definite requirement. ADR-011 section 32 records the
+approved design direction: V1 remains the width-one mode of a future unified
+Execution Stage model. This is a legitimate change-control trigger, not an
+authorization to bypass design review or external trading gates.
+
+The evolution may generalize Planner, permit, Order Group revision, journal,
+Runtime dispatch and recovery semantics. It must preserve Basket targets,
+Portfolio and Accounting truth ownership, individual Child order contracts,
+exact Gateway routing, single-writer state mutation, durable-before-I/O,
+explicit UNKNOWN and mixed-version replay.
+
+No production composition root should freeze a single-Action-only API as the
+permanent platform interface before the Stage follow-up is reviewed. Existing
+V1 behavior remains supported and must not be removed merely to add parallel
+capability.
+
 ## Physical Package Stability
 
 `cex_quant.runtime` is the current composition root. The project may describe

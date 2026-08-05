@@ -48,7 +48,8 @@ The existing `runtime.TradingPipeline` remains single-leg. It rejects a
 `BasketTargetIntent` at the Strategy boundary before Portfolio, Risk, OMS and
 Execution.
 
-Accepted ADR-011 defines the future execution-control topology:
+Accepted ADR-011 defines the execution-control topology implemented by the
+offline grouped Runtime:
 
 ```text
 BasketTargetIntent
@@ -60,6 +61,19 @@ BasketTargetIntent
   -> existing OrderRequest
   -> existing Execution adapter
 ```
+
+Runtime resolves exact, versioned Objective metadata to an
+`ExecutionPlanRef`, verifies the full reference in a bounded planner registry
+and delegates action proposal to that planner. The default sequential
+residual planner is a replaceable Runtime component, not policy embedded in
+the OMS or gateway router.
+
+The exact execution router is a Runtime adapter keyed only by
+`(account_id, instrument_id)`. It composes configured asynchronous gateways
+behind the synchronous submit/cancel/query bridge. It neither restricts the
+number of Basket legs nor assumes Binance, OKX, Spot, perpetual, option,
+Funding Carry, triangular arbitrage or option parity semantics. Unknown scopes
+fail before dispatch; adding a venue is an adapter/configuration addition.
 
 T029-T031/A014 implement the bounded offline group foundation:
 
@@ -188,6 +202,11 @@ listener. Concrete TLS termination remains a deployment boundary.
     `EconomicOwnerRef`, `PnlAttributionView` and reconciliation/valuation
     views. T040-T044/A017 implement this boundary offline while external
     execution remains blocked.
+22. Runtime owns execution-plan resolution, the bounded planner registry and
+    exact gateway-route composition. A planner may propose no more than one V1
+    action per call and owns no authority. Routing is exact and fail-closed;
+    no OMS or Execution-domain contract may infer a fallback venue, account or
+    product route.
 
 ## Process Boundaries
 

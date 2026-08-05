@@ -63,9 +63,14 @@ class ManualClock:
         return UnixNanos(self.value)
 
 
-def instrument(kind: InstrumentKind, symbol: str) -> InstrumentId:
+def instrument(
+    kind: InstrumentKind,
+    symbol: str,
+    *,
+    venue: str = "BINANCE",
+) -> InstrumentId:
     return InstrumentId(
-        venue=VenueId("BINANCE"),
+        venue=VenueId(venue),
         kind=kind,
         symbol=symbol,
     )
@@ -75,15 +80,18 @@ def leg(
     kind: InstrumentKind,
     symbol: str,
     target: str,
+    *,
+    account_id: AccountId = ACCOUNT_ID,
+    venue: str = "BINANCE",
 ) -> BasketTargetLeg:
-    instrument_id = instrument(kind, symbol)
+    instrument_id = instrument(kind, symbol, venue=venue)
     return BasketTargetLeg(
         leg_id=deterministic_basket_leg_id(
             decision_snapshot_id=DECISION_SNAPSHOT_ID,
-            account_id=ACCOUNT_ID,
+            account_id=account_id,
             instrument_id=instrument_id,
         ),
-        account_id=ACCOUNT_ID,
+        account_id=account_id,
         instrument_id=instrument_id,
         target_quantity=Quantity.from_str(target),
     )
@@ -104,6 +112,37 @@ def three_leg_basket() -> BasketTargetIntent:
             leg(InstrumentKind.OPTION, "BTC-30000-C", "10"),
             leg(InstrumentKind.OPTION, "BTC-35000-C", "-10"),
             leg(InstrumentKind.PERPETUAL, "BTCUSDT", "-0.35"),
+        )
+    )
+
+
+def four_leg_basket() -> BasketTargetIntent:
+    return _basket(
+        (
+            leg(InstrumentKind.OPTION, "BTC-30000-C", "10"),
+            leg(InstrumentKind.OPTION, "BTC-30000-P", "-10"),
+            leg(InstrumentKind.SPOT, "BTCUSDT", "-10"),
+            leg(InstrumentKind.PERPETUAL, "BTCUSDT", "10"),
+        )
+    )
+
+
+def cross_venue_basket() -> BasketTargetIntent:
+    return _basket(
+        (
+            leg(
+                InstrumentKind.SPOT,
+                "BTCUSDT",
+                "10",
+                account_id=AccountId("binance-primary"),
+            ),
+            leg(
+                InstrumentKind.PERPETUAL,
+                "BTC-USDT-SWAP",
+                "-10",
+                account_id=AccountId("okx-primary"),
+                venue="OKX",
+            ),
         )
     )
 

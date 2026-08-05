@@ -1,0 +1,382 @@
+{
+  "code_graph": {
+    "graph_path": "graphify-out/graph.json",
+    "graph_sha256": "2368ce2ca2b6741df4f59d6d0f9540d270b8c793c0e56a06abfe4306573eb389",
+    "source_count": 257,
+    "source_fingerprint": "1068e9291b32fe765fcf09a43de50d5e4615ce6905e9da196620fdd0a937e4a5",
+    "sources_path": "graphify-out/SOURCES.json",
+    "tool": "graphify 0.9.31"
+  },
+  "generator_version": "1.0",
+  "project_sources": {
+    "source_count": 91,
+    "source_fingerprint": "1c9dca8fdaf01cdf8497b19fda2fe6f7fa34c2892af6b3fab042cb2175a3ecf7",
+    "sources": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "1ef3309ede6f59d9b6497d53024152b6b9735a3640f940c942f78caf707e7079"
+      },
+      {
+        "path": "README.md",
+        "sha256": "0ac4d8bb2bada317f6ac2be762e526198f04049686a62fd3fa6dad865ae0a1e6"
+      },
+      {
+        "path": "START_HERE.md",
+        "sha256": "9ec95444ff11c656778a88abc08597555c203871762f8962ac9af876b116e809"
+      },
+      {
+        "path": "adr/ADR-002-event-state-storage.md",
+        "sha256": "df43acc8711058c26898a7bfea8f0ae2cf4fa6be0301465cfbea554e7ca4232b"
+      },
+      {
+        "path": "adr/ADR-003-market-state.md",
+        "sha256": "61d126e34477e92a05665edce92fb51cd086f45c45224f2c95479ac141b2915f"
+      },
+      {
+        "path": "adr/ADR-004-feature-registry.md",
+        "sha256": "7d2847644d503a212243f6e9cd1cea4a70e420675e0bd3b2410c9ef21cae5721"
+      },
+      {
+        "path": "adr/ADR-005-rust-migration.md",
+        "sha256": "e87f1e5b495cd01cdc9b7b396ccbc09d7eadd02cfda46816f5010e124e475e3f"
+      },
+      {
+        "path": "adr/ADR-006-runtime-deployment.md",
+        "sha256": "ef78ee3f118dbb39bb2fe8383f80af6fd48d8a6a43d6c94a1d1d8c9e4922c7a6"
+      },
+      {
+        "path": "adr/ADR-007-domain-contracts.md",
+        "sha256": "da2970e093f50fd0e69adf50bcfb5727e96fad5575287c73f0a825dadbc81c7b"
+      },
+      {
+        "path": "adr/ADR-008-instrument-and-options.md",
+        "sha256": "779f4678816a65d6fe3c465e986eb7d9fff7bc2ce6269e554648faa2f7b42783"
+      },
+      {
+        "path": "adr/ADR-009-portfolio-decision-snapshot.md",
+        "sha256": "24e5ebc0861362fe7fcbb0ed98831e46430e583c5daa944d384d1f6b692eb6f0"
+      },
+      {
+        "path": "adr/ADR-010-basket-intent-architecture.md",
+        "sha256": "60fc321ff41a73b06c4522c57cf09f4179a30b9696fe370d1fd8af30ed7702c1"
+      },
+      {
+        "path": "adr/ADR-011-parent-order-group-multi-leg-execution.md",
+        "sha256": "a21434ced10d159e24df7821c14379bbb062d34014ab94e388896f047cafc87c"
+      },
+      {
+        "path": "adr/ADR-012-portfolio-risk-and-grouped-execution-authorization.md",
+        "sha256": "35a192a674702e21cecbc453d74477d205da04a02b7676f018752e0cc9085cdf"
+      },
+      {
+        "path": "adr/ADR-013-financial-ledger-and-pnl-attribution.md",
+        "sha256": "8ccc8f28ca62e9dcfc30564e701461f574ff2cdb41c6b589655a1768bfce75e1"
+      },
+      {
+        "path": "adr/ADR-014-carry-application-boundary.md",
+        "sha256": "fbc9adbac9aa64af192317f2ad6ed7d110ba88a23529f9a78855d7223b576767"
+      },
+      {
+        "path": "architecture/execution_system.md",
+        "sha256": "eaa1f6d5cec9d5fdd074ca24084d1a9f824614b51bdd8c612ac385393e6e6fc9"
+      },
+      {
+        "path": "architecture/feature_system.md",
+        "sha256": "0989d9bcec98f431da79bb0d9b4432dee62dabd6c5fc9d56aa11314b794a7377"
+      },
+      {
+        "path": "architecture/kernel_v1_freeze.md",
+        "sha256": "93ee44d5851111bcfa53b99f70401e63ea7850b6e9c14ffd73b9d828a38260c4"
+      },
+      {
+        "path": "architecture/market_data_architecture.md",
+        "sha256": "bc5ddbf349d40d4223ff710dd9ddb976f49d3e99f32432f6d37f975210bacb7d"
+      },
+      {
+        "path": "architecture/module_topology.md",
+        "sha256": "a05d65b877091b39ca1106e1706da0cca3e1e84bbfefbb2552e6529d39cbb462"
+      },
+      {
+        "path": "architecture/project_architecture_overview_zh.md",
+        "sha256": "a2728aa42853d4759a92e291a161e1e83f46d6d9cdf301b7b01347a858d43099"
+      },
+      {
+        "path": "architecture/runtime_architecture.md",
+        "sha256": "250b01f9575ed7ec2da408b50c0659f20c69af3bc8904260b3fe1f6daa7962e4"
+      },
+      {
+        "path": "architecture/state_management.md",
+        "sha256": "03613e5c468f95ace757d37b542d784d9919bcb55c936bf35df48e9a5222c3a2"
+      },
+      {
+        "path": "architecture/state_ownership.md",
+        "sha256": "beb28e2f0cd3f5817e2b98ef69c01ca8a4c24b775b1aee4fc6f6bf314093b9d7"
+      },
+      {
+        "path": "architecture/system_architecture.md",
+        "sha256": "4ff4aefe8681ee7419953e178d32daf57d237658ee3d80a0182c5ae9fbfdc43c"
+      },
+      {
+        "path": "architecture/time_synchronization.md",
+        "sha256": "e5f11362f7f195b5e1c215aa46f92cd386dfa60f1bd2768aa1a3343d6ca8cbdb"
+      },
+      {
+        "path": "development/a018_offline_execution_acceptance.md",
+        "sha256": "f8f6b82fafb5c8ed7969ce492a4fcbfa78fbb242b9ca10c39bbad78dfba2eaca"
+      },
+      {
+        "path": "development/acceptance_options_health_notes.md",
+        "sha256": "3e55e2ced8e1bfe06b709bdf9b13b43b1f42d7608fe383f9290ef2501789769e"
+      },
+      {
+        "path": "development/acceptance_pipeline_notes.md",
+        "sha256": "01971f0dc6856e5221e6cdd90850818b84d94070396f08cd6db858c0b25893de"
+      },
+      {
+        "path": "development/acceptance_replay_notes.md",
+        "sha256": "cefa6a25999472dc367cbcae058148f5257c4393efc722cc5c99be6e1b70a696"
+      },
+      {
+        "path": "development/acceptance_report_2026-07-23.md",
+        "sha256": "29bfe8e53d0caa2eea85ef33bee4fe8c4067e7ef5a44ccc54c988c5014101266"
+      },
+      {
+        "path": "development/authenticated_operator_and_deployment_design.md",
+        "sha256": "744923afa9f545f80b149749a4855f37e0d919831e783b49ec6eded1d18d3190"
+      },
+      {
+        "path": "development/binance_authenticated_adapter.md",
+        "sha256": "787f17a1fb1538ad27c1a534d584a53b32c2daba38ce9341ff28af194b422654"
+      },
+      {
+        "path": "development/binance_protocol_notes.md",
+        "sha256": "d755f2c3c9bf0fc58da8316a99f18408db8559c499c12ef9893630a471d1bb25"
+      },
+      {
+        "path": "development/binance_reconciliation_adapter.md",
+        "sha256": "fc0ada48e8e8b102d6682dea0614d9ea33b71b33c379c1f10a85fd48d11e7019"
+      },
+      {
+        "path": "development/binance_runtime_supervision_design.md",
+        "sha256": "1f99c48b256c5e80e914be7af1d3a9a163f6abbcdae41691ed096d25da664f86"
+      },
+      {
+        "path": "development/binance_transport_clock_design.md",
+        "sha256": "09b554206e3bb4c72def9c0eed10ae27a789225ff8bb8ec75cf53853d4b49db4"
+      },
+      {
+        "path": "development/clock_health_design.md",
+        "sha256": "5fedf0ece5396a99e71e81fec4be15d460a782aef46a292cb3c2f866786cafc8"
+      },
+      {
+        "path": "development/coding_conventions.md",
+        "sha256": "8fc9d3495ef1bca1a271a2f3bb8387a981eb5c5d75aecdcc05728ce54df2380b"
+      },
+      {
+        "path": "development/continuous_integration.md",
+        "sha256": "65bf54dda52d8c0a1e5d3bffdd4c60d9e002851b558ab723a95251ad23cfc2f0"
+      },
+      {
+        "path": "development/definition_of_done.md",
+        "sha256": "0fca2e3499a8391ace654b8fe6127c062f9921efa810b76239fcb5ee71360a47"
+      },
+      {
+        "path": "development/execution_gateway_design.md",
+        "sha256": "50c9753ce0b50c56e413367ec77e33d333ee7a88e74e859ca23097ac8898456d"
+      },
+      {
+        "path": "development/execution_promotion_plan.md",
+        "sha256": "867377e117cbca8902762571c6856f66475fd2a45745bea613af5fcfc40f2f7b"
+      },
+      {
+        "path": "development/external_review_package_2026-07-27.md",
+        "sha256": "4eb5f080a0d59146f17690ca3201a65defc5894b396b65000c5a36a1e7fa9a9c"
+      },
+      {
+        "path": "development/feature_engine_design.md",
+        "sha256": "565bf76cc143eedaf29b02eaf4dc4c5adf5f13ae8608e3a5f33292e13580a763"
+      },
+      {
+        "path": "development/funding_carry_fast_track_plan.md",
+        "sha256": "872e619eda31d0d1c9ae1973bc4799865454ba48c81042bcf9b06de5bd52aea3"
+      },
+      {
+        "path": "development/graphify_code_graph.md",
+        "sha256": "8d61bfb4a15a8080d153f578ef4419a0f3b5cf45e5fe2e5b7d9e097b6ae134e5"
+      },
+      {
+        "path": "development/multi_leg_portfolio_trading_plan.md",
+        "sha256": "946052c5a4cd86a42b3444fd1c77e8b88404ca002e85721615450b2ac1f0e3e1"
+      },
+      {
+        "path": "development/oms_design.md",
+        "sha256": "f528171fe5df619009cf2c9a77e16c969110a9412c54e6159829859bdb0d9deb"
+      },
+      {
+        "path": "development/oms_recovery_design.md",
+        "sha256": "873db30ff8755b52fc1a65581b854c659087bca1395f89306e9e207a3742a88e"
+      },
+      {
+        "path": "development/operator_endpoint_and_audit_design.md",
+        "sha256": "1844d3426e593086d56c96db6acb1d0e5fa46c98077c68fa4c349dd282c2df8f"
+      },
+      {
+        "path": "development/option_features_design.md",
+        "sha256": "76a8753c279b622f25b79962a4c1782b25561c267a51605703e31e5d9a3e5e1c"
+      },
+      {
+        "path": "development/performance_baseline.md",
+        "sha256": "c851b290ab7d07ea105fc3641af1b6ec50db4224097a4fb0d1dd8d455cc1c427"
+      },
+      {
+        "path": "development/platform_delivery_plan.md",
+        "sha256": "72d21b3e2568b0b177293e4ed8cbac9875f73659db5f6a761118655ed2005351"
+      },
+      {
+        "path": "development/portfolio_state_design.md",
+        "sha256": "923646580c30e165188d1fedfc4febd513ab1c83346e5df3af490f3a1a50af25"
+      },
+      {
+        "path": "development/private_order_stream_design.md",
+        "sha256": "e20cbdf0f5edf2e87e3ce21277db7cddca4ab6f0aba585b8fcb009e54874f96e"
+      },
+      {
+        "path": "development/progress.md",
+        "sha256": "a077a33321e7ab0551e1387e1dfe687e154257e8ab2208d6d6e216d28c238ef7"
+      },
+      {
+        "path": "development/recorder_design.md",
+        "sha256": "01d34fc43b08019efff5c8d18b33251f9413b76441f19cbbcaf246440f1a52b0"
+      },
+      {
+        "path": "development/remaining_external_gates.md",
+        "sha256": "6d8d536ee706ef8521b66e85e084ca9f635cfd8f418b0274743e91e1de9e6121"
+      },
+      {
+        "path": "development/risk_engine_design.md",
+        "sha256": "e5827614529c6b7a257f71d5c01aa089c02a086790eb86d3f9bef4a15eefa9ab"
+      },
+      {
+        "path": "development/roadmap.md",
+        "sha256": "378fd18798469154de959a5347a434b669f4c71f59632f852def4a636efa0acc"
+      },
+      {
+        "path": "development/runtime_application_assembly.md",
+        "sha256": "47eca007d0968624da6325606e9b0e54dd30e63de347da9b3d1f28b5cb689a56"
+      },
+      {
+        "path": "development/runtime_operations_design.md",
+        "sha256": "35dee998b4a6d248db0945b84cbc5533101513fcbcbc59418e8cb1052798f8d1"
+      },
+      {
+        "path": "development/runtime_pipeline_design.md",
+        "sha256": "e748bec1a1c1e4cf912b09c0ef2af80524ee6d005fc7c21d8485ab351934a404"
+      },
+      {
+        "path": "development/runtime_recorder_handoff.md",
+        "sha256": "7131eb5170a98b64ce2f0ece1b34f0eac14950dd089c11327f4cd96eca7a6ee8"
+      },
+      {
+        "path": "development/security_and_operator_recovery_design.md",
+        "sha256": "24284bd5919c1e59c26249c32994360b1da22fdfe3572bdb8ff5ba3d4e4b5e8c"
+      },
+      {
+        "path": "development/strategy_runtime_design.md",
+        "sha256": "f6bd9ce2a58c72de87dc18051b39adaf99dd4e93c57fcdc40c2a025deece96b0"
+      },
+      {
+        "path": "development/t045_execution_promotion_composition_audit.md",
+        "sha256": "c7e5b9bb33a41f440efb829d65663a381ed60496b5f95a2b8ce62fbe46d81bbf"
+      },
+      {
+        "path": "development/t046_offline_execution_runtime.md",
+        "sha256": "71a3bed73f2f461c5bc6c1e05cb7ae620a4b3ef5c196c68c97f9ba3339ec5d91"
+      },
+      {
+        "path": "development/tasks.md",
+        "sha256": "097b78807969ce2e98a07c02917699e2d7f000aaeb43164f94944d14e8707cfd"
+      },
+      {
+        "path": "development/testing_strategy.md",
+        "sha256": "b315c83e623bca460987446954b73869e3a556a9bd03c03774349f875be604e9"
+      },
+      {
+        "path": "interfaces/basket_intent_schema.md",
+        "sha256": "f2ab0d3858255191d74a4d2b2b8b15ab4f4ac6eca8d74d4f779e0bbe68e9a1db"
+      },
+      {
+        "path": "interfaces/carry_application_schema.md",
+        "sha256": "6262b22f37e54800fd62411b154499061701a4132f2ee31ef2e12e45269794bb"
+      },
+      {
+        "path": "interfaces/decision_snapshot_schema.md",
+        "sha256": "daf88a7b9f64725da9af4a617816a463a54838a3b167bcc1c6ebbbd2c78f8d61"
+      },
+      {
+        "path": "interfaces/error_contract.md",
+        "sha256": "aecc0bf51d5770efd59dc87f0f243de5861b830e4a16684421809a73be2df9a3"
+      },
+      {
+        "path": "interfaces/event_schema.md",
+        "sha256": "fb1dcff4e2389d2cb9672c3face5472abfd46a0dc4b9538c9afe7d4397be7af8"
+      },
+      {
+        "path": "interfaces/feature_schema.md",
+        "sha256": "4c4b69cef958227673814b21e2e7af1454c85aa8a94cc0575654f4300a0cb384"
+      },
+      {
+        "path": "interfaces/market_data_schema.md",
+        "sha256": "62abcd14065271b541622ab2bb75f473e92409d22ed3da011085316a4c3d9ec1"
+      },
+      {
+        "path": "interfaces/order_group_schema.md",
+        "sha256": "e832b6484c83e32eedd3f8a9ee813a7fe49467643a02c2b952986ba8fa062b7f"
+      },
+      {
+        "path": "interfaces/order_schema.md",
+        "sha256": "234f9150a62ba6756c8803f3f30180b96fe5a074af791264416ff63268c2b948"
+      },
+      {
+        "path": "interfaces/portfolio_risk_schema.md",
+        "sha256": "5d91fa7dc51b85e65f1daa799355b8bb36a421aac188902ac634974c60c3579a"
+      },
+      {
+        "path": "knowledge_graph/README.md",
+        "sha256": "d090a8cd15949ca022a2f08f8a8d3e21ff3f678129667e37ab4137da385d896a"
+      },
+      {
+        "path": "knowledge_graph/schema/constraints.json",
+        "sha256": "5f25de2b13e7ccaeb876f716ae140cf74560a5fc51793e074ac6c313a6a6a53a"
+      },
+      {
+        "path": "knowledge_graph/schema/project_graph.schema.json",
+        "sha256": "628246de6631ab9d3be2ee2a5aabbaa0c43482c892b70e21f830b969faa4b4c4"
+      },
+      {
+        "path": "knowledge_graph/sources/authoritative_facts.json",
+        "sha256": "2c49b02c60c3c82bc332e476b3d4480961a4c0c8b5d3ada6ac2cbb039d6f9693"
+      },
+      {
+        "path": "operations/aws_lightsail_server_guide_zh.md",
+        "sha256": "c5c19efc348ec6fa04b53bc0dee3ac80721f147091f072f94f96525eb7193f68"
+      },
+      {
+        "path": "operations/deployment_runbook.md",
+        "sha256": "88cc6f134697e33a93a09b9025023558780dc700f4aa86bdf06a7059a860bf1a"
+      },
+      {
+        "path": "operations/incident_response_runbook.md",
+        "sha256": "2684a97d327cf81fef7c70edeae24ec5bde91efec1323c49c7142a1052713a02"
+      },
+      {
+        "path": "operations/rollback_and_recovery_runbook.md",
+        "sha256": "a6c5fa7260c997a5fe64541f19c78d0b51c69ed79a82d07a0e2cf18db608e050"
+      },
+      {
+        "path": "tools/knowledge_graph/update_code_graph.ps1",
+        "sha256": "ef1409a7ea9a8a3d71181a7d8c41815dd54769deb0689299c8af66bb73e31569"
+      }
+    ]
+  },
+  "schema_version": "1.0"
+}

@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from decimal import Decimal
 from enum import StrEnum
 from threading import get_ident
 from typing import Never, Protocol, cast
 
-from cex_quant.core import ClientOrderId, OrderGroupId, Quantity, UnixNanos
+from cex_quant.core import ClientOrderId, OrderGroupId, UnixNanos
 from cex_quant.execution import (
     CancelOrder,
     CancelResult,
@@ -27,14 +26,9 @@ from cex_quant.oms import (
     OrderGroupStatus,
     OrderGroupView,
     OrderRequest,
-    OrderSide,
     OrderStatus,
     OrderSubmitOutcome,
-    OrderType,
     OrderView,
-    PositionSide,
-    TimeInForce,
-    deterministic_group_action_id,
 )
 from cex_quant.risk import (
     BasketPortfolioRiskDecision,
@@ -56,6 +50,11 @@ from .execution_handoff import (
     ExternalSubmitBlockedError,
     ExternalSubmitGuardPort,
     SynchronousExecutionSubmitPort,
+)
+from .execution_planning import (
+    ExecutionPlannerRegistry,
+    ExecutionPlanResolver,
+    default_execution_planning,
 )
 from .order_group_runtime import OrderGroupRuntime
 from .portfolio_risk_guard import PortfolioRiskExecutionGuard
@@ -134,9 +133,7 @@ class GroupedBootstrapEvidence:
     reason: str = ""
 
     def __post_init__(self) -> None:
-        if self.completed_steps != GROUPED_BOOTSTRAP_ORDER[
-            : len(self.completed_steps)
-        ]:
+        if self.completed_steps != GROUPED_BOOTSTRAP_ORDER[: len(self.completed_steps)]:
             raise ValueError("grouped bootstrap steps are out of order")
         if self.reason.strip() != self.reason:
             raise ValueError("bootstrap reason must be trimmed")
@@ -217,8 +214,10 @@ class GroupedExecutionRuntime:
         execution: SynchronousExecutionSubmitPort,
         cancel_execution: SynchronousExecutionCancelPort | None = None,
         platform_guard: ExternalSubmitGuardPort,
-        execution_plan: ExecutionPlanRef,
         now_ns: Callable[[], UnixNanos],
+        execution_plan: ExecutionPlanRef | None = None,
+        execution_plan_resolver: ExecutionPlanResolver | None = None,
+        execution_planner_registry: ExecutionPlannerRegistry | None = None,
     ) -> None:
         self._risk_engine = risk_engine
         self._risk_coordinator = risk_coordinator
@@ -226,7 +225,27 @@ class GroupedExecutionRuntime:
         self._execution = execution
         self._cancel_execution = cancel_execution
         self._platform_guard = platform_guard
-        self._execution_plan = execution_plan
+        if execution_plan is not None:
+            if (
+                execution_plan_resolver is not None
+                or execution_planner_registry is not None
+            ):
+                raise ValueError(
+                    "execution_plan cannot be combined with explicit "
+                    "execution planning components"
+                )
+            (
+                execution_plan_resolver,
+                execution_planner_registry,
+            ) = default_execution_planning(execution_plan)
+        elif execution_plan_resolver is None or execution_planner_registry is None:
+            raise ValueError(
+                "explicit execution planning requires both resolver and registry"
+            )
+        assert execution_plan_resolver is not None
+        assert execution_planner_registry is not None
+        self._execution_plan_resolver = execution_plan_resolver
+        self._execution_planner_registry = execution_planner_registry
         self._now_ns = now_ns
         self._writer_thread_id = get_ident()
         self._status = GroupedExecutionRuntimeStatus.NEW
@@ -336,6 +355,8 @@ class GroupedExecutionRuntime:
         self._require_running()
         now_ns = self._now_ns()
         try:
+            execution_plan = self._execution_plan_resolver.resolve(basket)
+            self._execution_planner_registry.require(execution_plan)
             decision = self._risk_engine.assess_basket(
                 basket,
                 risk_snapshot,
@@ -360,7 +381,7 @@ class GroupedExecutionRuntime:
                     valid_until_ns=approval.valid_until_ns,
                     risk_policy_version=approval.risk_policy_version,
                 ),
-                self._execution_plan,
+                execution_plan,
             )
             reservation = self._risk_coordinator.attach_reservation(
                 approval.approval_id,
@@ -386,10 +407,11 @@ class GroupedExecutionRuntime:
         self._require_running()
         try:
             group = self._groups.group(group_id)
-            action = _next_market_action(
+            planner = self._execution_planner_registry.require(group.execution_plan)
+            action = planner.propose(
                 group,
                 risk_snapshot.value,
-                now_ns=self._now_ns(),
+                self._now_ns(),
             )
             if action is None:
                 return GroupedExecutionStepResult(
@@ -482,9 +504,7 @@ class GroupedExecutionRuntime:
                     or "execution rejected"
                 )
                 self._groups.require_recovery(group_id, reason=reason)
-                self._status = (
-                    GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED
-                )
+                self._status = GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED
             return GroupedExecutionStepResult(
                 disposition=disposition,
                 group=self._groups.group(group_id),
@@ -512,9 +532,7 @@ class GroupedExecutionRuntime:
                     group.order_group_id,
                     reason=reason,
                 )
-                self._status = (
-                    GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED
-                )
+                self._status = GroupedExecutionRuntimeStatus.RECOVERY_REQUIRED
             return group
         except Exception as error:
             self._fail(error)
@@ -579,9 +597,7 @@ class GroupedExecutionRuntime:
                     GroupedCancelDisposition.UNKNOWN,
                     group_id=group_id,
                     client_order_id=client_order_id,
-                    error=RuntimeError(
-                        "cancel result belongs to another child"
-                    ),
+                    error=RuntimeError("cancel result belongs to another child"),
                 )
             if result.outcome is ExecutionOutcome.REJECTED:
                 reason = (
@@ -778,66 +794,6 @@ class _PermitThenTransmitGuard:
             self._action.group_id,
             self._action.action_id,
         )
-
-
-def _next_market_action(
-    group: OrderGroupView,
-    snapshot: PortfolioRiskSnapshot,
-    *,
-    now_ns: UnixNanos,
-) -> ExecutionAction | None:
-    if any(leg.unresolved_action_ids for leg in group.legs):
-        return None
-    current = {
-        (account.account_id, position.instrument_id): (
-            position.effective_quantity.as_decimal()
-        )
-        for account in snapshot.positions
-        for position in account.positions
-    }
-    for leg in group.legs:
-        before = current.get((leg.account_id, leg.instrument_id), Decimal(0))
-        target = leg.target_quantity.as_decimal()
-        residual = target - before - leg.signed_working_quantity.as_decimal()
-        if residual == 0:
-            continue
-        attempt = len(leg.child_order_ids) + 1
-        action_id = deterministic_group_action_id(
-            group_id=group.order_group_id,
-            expected_group_revision=group.revision,
-            basket_leg_id=leg.basket_leg_id,
-            execution_plan=group.execution_plan,
-            action_kind="market_residual",
-            leg_attempt_sequence=attempt,
-        )
-        return ExecutionAction(
-            group_id=group.order_group_id,
-            expected_group_revision=group.revision,
-            action_id=action_id,
-            basket_leg_id=leg.basket_leg_id,
-            account_id=leg.account_id,
-            instrument_id=leg.instrument_id,
-            side=OrderSide.BUY if residual > 0 else OrderSide.SELL,
-            order_type=OrderType.MARKET,
-            quantity=Quantity.from_str(format(abs(residual), "f")),
-            time_in_force=TimeInForce.GTC,
-            limit_price=None,
-            stop_price=None,
-            reduce_only=_is_pure_reduction(before, target),
-            post_only=False,
-            position_side=PositionSide.NET,
-            execution_plan=group.execution_plan,
-            created_at_ns=now_ns,
-        )
-    return None
-
-
-def _is_pure_reduction(before: Decimal, target: Decimal) -> bool:
-    return (
-        before != 0
-        and before * target >= 0
-        and abs(target) < abs(before)
-    )
 
 
 __all__ = [

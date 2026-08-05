@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-08-02
+Last updated: 2026-08-05
 
 Current self-contained handoff:
 
@@ -19,6 +19,22 @@ Parallel external track: Phase 4 production readiness and external acceptance
 continues. Neither track authorizes grouped Testnet or production trading.
 
 ## Completed
+
+- Project-owner direction now fixes V1 as the width-one case of a future
+  bounded Execution Stage model. Parallel multi-leg execution is a confirmed
+  requirement, while Stage schemas, batch authorization, persistence and
+  recovery still require a reviewed ADR/amendment before implementation.
+- Refactored grouped execution policy out of the Runtime coordinator into a
+  bounded exact `ExecutionPlannerRegistry` selected from versioned Objective
+  metadata. The sequential residual algorithm remains the compatibility
+  default and owns no execution authority.
+- Moved exact gateway routing from the Execution domain to Runtime adapters;
+  synchronous submit/cancel/query now compose any explicitly configured
+  asynchronous gateway by `(account_id, instrument_id)` without a fallback.
+- Added architecture-fitness coverage for two-, three-, four- and 16-leg
+  plans, shared gateways, multiple accounts and a synthetic Binance/OKX
+  cross-venue Basket. These are offline compatibility proofs, not OKX or live
+  trading implementations.
 
 - Architecture decisions for deployment, contracts and option analytics.
 - Module topology, state ownership, coding and testing baselines.

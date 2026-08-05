@@ -1,6 +1,6 @@
 # CEX Quant — Current Project State and LLM Handoff
 
-Status date: 2026-08-02.
+Status date: 2026-08-05.
 
 Audience: the next LLM/Codex session, project owner and external architecture
 reviewer.
@@ -291,6 +291,13 @@ audit and local quality gates at tested code baseline
 NO-GO/HOLD pending separate authorization and external prerequisites. Evidence:
 `development/a018_offline_execution_acceptance.md`.
 
+The subsequent compatibility refactor moved exact gateway routing into
+Runtime adapters and moved residual action selection behind a bounded,
+versioned execution-planner registry. Offline architecture-fitness tests cover
+two-, three-, four- and 16-leg Baskets plus a synthetic Binance/OKX
+multi-account Basket. No OKX adapter, external execution or trading authority
+was added.
+
 ## 10. Deferred Application Runtime Decisions
 
 These decisions are retained for Post-MVP T047. They are not active
@@ -354,19 +361,21 @@ Do not develop multiple new strategies in parallel.
 
 ## 13. Verification Baseline
 
-Last full local validation after ADR-014 implementation:
+Latest full local validation after the Runtime planner/router refactor:
 
 ```text
-pytest:             544 passed
-unittest subtests:  188 passed
-branch coverage:    85.13% (minimum 85%)
+pytest:             604 passed
+unittest subtests:  238 passed
+branch coverage:    85.27% (minimum 85%)
 Ruff:               passed
-strict MyPy:        passed over 136 source files
+strict MyPy:        passed over 142 source files
 compileall:         passed
-secret scan:        passed
+knowledge graph:    1,637 project nodes / 3,051 edges, valid and fresh
 ```
 
-The verified state base passed GitHub Actions run `30519391352`.
+These local refactor and graph changes have not yet been committed or pushed;
+the last recorded remote verified state remains GitHub Actions run
+`30519391352`.
 
 A local Windows pytest run may emit a `.pytest_cache` creation warning. It did
 not affect test results, and clean remote CI passed.

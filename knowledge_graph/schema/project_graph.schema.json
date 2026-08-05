@@ -1,0 +1,168 @@
+{
+  "$id": "urn:cex-quant:schema:project-knowledge-graph:1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/edge"
+      },
+      "type": "array"
+    },
+    "federated_sources": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "graph_kind": {
+      "const": "cex_quant_project_knowledge_graph"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/node"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "graph_kind",
+    "metadata",
+    "federated_sources",
+    "nodes",
+    "edges"
+  ],
+  "type": "object",
+  "$defs": {
+    "authority": {
+      "enum": [
+        "authoritative",
+        "extracted",
+        "inferred",
+        "proposal"
+      ]
+    },
+    "edge": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "relation": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "target": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "relation",
+        "target",
+        "authority",
+        "confidence",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "method": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_path",
+        "source_hash",
+        "line",
+        "method"
+      ],
+      "type": "object"
+    },
+    "node": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "type": "object"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "type": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type",
+        "authority",
+        "attributes",
+        "evidence"
+      ],
+      "type": "object"
+    }
+  }
+}

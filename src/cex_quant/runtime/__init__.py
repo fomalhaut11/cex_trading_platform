@@ -4,12 +4,17 @@ Domain packages never depend on this composition root.
 """
 
 from .adapters import (
+    MAX_CONFIGURED_EXECUTION_ROUTES,
     AccountPolicy,
     AsyncExecutionPortBridge,
     CanonicalOmsApplicationService,
+    ExactExecutionGatewayRouter,
+    ExactExecutionRoute,
     ExecutionBridgeError,
+    ExecutionBridgeQueryError,
     ExecutionBridgeStateError,
     ExecutionBridgeUnknownError,
+    ExecutionRoutingError,
     FeatureEngineAdapter,
     MarketStateGateAdapter,
     MarketStateUpdater,
@@ -19,6 +24,7 @@ from .adapters import (
     OmsRecoveryError,
     OrderParameters,
     OrderPolicy,
+    RoutedExecutionGateway,
 )
 from .application import TradingApplication
 from .binance_clock import (
@@ -62,6 +68,20 @@ from .execution_handoff import (
     ExternalSubmitBlockedError,
     ExternalSubmitGuardPort,
     SynchronousExecutionSubmitPort,
+)
+from .execution_planning import (
+    MAX_OBJECTIVE_EXECUTION_PLAN_BINDINGS,
+    MAX_REGISTERED_EXECUTION_PLANS,
+    ExecutionPlannerBinding,
+    ExecutionPlannerRegistry,
+    ExecutionPlanningConfigurationError,
+    ExecutionPlanResolver,
+    ObjectiveExecutionPlanBinding,
+    ObjectiveExecutionPlanResolver,
+    OrderGroupPlanner,
+    SequentialResidualExecutionPlanner,
+    StaticExecutionPlanResolver,
+    default_execution_planning,
 )
 from .financial_fact_handoff import (
     FinancialFactExpiredError,
@@ -225,6 +245,9 @@ from .snapshot_coordinator import (
 
 __all__ = [
     "GROUPED_BOOTSTRAP_ORDER",
+    "MAX_CONFIGURED_EXECUTION_ROUTES",
+    "MAX_OBJECTIVE_EXECUTION_PLAN_BINDINGS",
+    "MAX_REGISTERED_EXECUTION_PLANS",
     "AccountPolicy",
     "AsyncExecutionPortBridge",
     "AuthenticatedOperatorCommandService",
@@ -254,10 +277,18 @@ __all__ = [
     "DurableExecutionHandoff",
     "DurableSubmitStatePort",
     "EnvironmentOperatorKeyProvider",
+    "ExactExecutionGatewayRouter",
+    "ExactExecutionRoute",
     "ExecutionBridgeError",
+    "ExecutionBridgeQueryError",
     "ExecutionBridgeStateError",
     "ExecutionBridgeUnknownError",
+    "ExecutionPlanResolver",
+    "ExecutionPlannerBinding",
+    "ExecutionPlannerRegistry",
+    "ExecutionPlanningConfigurationError",
     "ExecutionPort",
+    "ExecutionRoutingError",
     "ExternalSubmitBlockedError",
     "ExternalSubmitGuardPort",
     "FeatureEngineAdapter",
@@ -292,6 +323,8 @@ __all__ = [
     "MarketStatePort",
     "MarketStateUpdater",
     "MutualTlsIdentity",
+    "ObjectiveExecutionPlanBinding",
+    "ObjectiveExecutionPlanResolver",
     "ObservationDisposition",
     "ObservationIdentityConflictError",
     "OfflineExecutionDirective",
@@ -340,6 +373,7 @@ __all__ = [
     "OperatorRiskGate",
     "OperatorTransportRejectedError",
     "OrderGroupPersistenceError",
+    "OrderGroupPlanner",
     "OrderGroupRecoveryError",
     "OrderGroupRuntime",
     "OrderGroupRuntimeError",
@@ -370,8 +404,10 @@ __all__ = [
     "RecorderWorkerFailedError",
     "RiskEvaluator",
     "RiskPort",
+    "RoutedExecutionGateway",
     "RuntimeHealthService",
     "RuntimeHealthSnapshot",
+    "SequentialResidualExecutionPlanner",
     "Sha256SnapshotIdentityPolicy",
     "SnapshotAssembler",
     "SnapshotCoordinator",
@@ -391,6 +427,7 @@ __all__ = [
     "StartupReconciliationReport",
     "StartupReconciliationState",
     "StateGate",
+    "StaticExecutionPlanResolver",
     "StrategyPort",
     "SynchronousExecutionCancelPort",
     "SynchronousExecutionSubmitPort",
@@ -400,5 +437,6 @@ __all__ = [
     "UnexpectedSnapshotSourceError",
     "ValidationPort",
     "decode_operator_request",
+    "default_execution_planning",
     "operator_command_signature",
 ]

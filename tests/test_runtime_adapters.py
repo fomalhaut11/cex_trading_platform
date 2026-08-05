@@ -12,8 +12,10 @@ from cex_quant.core import (
     VenueId,
 )
 from cex_quant.execution import (
+    CancelOrder,
     CancelResult,
     ExecutionOutcome,
+    QueryOrder,
     SubmitResult,
 )
 from cex_quant.features import FeatureSnapshot
@@ -23,11 +25,18 @@ from cex_quant.market_data.state import (
     StateUpdateResult,
     UpdateDisposition,
 )
-from cex_quant.oms import OrderSide, OrderType
+from cex_quant.oms import (
+    OrderReconciliationSnapshot,
+    OrderSide,
+    OrderStatus,
+    OrderType,
+    ReconciliationSource,
+)
 from cex_quant.risk import RiskDecision, RiskDecisionStatus, RiskRejectReason
 from cex_quant.runtime import (
     AsyncExecutionPortBridge,
     CanonicalOmsApplicationService,
+    ExecutionBridgeQueryError,
     ExecutionBridgeStateError,
     ExecutionBridgeUnknownError,
     FeatureEngineAdapter,
@@ -65,6 +74,22 @@ def decision(*, allowed: bool = True) -> RiskDecision:
         projected_global_position=value.target_quantity,
         projected_strategy_notional=None,
         projected_global_notional=None,
+    )
+
+
+def cancel_command() -> CancelOrder:
+    return CancelOrder(
+        account_id=AccountId("primary"),
+        instrument_id=INSTRUMENT,
+        client_order_id=ClientOrderId("client-1"),
+    )
+
+
+def query_command() -> QueryOrder:
+    return QueryOrder(
+        account_id=AccountId("primary"),
+        instrument_id=INSTRUMENT,
+        client_order_id=ClientOrderId("client-1"),
     )
 
 
@@ -130,23 +155,70 @@ class _Orders:
 
 class _Gateway:
     def __init__(self) -> None:
-        self.thread_id: int | None = None
+        self.thread_ids: dict[str, int] = {}
 
     async def submit(self, command: object) -> SubmitResult:
-        self.thread_id = get_ident()
+        self.thread_ids["submit"] = get_ident()
         return SubmitResult(
             client_order_id=command.client_order_id,
             outcome=ExecutionOutcome.ACCEPTED,
         )
 
-    async def cancel(self, command: object) -> CancelResult:
-        raise NotImplementedError
+    async def cancel(self, command: CancelOrder) -> CancelResult:
+        self.thread_ids["cancel"] = get_ident()
+        return CancelResult(
+            client_order_id=command.client_order_id,
+            outcome=ExecutionOutcome.ACCEPTED,
+        )
+
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot | None:
+        self.thread_ids["query_order"] = get_ident()
+        return OrderReconciliationSnapshot(
+            source=ReconciliationSource.REST_QUERY,
+            source_update_id="query-1",
+            client_order_id=command.client_order_id,
+            status=OrderStatus.OPEN,
+            cumulative_filled_quantity=Quantity.from_str("0"),
+            observed_at_ns=UnixNanos(300),
+        )
 
 
 class _SlowGateway(_Gateway):
     async def submit(self, command: object) -> SubmitResult:
         await asyncio.sleep(1)
         return await super().submit(command)
+
+
+class _SlowCancelGateway(_Gateway):
+    async def cancel(self, command: CancelOrder) -> CancelResult:
+        await asyncio.sleep(1)
+        return await super().cancel(command)
+
+
+class _SlowQueryGateway(_Gateway):
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot | None:
+        await asyncio.sleep(1)
+        return await super().query_order(command)
+
+
+class _ExecutionOnlyGateway:
+    async def submit(self, command: object) -> SubmitResult:
+        return SubmitResult(
+            client_order_id=command.client_order_id,
+            outcome=ExecutionOutcome.ACCEPTED,
+        )
+
+    async def cancel(self, command: CancelOrder) -> CancelResult:
+        return CancelResult(
+            client_order_id=command.client_order_id,
+            outcome=ExecutionOutcome.ACCEPTED,
+        )
 
 
 class RuntimeAdapterTests(TestCase):
@@ -219,7 +291,7 @@ class RuntimeAdapterTests(TestCase):
         with self.assertRaisesRegex(OmsInvariantError, "already owned"):
             service.create_order(intent(), decision())
 
-    def test_async_gateway_runs_on_owned_loop_thread(self) -> None:
+    def test_async_gateway_operations_run_on_owned_loop_thread(self) -> None:
         gateway = _Gateway()
         service = CanonicalOmsApplicationService(
             accounts=_Accounts(),
@@ -231,12 +303,19 @@ class RuntimeAdapterTests(TestCase):
         bridge = AsyncExecutionPortBridge(gateway)
         bridge.start()
         try:
-            result = bridge.submit(request)
+            submit_result = bridge.submit(request)
+            cancel_result = bridge.cancel(cancel_command())
+            query_result = bridge.query_order(query_command())
         finally:
             bridge.close()
 
-        self.assertEqual(result.outcome, ExecutionOutcome.ACCEPTED)
-        self.assertNotEqual(gateway.thread_id, get_ident())
+        self.assertEqual(submit_result.outcome, ExecutionOutcome.ACCEPTED)
+        self.assertEqual(cancel_result.outcome, ExecutionOutcome.ACCEPTED)
+        self.assertIsNotNone(query_result)
+        self.assertEqual(query_result.source_update_id, "query-1")
+        self.assertEqual(set(gateway.thread_ids), {"submit", "cancel", "query_order"})
+        self.assertEqual(len(set(gateway.thread_ids.values())), 1)
+        self.assertNotEqual(gateway.thread_ids["submit"], get_ident())
 
     def test_bridge_rejects_blocking_call_inside_running_loop(self) -> None:
         gateway = _Gateway()
@@ -251,11 +330,17 @@ class RuntimeAdapterTests(TestCase):
         bridge.start()
 
         async def misuse() -> None:
-            with self.assertRaisesRegex(
-                ExecutionBridgeStateError,
-                "active event loop",
-            ):
-                bridge.submit(request)
+            operations = (
+                ("submit", lambda: bridge.submit(request)),
+                ("cancel", lambda: bridge.cancel(cancel_command())),
+                ("query", lambda: bridge.query_order(query_command())),
+            )
+            for name, operation in operations:
+                with self.subTest(operation=name), self.assertRaisesRegex(
+                    ExecutionBridgeStateError,
+                    "active event loop",
+                ):
+                    operation()
 
         try:
             asyncio.run(misuse())
@@ -283,6 +368,72 @@ class RuntimeAdapterTests(TestCase):
                 bridge.submit(request)
         finally:
             bridge.close()
+
+    def test_cancel_timeout_is_classified_as_unknown_after_dispatch(self) -> None:
+        bridge = AsyncExecutionPortBridge(
+            _SlowCancelGateway(),
+            timeout_seconds=0.01,
+        )
+        bridge.start()
+        try:
+            with self.assertRaisesRegex(
+                ExecutionBridgeUnknownError,
+                "cancel timed out after dispatch",
+            ):
+                bridge.cancel(cancel_command())
+        finally:
+            bridge.close()
+
+    def test_query_timeout_is_read_only_query_failure(self) -> None:
+        bridge = AsyncExecutionPortBridge(
+            _SlowQueryGateway(),
+            timeout_seconds=0.01,
+        )
+        bridge.start()
+        try:
+            with self.assertRaisesRegex(
+                ExecutionBridgeQueryError,
+                "order query timed out",
+            ):
+                bridge.query_order(query_command())
+        finally:
+            bridge.close()
+
+    def test_query_requires_reconciliation_gateway(self) -> None:
+        bridge = AsyncExecutionPortBridge(_ExecutionOnlyGateway())
+        bridge.start()
+        try:
+            with self.assertRaisesRegex(
+                ExecutionBridgeStateError,
+                "does not support order reconciliation",
+            ):
+                bridge.query_order(query_command())
+        finally:
+            bridge.close()
+
+    def test_operations_reject_calls_after_close(self) -> None:
+        service = CanonicalOmsApplicationService(
+            accounts=_Accounts(),
+            identities=_Identities(),
+            orders=_Orders(),
+            now_ns=lambda: UnixNanos(150),
+        )
+        request = service.create_order(intent(), decision())
+        bridge = AsyncExecutionPortBridge(_Gateway())
+        bridge.start()
+        bridge.close()
+
+        operations = (
+            ("submit", lambda: bridge.submit(request)),
+            ("cancel", lambda: bridge.cancel(cancel_command())),
+            ("query", lambda: bridge.query_order(query_command())),
+        )
+        for name, operation in operations:
+            with self.subTest(operation=name), self.assertRaisesRegex(
+                ExecutionBridgeStateError,
+                "not running",
+            ):
+                operation()
 
 
 if __name__ == "__main__":

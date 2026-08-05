@@ -70,6 +70,31 @@ class A018FrozenBoundaryAcceptanceTests(unittest.TestCase):
         )
         self.assertEqual(constructors, ())
 
+    def test_execution_planning_and_routing_are_runtime_owned(self) -> None:
+        runtime_files = (
+            SOURCE / "runtime" / "execution_planning.py",
+            SOURCE / "runtime" / "adapters" / "execution_routing.py",
+        )
+        self.assertTrue(all(path.is_file() for path in runtime_files))
+        self.assertFalse((SOURCE / "execution" / "routing.py").exists())
+
+        forbidden = tuple(
+            (path, module)
+            for path, module in imports_under(*runtime_files)
+            if module.startswith("cex_quant.applications")
+            or "binance" in module.lower()
+            or "okx" in module.lower()
+        )
+        self.assertEqual(forbidden, ())
+
+    def test_grouped_runtime_delegates_action_policy_to_planner(self) -> None:
+        grouped_source = (
+            SOURCE / "runtime" / "grouped_execution.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertNotIn("def _next_market_action", grouped_source)
+        self.assertIn("planner.propose(", grouped_source)
+
     def test_original_group_submit_route_remains_hard_blocked(self) -> None:
         groups = OrderGroupRuntime(now_ns=lambda: UnixNanos(1_000))
         with self.assertRaises(GroupedExecutionBlockedError):

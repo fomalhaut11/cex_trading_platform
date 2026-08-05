@@ -1267,3 +1267,73 @@ permit issuance was added.
 
 The self-contained implementation evidence and test matrix are recorded in
 `ai_collaboration/topics/funding_arbitrage/80_codex_adr011_implementation_acceptance.md`.
+
+## 32. Accepted Execution-Stage Evolution Direction
+
+Status: project-owner-approved architecture direction on 2026-08-05. This
+clarification does not yet accept a Stage contract, enable parallel dispatch
+or authorize any external execution.
+
+The original V1 decision remains valid: it is the conservative N-leg execution
+mode with a hard concurrency width of one. Its purpose is durable exact
+authority, fresh Portfolio reassessment after each action and bounded UNKNOWN
+recovery. Funding Carry may continue to select this mode; no later execution
+architecture may make parallel dispatch mandatory for every Basket.
+
+The project owner has now confirmed that bounded overlapping and parallel
+multi-leg execution are definite platform requirements. Leg cardinality and
+execution concurrency are therefore separate dimensions:
+
+```text
+Basket leg count        = 2..16
+Execution Stage width   = 1..bounded configured maximum
+Stage dispatch width    = 1..Stage width
+```
+
+### Stable design principles
+
+1. V1 becomes the width-one case of one unified Stage execution model, not a
+   separate legacy execution system.
+2. A future planner proposes a bounded Stage containing one or more exact
+   `ExecutionAction` values. Stage identity, base group revision and action
+   membership are immutable.
+3. Funding Carry may use terminal-serial, fill-driven overlapping or bounded
+   parallel Stages according to its registered Execution Plan.
+4. Portfolio Risk must authorize the complete Stage and a conservative
+   partial-execution envelope. Basket admission remains distinct from Stage
+   permission.
+5. The complete Stage, Action identities and Child identities must be durable
+   before the first external request is dispatched.
+6. OMS and Runtime state mutation remain single-writer. Only venue I/O may be
+   concurrent; callbacks are serialized into canonical state transitions.
+7. Each Child retains an independent accepted, rejected, definitely-not-sent,
+   partial, terminal or UNKNOWN result. Any unresolved truth is reconciled
+   before automatic completion, compensation or replacement.
+8. Cross-venue dispatch is best-effort concurrent execution, never an
+   all-or-none atomicity claim.
+9. `BasketTargetIntent`, Portfolio truth, Accounting truth, individual
+   `ExecutionAction`, `OrderRequest` and exact Gateway routing remain reusable
+   boundaries.
+10. Planner, bounded dispatcher and recovery-decision policies are registered
+    components, but none may bypass Risk, OMS, operator authority, durability
+    or reconciliation.
+11. Existing V1 journal history and width-one behavior require deterministic
+    backward-compatible replay and regression coverage.
+12. Basket maximum legs and Stage concurrency capacity are independent
+    limits. A large Basket may be executed through multiple smaller Stages.
+
+### Required reviewed follow-up
+
+Before implementation, a separate ADR or explicit amendment must define:
+
+- Stage and Stage-permit schemas and deterministic identities;
+- base-revision and concurrent Child state semantics;
+- partial-execution Risk bounds and permit consumption;
+- atomic local persistence before concurrent fan-out;
+- result-vector journaling, replay, reconciliation and recovery;
+- configured Stage-width bounds and capacity behavior;
+- migration, rollback and V1 compatibility acceptance tests.
+
+This confirmed requirement satisfies the scenario and owner-direction parts
+of the Kernel v1 change-control trigger. It does not waive the remaining
+analysis, migration, test or external-authorization gates.

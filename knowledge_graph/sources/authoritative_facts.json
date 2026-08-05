@@ -1,0 +1,308 @@
+{
+  "edges": [
+    {
+      "evidence": {
+        "locator": "The sole active product objective is:",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "relation": "USES_APPLICATION",
+      "source": "objective:funding-carry-mvp",
+      "target": "application:carry"
+    },
+    {
+      "evidence": {
+        "locator": "-> generic BasketTargetIntent",
+        "source_path": "architecture/module_topology.md"
+      },
+      "relation": "PRODUCES",
+      "source": "application:carry",
+      "target": "contract:basket-target-intent"
+    },
+    {
+      "evidence": {
+        "locator": "-> Portfolio Risk approval/reservation",
+        "source_path": "development/execution_promotion_plan.md"
+      },
+      "relation": "REQUIRES_AUTHORIZATION_FROM",
+      "source": "contract:basket-target-intent",
+      "target": "boundary:portfolio-risk"
+    },
+    {
+      "evidence": {
+        "locator": "ExecutionActionPermit        # issued durably by Portfolio Risk",
+        "source_path": "architecture/module_topology.md"
+      },
+      "relation": "AUTHORIZES_ACTION_FOR",
+      "source": "boundary:portfolio-risk",
+      "target": "boundary:oms-order-group"
+    },
+    {
+      "evidence": {
+        "locator": "-> existing Execution adapter",
+        "source_path": "architecture/module_topology.md"
+      },
+      "relation": "COORDINATES",
+      "source": "boundary:oms-order-group",
+      "target": "boundary:execution"
+    },
+    {
+      "evidence": {
+        "locator": "external submission method always fails closed",
+        "source_path": "architecture/module_topology.md"
+      },
+      "relation": "BLOCKED_BY",
+      "source": "boundary:oms-order-group",
+      "target": "gate:grouped-external-execution"
+    },
+    {
+      "evidence": {
+        "locator": "A018 accepted;",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "relation": "DEPENDS_ON",
+      "source": "gate:testnet",
+      "target": "task:A018"
+    },
+    {
+      "evidence": {
+        "locator": "A020  Funding Carry MVP Live Readiness",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "relation": "DEPENDS_ON",
+      "source": "gate:production",
+      "target": "task:A020"
+    },
+    {
+      "evidence": {
+        "locator": "A021  Controlled Micro-Live Acceptance",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "relation": "DEPENDS_ON",
+      "source": "gate:production",
+      "target": "task:A021"
+    },
+    {
+      "evidence": {
+        "locator": "Accounting is an independent domain.",
+        "source_path": "architecture/module_topology.md"
+      },
+      "relation": "RECORDS_FINANCIAL_FACTS_FOR",
+      "source": "domain:accounting",
+      "target": "application:carry"
+    },
+    {
+      "evidence": {
+        "locator": "At Basket admission, `ObjectiveExecutionPlanResolver` maps",
+        "source_path": "architecture/runtime_architecture.md"
+      },
+      "relation": "RESOLVES_PLAN_FOR",
+      "source": "component:runtime-execution-planning",
+      "target": "contract:basket-target-intent"
+    },
+    {
+      "evidence": {
+        "locator": "registered `OrderGroupPlanner` for at most one deterministic",
+        "source_path": "architecture/runtime_architecture.md"
+      },
+      "relation": "COORDINATES",
+      "source": "component:runtime-execution-planning",
+      "target": "boundary:oms-order-group"
+    },
+    {
+      "evidence": {
+        "locator": "`runtime.adapters.ExactExecutionGatewayRouter` dispatches",
+        "source_path": "architecture/runtime_architecture.md"
+      },
+      "relation": "COORDINATES",
+      "source": "component:runtime-execution-routing",
+      "target": "boundary:execution"
+    },
+    {
+      "evidence": {
+        "locator": "### Stable design principles",
+        "source_path": "adr/ADR-011-parent-order-group-multi-leg-execution.md"
+      },
+      "relation": "GOVERNS",
+      "source": "constraint:execution-stage-evolution",
+      "target": "component:runtime-execution-planning"
+    }
+  ],
+  "nodes": [
+    {
+      "authority": "authoritative",
+      "evidence": {
+        "locator": "The sole active product objective is:",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "id": "objective:funding-carry-mvp",
+      "label": "Binance Single-account BTC Funding Carry MVP",
+      "status": "active",
+      "type": "ProductObjective"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "CarryApplicationRuntime"
+      ],
+      "evidence": {
+        "locator": "Accepted ADR-014 adds the offline application path:",
+        "source_path": "architecture/module_topology.md"
+      },
+      "id": "application:carry",
+      "label": "Carry Application",
+      "status": "offline-accepted",
+      "type": "ApplicationBoundary"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "BasketTargetIntent"
+      ],
+      "evidence": {
+        "locator": "`strategy.basket` owns immutable",
+        "source_path": "architecture/module_topology.md"
+      },
+      "id": "contract:basket-target-intent",
+      "label": "BasketTargetIntent",
+      "status": "accepted",
+      "type": "DomainContract"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "PortfolioRiskCoordinator",
+        "PortfolioRiskExecutionGuard"
+      ],
+      "evidence": {
+        "locator": "Portfolio Risk reservations, permit generations",
+        "source_path": "architecture/state_ownership.md"
+      },
+      "id": "boundary:portfolio-risk",
+      "label": "Portfolio Risk Authorization",
+      "status": "accepted-offline",
+      "type": "DomainBoundary"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "OrderGroupRuntime",
+        "OrderGroupStateMachine",
+        "ExecutionActionPermit"
+      ],
+      "evidence": {
+        "locator": "Order Group execution control and child/action facts",
+        "source_path": "architecture/state_ownership.md"
+      },
+      "id": "boundary:oms-order-group",
+      "label": "OMS Order Group Execution Control",
+      "status": "accepted-offline",
+      "type": "DomainBoundary"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "AuthenticatedBinanceExecutionAdapter"
+      ],
+      "evidence": {
+        "locator": "existing Execution adapter",
+        "source_path": "architecture/module_topology.md"
+      },
+      "id": "boundary:execution",
+      "label": "Execution Adapter Boundary",
+      "status": "single-leg-existing",
+      "type": "DomainBoundary"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "AccountingLedger"
+      ],
+      "evidence": {
+        "locator": "Accounting is an independent domain.",
+        "source_path": "architecture/module_topology.md"
+      },
+      "id": "domain:accounting",
+      "label": "Accounting",
+      "status": "offline-implemented",
+      "type": "DomainBoundary"
+    },
+    {
+      "authority": "authoritative",
+      "evidence": {
+        "locator": "External execution: blocked",
+        "source_path": "development/execution_promotion_plan.md"
+      },
+      "id": "gate:grouped-external-execution",
+      "label": "Grouped External Execution",
+      "status": "blocked",
+      "type": "ExternalAuthorizationGate"
+    },
+    {
+      "authority": "authoritative",
+      "evidence": {
+        "locator": "Testnet authorization: not yet granted.",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "id": "gate:testnet",
+      "label": "Binance Grouped Testnet Execution",
+      "status": "unauthorized",
+      "type": "ExternalAuthorizationGate"
+    },
+    {
+      "authority": "authoritative",
+      "evidence": {
+        "locator": "Real-money authorization: not granted.",
+        "source_path": "development/funding_carry_fast_track_plan.md"
+      },
+      "id": "gate:production",
+      "label": "Production Real-money Execution",
+      "status": "unauthorized",
+      "type": "ExternalAuthorizationGate"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "ExecutionPlannerRegistry",
+        "ObjectiveExecutionPlanResolver",
+        "OrderGroupPlanner",
+        "SequentialResidualExecutionPlanner"
+      ],
+      "evidence": {
+        "locator": "## Grouped Execution Composition",
+        "source_path": "architecture/runtime_architecture.md"
+      },
+      "id": "component:runtime-execution-planning",
+      "label": "Runtime Execution Planning",
+      "status": "implemented-offline",
+      "type": "RuntimeComponent"
+    },
+    {
+      "authority": "authoritative",
+      "code_labels": [
+        "AsyncExecutionPortBridge",
+        "ExactExecutionGatewayRouter",
+        "ExactExecutionRoute"
+      ],
+      "evidence": {
+        "locator": "`runtime.adapters.ExactExecutionGatewayRouter` dispatches",
+        "source_path": "architecture/runtime_architecture.md"
+      },
+      "id": "component:runtime-execution-routing",
+      "label": "Runtime Exact Execution Routing",
+      "status": "implemented-offline",
+      "type": "RuntimeComponent"
+    },
+    {
+      "authority": "authoritative",
+      "evidence": {
+        "locator": "## 32. Accepted Execution-Stage Evolution Direction",
+        "source_path": "adr/ADR-011-parent-order-group-multi-leg-execution.md"
+      },
+      "id": "constraint:execution-stage-evolution",
+      "label": "Unified Bounded Execution Stage Evolution",
+      "status": "approved-direction",
+      "type": "ArchitectureConstraint"
+    }
+  ],
+  "schema_version": "1.0"
+}

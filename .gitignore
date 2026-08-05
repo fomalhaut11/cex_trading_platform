@@ -6,6 +6,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 coverage.xml
+coverage.json
 htmlcov/
 
 # Virtual environments and local dependency bundles
@@ -19,6 +20,17 @@ build/
 dist/
 *.egg-info/
 outputs/
+
+# Portable Graphify outputs are versioned; machine-local extraction state is not
+graphify-out/cache/
+graphify-out/cost.json
+graphify-out/manifest.json
+graphify-out/.graphify_analysis.json
+graphify-out/.graphify_labels.json
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/graph.html
+graphify-out/GRAPH_TREE.html
 
 # Local configuration and credentials
 .env

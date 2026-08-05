@@ -14,12 +14,13 @@ for one generic Basket execution loop. It now composes:
 
 1. whole-Basket Portfolio Risk assessment and durable reservation;
 2. deterministic Order Group creation and activation;
-3. current-position residual selection in canonical leg order;
-4. exact per-action Risk authorization and permit issuance;
-5. durable preparation, immediate platform recheck and permit consumption;
-6. deterministic submit/cancel outcome routing back to the exact group child;
-7. fail-closed `HALTED` and `RECOVERY_REQUIRED` states;
-8. ordered restart evidence before execution can resume.
+3. exact Objective-to-`ExecutionPlanRef` resolution and bounded planner lookup;
+4. current-position residual selection by a registered deterministic planner;
+5. exact per-action Risk authorization and permit issuance;
+6. durable preparation, immediate platform recheck and permit consumption;
+7. deterministic submit/cancel outcome routing back to the exact group child;
+8. fail-closed `HALTED` and `RECOVERY_REQUIRED` states;
+9. ordered restart evidence before execution can resume.
 
 Supporting Runtime adapters:
 
@@ -33,9 +34,22 @@ Supporting Runtime adapters:
 - `GroupedBootstrapEvidence` requires journal replay, Portfolio
   reconciliation, order reconciliation, OMS effect projection, Accounting
   drain and Carry projection in that exact order.
+- `ExactExecutionGatewayRouter` is Runtime-owned and routes submit, cancel and
+  query only through an explicitly configured `(account_id, instrument_id)`
+  scope. Its configuration bound is not a strategy-leg bound.
+- `ExecutionPlannerRegistry` keys on the complete `ExecutionPlanRef`;
+  `ObjectiveExecutionPlanResolver` fails closed on unknown versioned
+  objectives. The legacy one-plan constructor remains as a compatibility
+  composition around the same registry.
 
 No Funding-specific branch was added to Risk, OMS or grouped execution. No
 frozen Kernel v1 public contract changed.
+
+Subsequent architecture-fitness coverage applies the same planner/router
+boundaries to two-, three-, four- and 16-leg Baskets and to a synthetic
+Binance/OKX multi-account Basket. This proves structural compatibility only;
+it does not provide or authorize an OKX adapter, a cross-venue execution plan,
+Testnet access or production trading.
 
 ## Safety Semantics
 
@@ -93,3 +107,20 @@ Evidence: `development/a018_offline_execution_acceptance.md`.
 Even after A018, A019 remains external and unauthorized until the project
 owner separately approves bounded Binance Testnet execution and supplies the
 required external prerequisites. Production execution remains prohibited.
+
+## 2026-08-05 Compatibility Refactor Validation
+
+The additive Runtime planner registry, exact gateway router and complete
+submit/cancel/query bridge passed:
+
+```text
+pytest                           604 passed, 238 subtests passed
+branch coverage                  85.27%, 85% gate passed
+Ruff src tests tools             passed
+MyPy --strict src                passed (142 source files)
+compileall src tests tools       passed
+federated knowledge-graph check passed (1,637 nodes / 3,051 edges)
+```
+
+This validation is credential-free and offline. It grants no Testnet or
+production authority.

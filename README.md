@@ -40,6 +40,13 @@ $env:PYTHONPATH = "src"
 Read `architecture/module_topology.md`, `architecture/state_ownership.md` and
 the accepted ADRs before changing a public contract.
 
+The federated project knowledge graph is documented in
+`knowledge_graph/README.md`. It combines the local Graphify AST code layer
+with deterministic ADR, architecture, delivery, operations and external-gate
+facts. Run `tools/knowledge_graph/update_code_graph.ps1` after indexed code or
+authority documents change; source, passing tests and accepted repository
+documents always outrank graph-derived relationships.
+
 The active delivery sequence is the single-account BTC Funding Carry
 Fast-Track MVP in `development/funding_carry_fast_track_plan.md`. The broader
 `development/platform_delivery_plan.md` is retained but deferred until after

@@ -1,0 +1,86 @@
+{
+  "forbidden_authoritative_source_prefixes": [
+    "ai_collaboration/"
+  ],
+  "required_edges": [
+    {
+      "relation": "PRODUCES",
+      "source": "application:carry",
+      "target": "contract:basket-target-intent"
+    },
+    {
+      "relation": "REQUIRES_AUTHORIZATION_FROM",
+      "source": "contract:basket-target-intent",
+      "target": "boundary:portfolio-risk"
+    },
+    {
+      "relation": "BLOCKED_BY",
+      "source": "boundary:oms-order-group",
+      "target": "gate:grouped-external-execution"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "gate:testnet",
+      "target": "task:A018"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "gate:production",
+      "target": "task:A020"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "gate:production",
+      "target": "task:A021"
+    },
+    {
+      "relation": "OWNED_BY",
+      "source": "state:account-and-position-state",
+      "target": "component:portfolio-account-engine"
+    },
+    {
+      "relation": "GOVERNS",
+      "source": "constraint:execution-stage-evolution",
+      "target": "component:runtime-execution-planning"
+    }
+  ],
+  "required_nodes": [
+    {
+      "id": "adr:ADR-011",
+      "status": "accepted"
+    },
+    {
+      "id": "adr:ADR-012",
+      "status": "accepted"
+    },
+    {
+      "id": "adr:ADR-013",
+      "status": "proposed"
+    },
+    {
+      "id": "adr:ADR-014",
+      "status": "accepted"
+    },
+    {
+      "id": "task:T045",
+      "status": "complete"
+    },
+    {
+      "id": "gate:grouped-external-execution",
+      "status": "blocked"
+    },
+    {
+      "id": "gate:testnet",
+      "status": "unauthorized"
+    },
+    {
+      "id": "gate:production",
+      "status": "unauthorized"
+    },
+    {
+      "id": "constraint:execution-stage-evolution",
+      "status": "approved-direction"
+    }
+  ],
+  "schema_version": "1.0"
+}

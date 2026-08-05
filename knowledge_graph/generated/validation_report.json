@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "schema_version": "1.0",
+  "summary": {
+    "edge_count": 3051,
+    "error_count": 0,
+    "node_count": 1637,
+    "valid": true,
+    "warning_count": 4
+  },
+  "warnings": [
+    "legacy ADR has no explicit status heading: adr:ADR-002",
+    "legacy ADR has no explicit status heading: adr:ADR-003",
+    "legacy ADR has no explicit status heading: adr:ADR-004",
+    "legacy ADR has no explicit status heading: adr:ADR-005"
+  ]
+}

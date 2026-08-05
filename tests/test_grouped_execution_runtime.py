@@ -5,12 +5,21 @@ import unittest
 from pathlib import Path
 
 from cex_quant.core import Price, Quantity
-from cex_quant.instruments import InstrumentKind
+from cex_quant.execution import (
+    CancelOrder,
+    CancelResult,
+    ExecutionOutcome,
+    QueryOrder,
+    SubmitResult,
+)
+from cex_quant.instruments import InstrumentId, InstrumentKind
 from cex_quant.oms import (
     ExecutionActionState,
     JsonLinesOmsJournal,
     OrderEvent,
     OrderGroupStatus,
+    OrderReconciliationSnapshot,
+    OrderRequest,
     OrderStatus,
 )
 from cex_quant.portfolio import PositionRiskReadiness
@@ -21,7 +30,12 @@ from cex_quant.risk import (
 )
 from cex_quant.runtime import (
     GROUPED_BOOTSTRAP_ORDER,
+    AsyncExecutionPortBridge,
     DeterministicOfflineExecutionPort,
+    ExactExecutionGatewayRouter,
+    ExactExecutionRoute,
+    ExecutionPlannerBinding,
+    ExecutionPlannerRegistry,
     GroupedAdmissionDisposition,
     GroupedBootstrapEvidence,
     GroupedBootstrapStep,
@@ -30,11 +44,15 @@ from cex_quant.runtime import (
     GroupedExecutionRuntimeStateError,
     GroupedExecutionRuntimeStatus,
     GroupedExecutionStepDisposition,
+    ObjectiveExecutionPlanBinding,
+    ObjectiveExecutionPlanResolver,
     OfflineExecutionDirective,
     OfflineExecutionDirectiveKind,
     OrderGroupRuntime,
+    SequentialResidualExecutionPlanner,
 )
 from tests.group_test_support import (
+    ACCOUNT_ID,
     ManualClock,
     execution_plan,
     two_leg_basket,
@@ -69,6 +87,31 @@ class _AdvanceClockGuard:
     def assert_submit_allowed(self, request: object) -> None:
         del request
         self._clock.step(self._amount)
+
+
+class _AcceptingAsyncGateway:
+    def __init__(self) -> None:
+        self.submitted_instruments: list[InstrumentId] = []
+
+    async def submit(self, command: OrderRequest) -> SubmitResult:
+        self.submitted_instruments.append(command.instrument_id)
+        return SubmitResult(
+            client_order_id=command.client_order_id,
+            outcome=ExecutionOutcome.ACCEPTED,
+        )
+
+    async def cancel(self, command: CancelOrder) -> CancelResult:
+        return CancelResult(
+            client_order_id=command.client_order_id,
+            outcome=ExecutionOutcome.ACCEPTED,
+        )
+
+    async def query_order(
+        self,
+        command: QueryOrder,
+    ) -> OrderReconciliationSnapshot | None:
+        del command
+        return None
 
 
 class GroupedExecutionRuntimeTests(unittest.TestCase):
@@ -240,6 +283,120 @@ class GroupedExecutionRuntimeTests(unittest.TestCase):
         )
         self.assertEqual(len(execution.submissions), 2)
         self.assertEqual(runtime.status, GroupedExecutionRuntimeStatus.RUNNING)
+
+    def test_grouped_runtime_uses_bridged_exact_scope_router(self) -> None:
+        spot_gateway = _AcceptingAsyncGateway()
+        usd_m_gateway = _AcceptingAsyncGateway()
+        gateway = ExactExecutionGatewayRouter(
+            (
+                ExactExecutionRoute(
+                    account_id=ACCOUNT_ID,
+                    instrument_id=self.spot.instrument_id,
+                    gateway=spot_gateway,
+                ),
+                ExactExecutionRoute(
+                    account_id=ACCOUNT_ID,
+                    instrument_id=self.perpetual.instrument_id,
+                    gateway=usd_m_gateway,
+                ),
+            )
+        )
+        bridge = AsyncExecutionPortBridge(gateway)
+        bridge.start()
+        self.addCleanup(bridge.close)
+        runtime = GroupedExecutionRuntime(
+            risk_engine=PortfolioRiskEngine(),
+            risk_coordinator=self.coordinator,
+            groups=self.groups,
+            execution=bridge,
+            cancel_execution=bridge,
+            platform_guard=_AllowSubmitGuard(),
+            execution_plan=execution_plan(),
+            now_ns=self.clock,
+        )
+        runtime.start()
+        admission = self.admit(runtime)
+        assert admission.group is not None
+
+        first = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(admission),
+            self.policy,
+        )
+        assert first.action is not None
+        self.fill(runtime, first, "10")
+        first_quantity = "10" if first.action.side.value == "buy" else "-10"
+        second = runtime.execute_next(
+            admission.group.order_group_id,
+            self.action_snapshot(
+                admission,
+                {first.action.instrument_id: first_quantity},
+            ),
+            self.policy,
+        )
+        assert second.action is not None
+
+        self.assertEqual(
+            spot_gateway.submitted_instruments,
+            [self.spot.instrument_id],
+        )
+        self.assertEqual(
+            usd_m_gateway.submitted_instruments,
+            [self.perpetual.instrument_id],
+        )
+        self.assertEqual(
+            {first.action.instrument_id, second.action.instrument_id},
+            {self.spot.instrument_id, self.perpetual.instrument_id},
+        )
+        runtime.stop()
+
+    def test_runtime_resolves_registered_plan_from_objective_metadata(
+        self,
+    ) -> None:
+        plan = execution_plan()
+        basket = two_leg_basket()
+        execution = DeterministicOfflineExecutionPort(
+            (
+                OfflineExecutionDirective(
+                    kind=OfflineExecutionDirectiveKind.ACCEPT
+                ),
+            )
+        )
+        runtime = GroupedExecutionRuntime(
+            risk_engine=PortfolioRiskEngine(),
+            risk_coordinator=self.coordinator,
+            groups=self.groups,
+            execution=execution,
+            platform_guard=_AllowSubmitGuard(),
+            now_ns=self.clock,
+            execution_plan_resolver=ObjectiveExecutionPlanResolver(
+                (
+                    ObjectiveExecutionPlanBinding(
+                        objective=basket.objective,
+                        execution_plan=plan,
+                    ),
+                )
+            ),
+            execution_planner_registry=ExecutionPlannerRegistry(
+                (
+                    ExecutionPlannerBinding(
+                        execution_plan=plan,
+                        planner=SequentialResidualExecutionPlanner(),
+                    ),
+                )
+            ),
+        )
+        runtime.start()
+
+        admission_result = runtime.admit(
+            basket,
+            publication(portfolio_snapshot(self.instruments, self.sensitivities)),
+            self.policy,
+        )
+
+        assert admission_result.group is not None
+        self.assertEqual(admission_result.group.execution_plan, plan)
+        runtime.stop()
 
     def test_timeout_after_send_latches_recovery_and_no_blind_retry(self) -> None:
         runtime, execution = self.runtime(

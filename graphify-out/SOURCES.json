@@ -1,0 +1,1039 @@
+{
+    "schema_version":  1,
+    "graphify_version":  "graphify 0.9.31",
+    "extraction_mode":  "code-only-local-ast-unlabeled-clustering",
+    "graph_path":  "graphify-out/graph.json",
+    "graph_sha256":  "2368ce2ca2b6741df4f59d6d0f9540d270b8c793c0e56a06abfe4306573eb389",
+    "source_count":  257,
+    "source_fingerprint":  "1068e9291b32fe765fcf09a43de50d5e4615ce6905e9da196620fdd0a937e4a5",
+    "sources":  [
+                    {
+                        "path":  "pyproject.toml",
+                        "sha256":  "ea74aa70ea3f83fd6a0a2c39024ef4f8ffc0228dee993088a3e39c21502d4dda"
+                    },
+                    {
+                        "path":  "src/cex_quant/__init__.py",
+                        "sha256":  "07253da05ac79beb77b40e8cc522bd068242bac9a3421b4ce9128a61565e9f2b"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/__init__.py",
+                        "sha256":  "b593c8b5a88c60ec00556cdc53763cb1d1bbed580db41d6dc27d95fbe5cd5433"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/allocation.py",
+                        "sha256":  "e17970fba9aea5306a95969f7aa845950fc22c863d83f84f25bee3e5e2cd51d6"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/attribution.py",
+                        "sha256":  "c962244e9ce3b1c2bc3852ed16d515c2afb578d239e71450fc69ba7d347a43aa"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/codec.py",
+                        "sha256":  "03160f66bfb2746f1eb8b48f24bce1302994effd72495aac509804ccdd904135"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/facts.py",
+                        "sha256":  "ff260da73f909eace6be9f06635233e8ff6f066b6c7488629ab8521776c79cea"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/identifiers.py",
+                        "sha256":  "36f05554be44281ca3db31494a57949384f69e6666e9008f6a4b4dd564275f72"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/journal.py",
+                        "sha256":  "512e6bf5d41cb2e0952c6bfa79837c121d40ece565ff67e60efd2b5f413df0b7"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/ledger.py",
+                        "sha256":  "60a60dc2a97ac1ea5f158eb68edd37c50a239752eb7416424f61cd7207597a1e"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/mapping.py",
+                        "sha256":  "e0454607fd17ec8ebb24d3861c5c4a70fde52321f65d0f9382deea1ed012f852"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/model.py",
+                        "sha256":  "17df449245ecf28dbc84dece8c7d1d7ff142a7e7116be510217d4d03820fb5d6"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/ownership.py",
+                        "sha256":  "923a4a6045feaef41315f6139396fc408ccf30cc4d60d1b76750608c358d9a3f"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/reconciliation.py",
+                        "sha256":  "3849014d6a168471eb7b8e7f634e2af188db0bbafbb1171ee6d028073f027b1d"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/reversal.py",
+                        "sha256":  "c8378d2164069453250c9fc69f960455aff335c19f7bed39e304ab9218f27d57"
+                    },
+                    {
+                        "path":  "src/cex_quant/accounting/valuation.py",
+                        "sha256":  "286d150b366abd6f6f648aceab00a4d860d72e68b42c3eff52872a5d8d206473"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/__init__.py",
+                        "sha256":  "65e5173b6788aeb064ecd9f0f3491cafbf11d5a0ad99eceadde1d76719cf1f5d"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/__init__.py",
+                        "sha256":  "5e53e6652f069d48de3f2034e275b8e405567a8997ce9cd512fcb46d84fbf59c"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/codec.py",
+                        "sha256":  "88a8e1d1e012d5fec914a103c5f70e51f34c3614e9ed569638ab7a6a763f5085"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/facts.py",
+                        "sha256":  "3bfce9c425829c37c4e6e0a42a07ca61164181ca7b99184f8b24cd8116ee97da"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/financial.py",
+                        "sha256":  "39147c4988994e3dadc83f9d2ec6543d78a0658bf3b439c523227ade9af7ad40"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/__init__.py",
+                        "sha256":  "a3e9241c9a77eeebae78dd92a4648f3e3986d87d4f492015418f8932daa30063"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/features.py",
+                        "sha256":  "57ecc5a0f089b4d6da8ece9bfa9ef9ccda0b0dd4fba34f7c83ac7872a7c23847"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/model.py",
+                        "sha256":  "7f70533277719455c2ea6df327b947deccf6bcaa1a7d08aeff2a15e3e12944cf"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/objectives.py",
+                        "sha256":  "c56e6372c1772c12073f7094bc091930e41d23f90ad3cdc81292b87bc1d2e4c4"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/policy.py",
+                        "sha256":  "6536f86de99dbadd909d8bdfa60ee67d27fa418e519955f2f2af8f0383f7f900"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/snapshot.py",
+                        "sha256":  "64bbe20f2a8d66f0da489bed5a2339a115c4699fc33216b01f340041df7e391f"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/funding_arbitrage/strategy.py",
+                        "sha256":  "ed62cbfeb3d2aa0b8675f0f102905c7d9375deb10a9e603b876c30e1766e4cef"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/hedge.py",
+                        "sha256":  "c02cb4172e15b3df9af1176aa202ed42b80ed3d638ab96a27e616cb81f5de4c4"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/identifiers.py",
+                        "sha256":  "4b98c5f492b48975b2ac136f791606f978c809a84e8ba823411772c180d199e9"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/journal.py",
+                        "sha256":  "63462de8f9b3699faae819dbd9481a5d5594b2f2372c9771ac2d2dce8973fb1a"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/model.py",
+                        "sha256":  "88399d234baf973ef033d16125da4da16060eda53a23eaeb89c8f204bbcb74f2"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/ownership.py",
+                        "sha256":  "b79db2d3dc280291adabe80b84756fe5d83ac27d170abf5217be6b0b34dc8d4d"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/recovery.py",
+                        "sha256":  "221c83191fe735ca9d4bc648a35ee228b0f10da93af1706fabf9409338eb7fd9"
+                    },
+                    {
+                        "path":  "src/cex_quant/applications/carry/state.py",
+                        "sha256":  "5077a16b4250d11e9419f0ecd92fda536d6ba8bb473043a110e3046e23ecfb98"
+                    },
+                    {
+                        "path":  "src/cex_quant/core/__init__.py",
+                        "sha256":  "89fe03fa837a8cd90d7b1c153f23653fa5dd2484424b5bf40557d5f51821f6cd"
+                    },
+                    {
+                        "path":  "src/cex_quant/core/events.py",
+                        "sha256":  "284216b93fe95a4a2ed8f55d076c1ebeb92c8ae2e12f86814ee095a68a98eded"
+                    },
+                    {
+                        "path":  "src/cex_quant/core/fixed_point.py",
+                        "sha256":  "97cc17e20a8af70b3d4b1d89719f218417565d82a947702d2e574505c92fc72d"
+                    },
+                    {
+                        "path":  "src/cex_quant/core/identifiers.py",
+                        "sha256":  "dd799d115cad6ab485b29395457d7e903b233f3ef168e788a59ec0019c96a99e"
+                    },
+                    {
+                        "path":  "src/cex_quant/core/time.py",
+                        "sha256":  "eacd9e0863d7c81f5a4e0f2ca52aca58a13efc53b9d6fa747f1a373eaa327e45"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/__init__.py",
+                        "sha256":  "3f189133421fd5e08ff41fa899fb03b72c70b30e644dbddb15c9a66ece072569"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/__init__.py",
+                        "sha256":  "7f5315f63edeb243e317af7102719c6bf9894aa88458941f1e622550e8d74e56"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance.py",
+                        "sha256":  "72a7b0f2aa7088a56b7bc45c8edf41be1fc711370386c5ce9ae17c0f106b8918"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_authenticated.py",
+                        "sha256":  "9a44c721dbfddcf2d78ba6c374fa3cf2e95b7563373fa730b07703fb084ceaf9"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_credentials.py",
+                        "sha256":  "a46e7bd455495dc02f7e863038bb6ad45ca27cb1051c90b4c6e90eba34648373"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_http_transport.py",
+                        "sha256":  "cc8c2b398a0e8392e02378d75d5a11f50d3df9231eb6f4a99ed37adb39425ef1"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_private_stream.py",
+                        "sha256":  "5857254cf1a0086518888d85341c60880f2927538dfc2ac33f36b123277e4abe"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_private_transport.py",
+                        "sha256":  "57d47b2537c2519beb288afd4f7ef5d083c7ee5a3c4ff4b3d2ab42be0fce778c"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/adapters/binance_reconciliation.py",
+                        "sha256":  "527068adc100b3ed14be28dc027cae445b2ab31a14f37debc83ee88312bc8a02"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/contracts.py",
+                        "sha256":  "67db1eee1ec9fa8047a4397c91961cdb216576c26584ef59484aacdb6441c620"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/gateway.py",
+                        "sha256":  "c0588e6ed0c217740164ffd93092e3de292f9f9a99cee641faa19b392cd9e4d0"
+                    },
+                    {
+                        "path":  "src/cex_quant/execution/private_stream.py",
+                        "sha256":  "4cda081515c2be1fdf7bf5066e50e7a3a97fd43a75a4885533045932393bfa4b"
+                    },
+                    {
+                        "path":  "src/cex_quant/features/__init__.py",
+                        "sha256":  "964b64cef6d66f13a5b6c5502fb335bd43d8c42c1d4d25abefff1e6768c1f14c"
+                    },
+                    {
+                        "path":  "src/cex_quant/features/engine.py",
+                        "sha256":  "7d93d55a5902f75ac80d1416d139e66521c24df6c076bc230efca2b6178113af"
+                    },
+                    {
+                        "path":  "src/cex_quant/features/model.py",
+                        "sha256":  "7a916cfe22bbcfb3356d389f3a9e57b1383842f08f8d338407c9352fb976f3ce"
+                    },
+                    {
+                        "path":  "src/cex_quant/features/options.py",
+                        "sha256":  "be23f675c0d4a337b81c48730e44a8c8e6ca9eb6ad2377b3ba22e261d4478939"
+                    },
+                    {
+                        "path":  "src/cex_quant/features/registry.py",
+                        "sha256":  "4d4542255e888c12192a074ebb605e7726e41122e078a0261762b41ba45ef6da"
+                    },
+                    {
+                        "path":  "src/cex_quant/instruments/__init__.py",
+                        "sha256":  "21ceb87a28d2d9800d29da6582765a864f4a80b33c968c4835593e71b2ed03dc"
+                    },
+                    {
+                        "path":  "src/cex_quant/instruments/model.py",
+                        "sha256":  "8260cdbeb3a69175c7892c95039f6ac1110703cda72c02b86d63d1e27b146ddc"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/__init__.py",
+                        "sha256":  "cee5982727217d4d988b7d061daf9c467b49609529f7c6abb9d011395e59d712"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/__init__.py",
+                        "sha256":  "60865efa0619c8288b4b51294f1e92d0052d269dd3d22c9e0a319616c83d2cff"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/__init__.py",
+                        "sha256":  "2e2e09b45f49ea3181e0bb8a683f2396e7bb2de5a41ce821b7647af5cb21347f"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/connection.py",
+                        "sha256":  "d015f80c8cc4cf3bd692d51f9c772dada147283195ea19af111590fe16cf4034"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/exchange_info.py",
+                        "sha256":  "1c914118048bfbac20fc5d6f6148ca20f7051b90bf72770de9a3c9412727346b"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/normalizer.py",
+                        "sha256":  "4edfd65674a321a18eb5dc1db6bdfdf810dd912658a358529a90c0ec7aba1382"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/stream.py",
+                        "sha256":  "9dd62e1540121cb499411589000c6d573045f68cf84ebe5cacf5158c122e5a52"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/adapters/binance/websockets_transport.py",
+                        "sha256":  "e35fec0e2d58fd6ea0aef702e6523596590139c479ca59e0949ce59543ac87e2"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/events.py",
+                        "sha256":  "e7b7fd77dd4198d747ea84640bc457903a9eac21d405b7246630075ecf3f49fc"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/normalization.py",
+                        "sha256":  "bcbbf28ff918314652b32a54447a8dd0d78387615e4b35633f7d9654457c41ec"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/__init__.py",
+                        "sha256":  "8f3cc2a8de1386da67d3103421a76547dd82446ed4a4d7379df75abbe041f9e1"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/funding.py",
+                        "sha256":  "fe8e8794c81aec2a1a54dd81072fa3a848aeb5ecfd40b5de9c2894227c3b0ef6"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/l1.py",
+                        "sha256":  "962b77b9b1bf8604d053f6949e069a5a60dc182e59ff45dd34009385149294d5"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/model.py",
+                        "sha256":  "fa2cd3f94fed37c4a52af5a30fec377e84bf3be0540f229a9a3660478961b9b5"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/order_book.py",
+                        "sha256":  "534261115ee7b7393c888c354bdbb6fc769d5effabeaf4f9ee343ddad2aec389"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/state/partial.py",
+                        "sha256":  "91a4bc3fa8ee903077044aa4ba9a81d86ceef6ee26ab677477887d2b5d9e9617"
+                    },
+                    {
+                        "path":  "src/cex_quant/market_data/validation.py",
+                        "sha256":  "ccd60465ead1a1662ea2027cc011623c1f169439d1c2899a2e81f614ce8a51ac"
+                    },
+                    {
+                        "path":  "src/cex_quant/observability/__init__.py",
+                        "sha256":  "1ccc4e456562e0400228e692e5a2599754d6d854530e23868981edbc26d3f592"
+                    },
+                    {
+                        "path":  "src/cex_quant/observability/clock.py",
+                        "sha256":  "40d48d9b7f18739024ffc13005c2e94b126f4ebec36f8db2cf3cc7eade430ab2"
+                    },
+                    {
+                        "path":  "src/cex_quant/observability/health.py",
+                        "sha256":  "26170b6f2a9c1b5984b320f00bcb246b84c9c312931aa16a29b8277ca05bfb18"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/__init__.py",
+                        "sha256":  "c2d23ebf9d741555db67e5a114f6e3ae6e522947f731b2495a3e1e004efc8711"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/group_codec.py",
+                        "sha256":  "29363d6b36bda4c9f68a3d0a70a3a48c2c914a1be339283e4e017ee657157a4e"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/group_model.py",
+                        "sha256":  "34ca141fc60f083775aad4d560a1646bfaa592d87ec2a17e206b1091078dd837"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/group_state.py",
+                        "sha256":  "c9ec4c87da070e7044fbc2f946587586795eb478a50504cb363c45c22dfeb054"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/journal.py",
+                        "sha256":  "6acdcef246cdf02cac126d67a5e01916b5d7b59c4fbe7884657fd1368781c89a"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/model.py",
+                        "sha256":  "b462ca5f9d8b7854642a764331b9df850bc128a57ac8fa4eeaa53d2dd4233ba3"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/reconciliation.py",
+                        "sha256":  "5ed92959e3bb7637734e6f04ec70543c0a807e9a9367e94749ef85e2e5aac5fc"
+                    },
+                    {
+                        "path":  "src/cex_quant/oms/state.py",
+                        "sha256":  "9fba53a58086105eb740477f888fb9cbca9ff5880ea736c3201599133b59ab20"
+                    },
+                    {
+                        "path":  "src/cex_quant/portfolio/__init__.py",
+                        "sha256":  "cf244e9b2fd212645af5133cceb093606da66162d17966681a4f1080a6ffbe83"
+                    },
+                    {
+                        "path":  "src/cex_quant/portfolio/contracts.py",
+                        "sha256":  "75f4b299db133d3d420976dc7503e385716b56af8e38d2e8811a9ec7d53ad084"
+                    },
+                    {
+                        "path":  "src/cex_quant/portfolio/exposure_state.py",
+                        "sha256":  "65586145eaa448a8f97927a110fca8c5ccabf2cfe74aa7e19c7c1fb161c69698"
+                    },
+                    {
+                        "path":  "src/cex_quant/portfolio/risk_inputs.py",
+                        "sha256":  "e2bf58afe8e8142ddd0bba2cb481e50b42f736f0dbd3540256aaee45d60d4842"
+                    },
+                    {
+                        "path":  "src/cex_quant/portfolio/state.py",
+                        "sha256":  "4d9b70c6834107ec6a519474cefb91cb99eae88a1708ad343cb605bcc7154265"
+                    },
+                    {
+                        "path":  "src/cex_quant/recorder/__init__.py",
+                        "sha256":  "0590a1cae25f3e341ac63eb161df09338f74804315d1fdf7b2e3574e52ac343c"
+                    },
+                    {
+                        "path":  "src/cex_quant/recorder/codec.py",
+                        "sha256":  "9f5d010dbdea9ba6d4ad5e5d00f05d14374878dd9e0f0dc1a06967151d016bd0"
+                    },
+                    {
+                        "path":  "src/cex_quant/recorder/contracts.py",
+                        "sha256":  "b79e387f3a5ceaf0e327dbf09ff7da0aa3d5bdcb7c6baae638d9e5e5535483ce"
+                    },
+                    {
+                        "path":  "src/cex_quant/recorder/jsonl.py",
+                        "sha256":  "649af606b7efc0aecb92368beeb28a9db04031197a262ced6bccbe1de5731610"
+                    },
+                    {
+                        "path":  "src/cex_quant/recorder/replay.py",
+                        "sha256":  "146c72f13fe2b92f854644aacd26689e2d4a773d7b714356d5665cac5476a015"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/__init__.py",
+                        "sha256":  "ccbe56e8ff4dc6725e18576a23f93d737a1d78a423ab6324f6b1e405fbe7a3ca"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/engine.py",
+                        "sha256":  "925c83b48f052daab370d4235a20aa6a26fb050b38ada3147327d8c1172e0bf7"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/model.py",
+                        "sha256":  "cd77d59765a8933fc944e91a7b4fba9b0b94f6dbf94c0d7e41e5f0f280d8c9ef"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/portfolio_coordinator.py",
+                        "sha256":  "92a2d056dcd1a27ddeb9f071f13e66deafebc56b3e0a65fe7e6352089d89059b"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/portfolio_engine.py",
+                        "sha256":  "55be73671aa17776a7108560bdc5a47005e55cb4a34b01f20f53544e541182e8"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/portfolio_journal.py",
+                        "sha256":  "0e6a43b959f627048c91b916c823e66d690eb54dcb876d9fc1052fff1c983594"
+                    },
+                    {
+                        "path":  "src/cex_quant/risk/portfolio_model.py",
+                        "sha256":  "fa374d9620d2602a44ac1b83103a854a97fd797afee46e530310cdf349cadeda"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/__init__.py",
+                        "sha256":  "62e1d5fdcef587d58ed713968b035e7a7a9ae05256977690a4208c4cc42a13d7"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/__init__.py",
+                        "sha256":  "da61388f04a85294c579ed3dbee8d2a8af56479d8c385cf6fb3a444cade16ec2"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/execution.py",
+                        "sha256":  "91b55b8af64b766a380a1881ed6091cbbf5e871621c6a8c88d737d7d53b3480e"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/execution_routing.py",
+                        "sha256":  "bc996b63e2c66adf9d2f8dd0797a0b790a6cdb5d1ad95eead03f3c531888d28c"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/features.py",
+                        "sha256":  "5a5290faead1d0fdc82afb9299d9c681201bc39ca0b4a2d00d773e26024a8015"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/market_state.py",
+                        "sha256":  "6f71643c93a78d49d843056299344ec28ad5c124355beb504af194546aeca9bd"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/adapters/oms.py",
+                        "sha256":  "2169c2691defcc3348418c6b86cf934ef1d6188ba8f83ccca02f95a704609a2c"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/application.py",
+                        "sha256":  "2b0411e33100b7abf4323f749ef4f37bd950869a6afb8374a6f5a4c4858830ac"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/binance_clock.py",
+                        "sha256":  "00608ce80e6d543ae51d9982726e014d12f1a548fbda1e8500d94c2a4c5fe86f"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/binance_environment.py",
+                        "sha256":  "15749fa29e7935b1b558b3fede5d02dd7af0789a507a4f81d23e9a4d4ed104fb"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/carry_application.py",
+                        "sha256":  "e5944c90d6707a27346c88c4601cdc9b789e67b3ae3119b189419e6ab6b0470b"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/carry_projection.py",
+                        "sha256":  "abf30e3a974dad55265fe1f58a6244160461ae3078530a5009f260f3e8b05422"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/deployment.py",
+                        "sha256":  "7972dda24077aebb15719efedba815c44b7aad843c76f0e5c0bc7f18fd6f50d3"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/execution_handoff.py",
+                        "sha256":  "74aad40b82ae406f09c353fb9e22d21deb76a8d5197e5f166a9d0a8820f824a5"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/execution_planning.py",
+                        "sha256":  "1b7f03823149d95c2b36c7982d46bf97a16ce9adabe2b16e78a513d1be7acfdf"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/financial_fact_handoff.py",
+                        "sha256":  "5a44e5c834075335cba580a29f8203caa031f20f402ffe76bb598887c1171680"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/grouped_execution.py",
+                        "sha256":  "65cbf14986cbcd30e1ed4ff68982ae41fa572162c3c8ea91227943d8d9aeebbd"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/offline_execution.py",
+                        "sha256":  "d0db08eb50e6716ed4c8c19612ffb7991aef1f2e9e1544e45b44ba3c2937b6f1"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/operations.py",
+                        "sha256":  "65a6b0dd473a38e2d5df2e07b988130996069303b814b246471a48d777c7b30c"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/operations_journal.py",
+                        "sha256":  "82656a0e63f252a327727eec7a0b890bd1a1400a199c194968ec7badcc2dd7ed"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/operator_auth.py",
+                        "sha256":  "44abc3980a1da454006cc0d3761e26408d7cf3c7893354fade98ab00540aa096"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/operator_endpoint.py",
+                        "sha256":  "e7a4bb66b4f2201b3cd7b692a0c284a4af5475003cea876f3b567de15444508c"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/order_group_runtime.py",
+                        "sha256":  "1c9739c491a93fda15e443c122b199c7f137e10a11fe95ac0c55aea408c198cc"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/pipeline.py",
+                        "sha256":  "2bb63d22c0308ced7d88915e0f2c9f46b7c2b5b6837dd4aca670c147e1729524"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/portfolio_projection.py",
+                        "sha256":  "33a0c5d6ca2d7fe46b52991b21bde7aadb808c88852d8eeb9d875c90132c94e8"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/portfolio_risk_guard.py",
+                        "sha256":  "36d0893f4d76f10f43f93f6ed94b8bacbc8d5a3273386c5f136634af969f4143"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/private_stream_application.py",
+                        "sha256":  "195e9684a27d43302c48a6c13dec7e20cc8996ac1a6e1462736e0c586997ad44"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/reconciliation.py",
+                        "sha256":  "ec138ec5a13fa33e72798948f5ebce5b42fc6743a365d8cb3d3abe5d3981cb8a"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/recorder_handoff.py",
+                        "sha256":  "b6c102db32f6607e860119dcb91d89f099cc28da321c09c55d9a90d1e8b04d58"
+                    },
+                    {
+                        "path":  "src/cex_quant/runtime/snapshot_coordinator.py",
+                        "sha256":  "3a755ef9980751840502d964804accf08598fe290ceb2cea8c8428a297e9a304"
+                    },
+                    {
+                        "path":  "src/cex_quant/snapshots/__init__.py",
+                        "sha256":  "af50addc87e7b5beb0bfc94c9d2f8d30828c062da6fdfd15d8210b8780142067"
+                    },
+                    {
+                        "path":  "src/cex_quant/snapshots/assessment.py",
+                        "sha256":  "79710d33e99e0ec89bd8450dc7ede3c54be4f535bea3987a78515fb4232b0138"
+                    },
+                    {
+                        "path":  "src/cex_quant/snapshots/model.py",
+                        "sha256":  "860ff637c3dab6e4231ab7812dd4d7699dde12d71772f185d289fd57f86380fa"
+                    },
+                    {
+                        "path":  "src/cex_quant/snapshots/policy.py",
+                        "sha256":  "70b995dade627a46bb80a206c6d04a699c061e26821da685089ef2376cfa14a6"
+                    },
+                    {
+                        "path":  "src/cex_quant/strategy/__init__.py",
+                        "sha256":  "76a10596e15085e4816e39b8033c2d9715ae1bb6658c6bce3537a810ca6de0da"
+                    },
+                    {
+                        "path":  "src/cex_quant/strategy/basket.py",
+                        "sha256":  "d5dda5a93bc37a96d3a119a5947a79252bd37b0cafe880a93c7c365f47b200b8"
+                    },
+                    {
+                        "path":  "src/cex_quant/strategy/basket_codec.py",
+                        "sha256":  "56dfcb89dcfd72e1c7d03f8935c621c590e0ae39b4f829b1ad80a94340d03534"
+                    },
+                    {
+                        "path":  "src/cex_quant/strategy/model.py",
+                        "sha256":  "4b56fd925c6073557dcaa072747e9bb28b31659ed77394e666cc27d758366fb4"
+                    },
+                    {
+                        "path":  "src/cex_quant/strategy/runtime.py",
+                        "sha256":  "d0d9f4107b298f11f2170e5713730923226182617d05fc764470bfcfa33769ce"
+                    },
+                    {
+                        "path":  "tests/acceptance/__init__.py",
+                        "sha256":  "56ed42e4a71811e3fc7540e31d74414b04e54c238e8e292d2bf3f70e83cf7f2c"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_a018_frozen_boundary.py",
+                        "sha256":  "dbf443f8d1e7bf40037dbcd48eb1054f72c3751b9921e5d35728fc5a82629200"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_adr011_order_group.py",
+                        "sha256":  "c4245a5949b928debbc2019a8fcba07008964b085538e065dbb0190cddf64619"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_adr012_portfolio_risk.py",
+                        "sha256":  "8f2e8cc00b04b36e1a1dc24b408cada941d5e2f0b8803f74addef5242aedf124"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_adr013_accounting.py",
+                        "sha256":  "89117101cecf9719ba9ea33780f6cd887730b3cf692c179bcbc576c96fd36abd"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_adr014_carry_application.py",
+                        "sha256":  "f876f9e182fe3977bf7b02aad83a9ce11e7938a6dc12975e08c9489e14534887"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_authenticated_operator_deployment.py",
+                        "sha256":  "4c25d83f443849fbce1300a1411ea1869efc3d856e1827c1f061db46527fc49b"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_basket_intents.py",
+                        "sha256":  "42809cc8d91adf14e0967caa36dcf8c0566dee7a383b77b40bee8c182c4afe9a"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_decision_snapshots.py",
+                        "sha256":  "7cbef8c8575b035da3e8687c06e837dc0f2e9edc460a04ad020823d7474be492"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_offline_execution_promotion.py",
+                        "sha256":  "87a25ceb7dcfc3d5785bbbab0a062a670e32898260d1666d17b7d9c91a3f73e2"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_offline_execution_restart_matrix.py",
+                        "sha256":  "39406a84373ddd59160b29243faa67dc986b95c28d841571991489f2daac194c"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_oms_recovery.py",
+                        "sha256":  "5f5d964cd4e9088eedbf9574cf191b55aed302f801976f1adad3352bc2438bc3"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_operator_endpoint_recovery.py",
+                        "sha256":  "f2a1502f61d2e967dba05a739fdd000fb38af7b7067ceb7d12413b5a3df752aa"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_options_and_health.py",
+                        "sha256":  "d49c1d3b107c5ef91fc17c5359d5ec5f5ef919bab13de5ec51fed46dc54e7876"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_private_stream_supervision.py",
+                        "sha256":  "ffe8d2d809f8d59761535cff5503f8c91a7a45b3109dc1eb76be767a9f815eda"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_replay_and_recovery.py",
+                        "sha256":  "8829b61451d95b0fc93141fc68da858a8017cbab522b8e57b25b4d3d00729168"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_runtime_operations.py",
+                        "sha256":  "a4670522e675a83bad5861c7677fa702e9446bcf8221729dd488375205ded1b8"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_security_and_operator_recovery.py",
+                        "sha256":  "1df8fc44bbdb0c09796c90200e8af6b573529e9c663f0fa87b77bfb91115da1d"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_trading_pipeline.py",
+                        "sha256":  "0e8c498e7a9bb3fae6dece69a8476d6d8efe5bba9a3d9a5da7a77353672928c8"
+                    },
+                    {
+                        "path":  "tests/acceptance/test_transport_and_clock.py",
+                        "sha256":  "49465039872878e832a1816c809e81439bb0b3c11efdd0ae95e29e23e2559d42"
+                    },
+                    {
+                        "path":  "tests/carry_test_support.py",
+                        "sha256":  "f808856c120845cf2e9a9f2c17679e57e6555733be83145ada8a1b75742c678d"
+                    },
+                    {
+                        "path":  "tests/group_test_support.py",
+                        "sha256":  "d4caf7e29e73cf451b71a5cd2a4ba969ca0e4cc2510ed95269e4880af6618fc5"
+                    },
+                    {
+                        "path":  "tests/performance/__init__.py",
+                        "sha256":  "eaddde4cd5889ffb8f9c8a778945a9645a3ea2c7304c3ca19976dbb6d265ec18"
+                    },
+                    {
+                        "path":  "tests/performance/test_performance_harness.py",
+                        "sha256":  "a85dd042e41dc297bccf73eb72d79d2d8e27294802714dfbadf106ab70820422"
+                    },
+                    {
+                        "path":  "tests/portfolio_risk_test_support.py",
+                        "sha256":  "421fb0ec4100edbb1b47e7c80427747db6036c7b03778e582d2c64201f49f974"
+                    },
+                    {
+                        "path":  "tests/test_accounting_allocation.py",
+                        "sha256":  "68543959a8f714eb259ffcab0c968fa57f48c2ac2c5eef6ac6a4ad7d9dc58032"
+                    },
+                    {
+                        "path":  "tests/test_accounting_attribution.py",
+                        "sha256":  "b2482aa7ecd3e2fbb4dad8d5fad67ff8ce08beb57d96831ad6448047291f7b56"
+                    },
+                    {
+                        "path":  "tests/test_accounting_contract_validation.py",
+                        "sha256":  "91d96b96991b586fb792716857ec1843487d78b8d4f1960cfa4997c0b363fbd6"
+                    },
+                    {
+                        "path":  "tests/test_accounting_facts.py",
+                        "sha256":  "7e68b41fe049e566777a76b2fc63595f3d67f2b3166053f2cdc1b0db93f33717"
+                    },
+                    {
+                        "path":  "tests/test_accounting_journal.py",
+                        "sha256":  "863cc21e5346921e77f4425e2b9a9a78b6d701e8dd557ed2a9d04251c9e943eb"
+                    },
+                    {
+                        "path":  "tests/test_accounting_ledger.py",
+                        "sha256":  "d1df775e00739d352e5af8da9a326628573bbd7c89133cce8a5c7de30c28af4d"
+                    },
+                    {
+                        "path":  "tests/test_accounting_reconciliation.py",
+                        "sha256":  "82217cc1c1aceb2edd997d83bb3cdd87221d7153b2e27287814cc62ff55c10ca"
+                    },
+                    {
+                        "path":  "tests/test_accounting_valuation.py",
+                        "sha256":  "4f38776b07283402903be12ae1b5eb1a2e4e6e8f07335103c2e877a5a9b65ff2"
+                    },
+                    {
+                        "path":  "tests/test_basket_intents.py",
+                        "sha256":  "fda45fffdd1437300c6196ef9605e789bf98d46100f8249d457a87b54fa134f2"
+                    },
+                    {
+                        "path":  "tests/test_basket_strategy_runtime.py",
+                        "sha256":  "fd120c2f959886250760bc3c265775a91d715a298c11115c556f4d8ba24d3175"
+                    },
+                    {
+                        "path":  "tests/test_binance_authenticated.py",
+                        "sha256":  "58337580a35634d12f467bbe89ecebc3b16f1152c61128c3a53acbf1f4fcb08b"
+                    },
+                    {
+                        "path":  "tests/test_binance_clock.py",
+                        "sha256":  "27eed90224cd5052c5f6ad9b1f281d852a7eb59b0022f9983831eaf390a1b307"
+                    },
+                    {
+                        "path":  "tests/test_binance_connection.py",
+                        "sha256":  "0485659b5849fc20687b2c667261dbed9d99fb29307e6ee2bb99f72217490910"
+                    },
+                    {
+                        "path":  "tests/test_binance_credentials.py",
+                        "sha256":  "13afa308d18b7e81c8ea482d4dfb247016edb70f38efb0226b86d9dd89314273"
+                    },
+                    {
+                        "path":  "tests/test_binance_environment.py",
+                        "sha256":  "48dd10a7d7a2a0d435be6ac111391d8a1e2fd6dff2ede39e64b52b044be1808f"
+                    },
+                    {
+                        "path":  "tests/test_binance_exchange_info.py",
+                        "sha256":  "d72592204baddfebd887ecc532a285a8652315f4a10e2ef769e8db38aef5cc76"
+                    },
+                    {
+                        "path":  "tests/test_binance_http_transport.py",
+                        "sha256":  "2606d7c460b7c99719e4bffd5a0e0739fe91872b0d189c0f47ef6380e6291533"
+                    },
+                    {
+                        "path":  "tests/test_binance_normalizer.py",
+                        "sha256":  "81cd041ee03f2cc48d6a9bee61b35a16b1a6e77ab19be1ca99e289fd26218343"
+                    },
+                    {
+                        "path":  "tests/test_binance_private_stream.py",
+                        "sha256":  "ce1fa01c9f311652c429819add295731c511dcec540c3a9a62f161a5e04d025c"
+                    },
+                    {
+                        "path":  "tests/test_binance_private_transport.py",
+                        "sha256":  "dcca80660605671f92fa4176779273170b6c43ff6d1bc3f5c6c545819a5ff6bb"
+                    },
+                    {
+                        "path":  "tests/test_binance_reconciliation.py",
+                        "sha256":  "f3f12c7becffc39872e2f564cdabd20d25dd7c7f791b5e5ae33ce7276d906873"
+                    },
+                    {
+                        "path":  "tests/test_binance_stream.py",
+                        "sha256":  "172cb6d10ade29bf2dcb92379e67d7f1cb27efb3236662fa93746bf36f37a9c4"
+                    },
+                    {
+                        "path":  "tests/test_carry_application_runtime.py",
+                        "sha256":  "01a879a879404339ab2f190a8e77841692fd3f045a7203e128554d31e35b333b"
+                    },
+                    {
+                        "path":  "tests/test_carry_assessment.py",
+                        "sha256":  "799dbe37591fedd2b7c3d167183809d7d9651e3dda91697cf78846c354398172"
+                    },
+                    {
+                        "path":  "tests/test_carry_contracts.py",
+                        "sha256":  "fe1fe4045b2e597a3d4a240ca668f384ee7ba1248a0d2b6ef9287f37f82ec454"
+                    },
+                    {
+                        "path":  "tests/test_carry_read_side_projection.py",
+                        "sha256":  "2100d49bea43421847d23dce49d41ca2ff7b4ce7d89fcd276538616f080b7aa9"
+                    },
+                    {
+                        "path":  "tests/test_carry_state.py",
+                        "sha256":  "7199849f2a0807559c9c85c5a511906ba446dea98fd7a2d0dd44a19cf3816e65"
+                    },
+                    {
+                        "path":  "tests/test_carry_validation.py",
+                        "sha256":  "aeaa958e6eff24a1248f27415a5cfa0faace484ddfb45d29856e84554d930c8e"
+                    },
+                    {
+                        "path":  "tests/test_events.py",
+                        "sha256":  "6032a1d75f80d279bc035decb83b779b3a81d737027d42cd3a03b03683694049"
+                    },
+                    {
+                        "path":  "tests/test_execution_binance_mapping.py",
+                        "sha256":  "92e104e5feb2548eb5c5b4cd245fb964292bd7893858ec5df7540288a4bc44ee"
+                    },
+                    {
+                        "path":  "tests/test_execution_contracts.py",
+                        "sha256":  "c6f8a2f8fd2e79c890cc2b00f5ce0311525592bfb09763dac3078e9244577097"
+                    },
+                    {
+                        "path":  "tests/test_execution_handoff.py",
+                        "sha256":  "71a88cc61b13c287a229310fc45ea2206f7c7be611a5fe74beadfcc98e4aa1e6"
+                    },
+                    {
+                        "path":  "tests/test_execution_planning.py",
+                        "sha256":  "79329ffe2e66bdfe20dba2c2af7e4aea74dcfd50f2bc381f1d0537ae07311db0"
+                    },
+                    {
+                        "path":  "tests/test_execution_routing.py",
+                        "sha256":  "5b6e37d993b6d174187abe2d7083597f3827bec48fe3c4e9536974801c3dba18"
+                    },
+                    {
+                        "path":  "tests/test_features_engine.py",
+                        "sha256":  "1fc236dadbbb03a34dd66fbecd0ba3a178cd3331086882996d829005528c0743"
+                    },
+                    {
+                        "path":  "tests/test_financial_fact_handoff.py",
+                        "sha256":  "106975a10952d305d16c8a1f7646e201d1b7e4c8086c9baee46bfd4fefb8a912"
+                    },
+                    {
+                        "path":  "tests/test_fixed_point.py",
+                        "sha256":  "d0b11a40b812368ebf58e5a44f37cec3ba68df4093ca8b8565f8935766ffe2ca"
+                    },
+                    {
+                        "path":  "tests/test_funding_carry_policy.py",
+                        "sha256":  "243608405628b0fbecd7b9d385ca3c7bb48d7582cb09f66b8a8b1d1bf8847c5c"
+                    },
+                    {
+                        "path":  "tests/test_funding_state.py",
+                        "sha256":  "39193dc9e1e764c4b2717d63b371f65b6fc601436a764e95a7d5361472ea49d6"
+                    },
+                    {
+                        "path":  "tests/test_grouped_execution_runtime.py",
+                        "sha256":  "1c6166f09e76189c9ec691831f952ad8a9e49164bad199b8910170dc8966bfe1"
+                    },
+                    {
+                        "path":  "tests/test_instruments.py",
+                        "sha256":  "606b42aa72abbd7fc9ac0a4b7dd79563fab965d183bceef0d255636db39f7e8b"
+                    },
+                    {
+                        "path":  "tests/test_kline_events.py",
+                        "sha256":  "b91e58fc1bf78f5ebc1bee9cd09582d2b1bb87ab656620a7ecdcf959037635c4"
+                    },
+                    {
+                        "path":  "tests/test_market_data_events.py",
+                        "sha256":  "4b11e4fb67f0712d4b9a57320c9fbf73dc7776bf34b6d8fa84fcc41b35799283"
+                    },
+                    {
+                        "path":  "tests/test_market_data_normalization.py",
+                        "sha256":  "3f7a41d874b870f8ebccaed0776148b5145cb56878064e37d2a2354d6867b4d6"
+                    },
+                    {
+                        "path":  "tests/test_market_data_validation.py",
+                        "sha256":  "7eb471c828b71e6c8f917375192a2b7c9a674a439e477bd56d2d2b7489f324ea"
+                    },
+                    {
+                        "path":  "tests/test_market_state.py",
+                        "sha256":  "0f08939372e610de777c99213c801132f6511c48c18836ef73eb55fb14cd54f4"
+                    },
+                    {
+                        "path":  "tests/test_observability_clock.py",
+                        "sha256":  "e893fb3512849e95936551990f685dbc4748128f644a0f38feb2dee594b8460b"
+                    },
+                    {
+                        "path":  "tests/test_offline_execution.py",
+                        "sha256":  "aff485e32d81eaa76bcf664efe389c834d8cf0710227fe731e99773439782269"
+                    },
+                    {
+                        "path":  "tests/test_oms_journal.py",
+                        "sha256":  "692d71e78a3754bc8752f597db6d20d3acc717b704089c30b634831b0cb00c1f"
+                    },
+                    {
+                        "path":  "tests/test_oms_model.py",
+                        "sha256":  "a0b3d835054b87827e101d2490010cd4d9a4d17b68a334d0010d513530106857"
+                    },
+                    {
+                        "path":  "tests/test_oms_order_group.py",
+                        "sha256":  "f5cdf4b8f2431285d06d4eb68b4ae04ec03e01242a81320450eab3a572629a3a"
+                    },
+                    {
+                        "path":  "tests/test_oms_position_projection.py",
+                        "sha256":  "3dbd6b275a60e4fe80982fd039b0ec840296395d8899d801fbc3e8c62ad4d996"
+                    },
+                    {
+                        "path":  "tests/test_oms_state.py",
+                        "sha256":  "df970b14ca12a2a2de84825e6a2da68e91dca11df1a0d119d5b665ce3d8d1a07"
+                    },
+                    {
+                        "path":  "tests/test_operator_auth.py",
+                        "sha256":  "942d48b6de7c73ca7778a92b4e9f391a65a551abe03b1d794d9ca3d89813b4e4"
+                    },
+                    {
+                        "path":  "tests/test_operator_endpoint.py",
+                        "sha256":  "bb60a726cc3c9e4aacb07a8a3164cca58ad93ef0922d6d2308f360077c63021c"
+                    },
+                    {
+                        "path":  "tests/test_option_features.py",
+                        "sha256":  "ffded8fedfdd0a84095b152ebab1b50894d1fac2db73b53769fea3d0c12a17f1"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_risk_contracts.py",
+                        "sha256":  "12a705bfafbee9959aec43be04146f03dbbfbe1c053646d78a77ed0aac193e99"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_risk_coordinator.py",
+                        "sha256":  "9311eba52bc6c361a8ed899e91b630cb9f87fe8b68d63ff5473427a84c1cbfe3"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_risk_engine.py",
+                        "sha256":  "491a49cfe47735c4c4dd00ef1ceaf4d6ddc4601329e9b992c834a1cd925a514f"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_risk_guard.py",
+                        "sha256":  "909f4f134d05b789adc3700a33d2019c532ed1867333c804f6b4fad081570265"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_risk_inputs.py",
+                        "sha256":  "4de83489cd26dd067293376919078b5804a9b83542ebbd73b1ce2ec8adb91732"
+                    },
+                    {
+                        "path":  "tests/test_portfolio_state.py",
+                        "sha256":  "d11a7c1fed04544844d844bfa03dd81ebf06559cbacceac03d2456e346274367"
+                    },
+                    {
+                        "path":  "tests/test_private_stream_application.py",
+                        "sha256":  "b03eedf30900fcefd36036414e8fbb032f17092cf65440145d504a379d4ea21c"
+                    },
+                    {
+                        "path":  "tests/test_project_knowledge_graph.py",
+                        "sha256":  "5b52b8cb11c6283a8a4a40e626bc18d3e50492453fcbb11eb33544e2e3cfdc97"
+                    },
+                    {
+                        "path":  "tests/test_recorder_codec.py",
+                        "sha256":  "df70a15402f60fe7030e94d97c57562d78a201a2a1372a05a7273f71d0fbf509"
+                    },
+                    {
+                        "path":  "tests/test_recorder_jsonl.py",
+                        "sha256":  "2c758828d84999b5641c5950edbefcd137625f0417ccf6905764bd1e59d5344a"
+                    },
+                    {
+                        "path":  "tests/test_risk_engine.py",
+                        "sha256":  "4133045661744677e355706333fcd62c11637131d7261c7653f82994dc2763fa"
+                    },
+                    {
+                        "path":  "tests/test_runtime_adapters.py",
+                        "sha256":  "76666589cce0f49f97fd80faecb8c7e6d97664cac129e7f5a617e399ab30ac2f"
+                    },
+                    {
+                        "path":  "tests/test_runtime_application.py",
+                        "sha256":  "c38ad4ad49f3b7b5db2fdbad154f11539fcf512f6ee7ff4b08bd1d758605271e"
+                    },
+                    {
+                        "path":  "tests/test_runtime_deployment.py",
+                        "sha256":  "c6fd5d5cf5e54530d7cfdee281957ca4c34ad5e8317c07d2544af0a116c56957"
+                    },
+                    {
+                        "path":  "tests/test_runtime_operations.py",
+                        "sha256":  "bc2d13c74ae38fb37737692e5cf684a58646d49677c1bbe001459aefde6f30f0"
+                    },
+                    {
+                        "path":  "tests/test_runtime_operations_journal.py",
+                        "sha256":  "229d17b8360b174f79365d115c38ef163aeee19987843efe8c0f814a98527add"
+                    },
+                    {
+                        "path":  "tests/test_runtime_pipeline.py",
+                        "sha256":  "ee9a4afa74d7346b27635f7dd087b56f42441677f5b0d2d216e171bef7f55ec9"
+                    },
+                    {
+                        "path":  "tests/test_runtime_recorder_handoff.py",
+                        "sha256":  "6789f66026a326bcdfd99dbdfbe066ba632098d3564f1c361ffb67db7cc9ecd5"
+                    },
+                    {
+                        "path":  "tests/test_secret_scanner.py",
+                        "sha256":  "83c3ba5efbbe1fafb2b201b46e93d1a5c8a6b575ae930393c378a93d27a41832"
+                    },
+                    {
+                        "path":  "tests/test_snapshot_contracts.py",
+                        "sha256":  "b21422dc0e35616bc73c4696c79d437aa7f132455d5c9791788c6a8e2b6f5a6f"
+                    },
+                    {
+                        "path":  "tests/test_snapshot_coordinator.py",
+                        "sha256":  "742a1e8fa5237e669b588fd1acec74c8a4d3110af446a704a198aed56f7ed88a"
+                    },
+                    {
+                        "path":  "tests/test_startup_reconciliation.py",
+                        "sha256":  "331c1acea4bd9ecc00a6b475f18e9532ca5433347d5a98311e659aaf445cd324"
+                    },
+                    {
+                        "path":  "tests/test_strategy_runtime.py",
+                        "sha256":  "59b3355de228ff73a8208de95048f8eff77dd2344d7e0d137bc9baaa1883015a"
+                    },
+                    {
+                        "path":  "tools/ci/__init__.py",
+                        "sha256":  "effd488d3ce3bc803410d6ff07b846a4a9e70f8103162c681a5b55ee8071ad4e"
+                    },
+                    {
+                        "path":  "tools/ci/scan_secrets.py",
+                        "sha256":  "1e74b11dbc031810f6256cfee29bad40d1b560189ed5ba2d9eed6f08d5ad72bd"
+                    },
+                    {
+                        "path":  "tools/knowledge_graph/__init__.py",
+                        "sha256":  "6b7bbc32c2701427a08ca9a446fb9769f95fb0cbe61a3852eb9b18fb85e9929f"
+                    },
+                    {
+                        "path":  "tools/knowledge_graph/__main__.py",
+                        "sha256":  "10b48bc434c2381741cca44220043987018118f9b8507549ff4c145e10647281"
+                    },
+                    {
+                        "path":  "tools/knowledge_graph/cli.py",
+                        "sha256":  "786e68cba39221dcae6041c252bc77bb51e08cf398ba4857f97b6a764a7b55b4"
+                    },
+                    {
+                        "path":  "tools/knowledge_graph/project_graph.py",
+                        "sha256":  "39bf26b93cf131d7008cacef83ba4bc29d1163011a3476c0bd2451d1fa2cca4b"
+                    },
+                    {
+                        "path":  "tools/knowledge_graph/update_code_graph.ps1",
+                        "sha256":  "ef1409a7ea9a8a3d71181a7d8c41815dd54769deb0689299c8af66bb73e31569"
+                    },
+                    {
+                        "path":  "tools/performance/__init__.py",
+                        "sha256":  "421df3411d2175311737434615d49834340b525af70ff368a4f29b4e0ec2e1d7"
+                    },
+                    {
+                        "path":  "tools/performance/harness.py",
+                        "sha256":  "8d66bd6a4d7173ea77ebea16563fbc252a9b5f9bc7e35f8005575faade618c55"
+                    },
+                    {
+                        "path":  "tools/performance/run_baseline.py",
+                        "sha256":  "7c37070fbb0e794a98a7048ecb259770d9beedf7439c68d23dd13543c9afd8b5"
+                    }
+                ]
+}

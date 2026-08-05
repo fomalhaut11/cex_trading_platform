@@ -1,0 +1,24 @@
+# This repository uses Graphify only for a local, deterministic code graph.
+# Documentation remains outside the graph so an accidental command without
+# --code-only cannot dispatch architecture or collaboration documents to an LLM.
+*.md
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+
+# Protocol fixtures are test data, not code relationships.
+tests/fixtures/
+
+# Local/generated state and credentials must never enter the graph.
+.env
+.env.*
+outputs/
+work/
+graphify-out/
+/knowledge_graph/
+coverage.json
+coverage.xml
